@@ -4,8 +4,9 @@
   "description": "A lightweight, extensive and configurable npm package for building all your ES6 source codes in one parse using rollup.js",
   "main": "lib/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "commit": "git-cz",
+    "test": "BABEL_ENV=test nyc mocha --recursive",
+    "test-watch": "BABEL_ENV=test nyc mocha --recursive -w",
     "prebuild": "rimraf dist && rimraf lib",
     "build": "BABEL_ENV=build rollup --config"
   },
@@ -31,8 +32,12 @@
     "babel-plugin-external-helpers": "6.22.0",
     "babel-preset-env": "1.7.0",
     "babel-register": "6.26.0",
+    "chai": "4.1.2",
     "commitizen": "2.10.1",
     "cz-conventional-changelog": "2.1.0",
+    "istanbul": "0.4.5",
+    "mocha": "5.2.0",
+    "nyc": "12.0.2",
     "rimraf": "2.6.2",
     "rollup": "0.59.1",
     "rollup-plugin-babel": "3.0.4",
