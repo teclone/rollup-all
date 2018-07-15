@@ -5,7 +5,9 @@
   "main": "lib/main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "commit": "git-cz"
+    "commit": "git-cz",
+    "prebuild": "rimraf dist && rimraf lib",
+    "build": "BABEL_ENV=build rollup --config"
   },
   "repository": {
     "type": "git",
@@ -26,8 +28,16 @@
   },
   "homepage": "https://github.com/harrison-ifeanyichukwu/rollup-all#readme",
   "devDependencies": {
+    "babel-plugin-external-helpers": "6.22.0",
+    "babel-preset-env": "1.7.0",
+    "babel-register": "6.26.0",
     "commitizen": "2.10.1",
-    "cz-conventional-changelog": "2.1.0"
+    "cz-conventional-changelog": "2.1.0",
+    "rimraf": "2.6.2",
+    "rollup": "0.59.1",
+    "rollup-plugin-babel": "3.0.4",
+    "rollup-plugin-node-resolve": "3.3.0",
+    "rollup-plugin-uglify": "4.0.0"
   },
   "czConfig": {
     "path": "node_modules/cz-conventional-changelog"
