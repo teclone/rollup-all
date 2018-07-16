@@ -1,0 +1,51 @@
+{
+    "srcDir": "src",
+
+    "mainModuleFileName": "main.js",
+
+    "mainModuleName": "RollupAll",
+
+    "fileExtensions": [".js"],
+
+    "exclude": [],
+
+    "include": ["*"],
+
+    "externalModules": ["fs", "path"],
+
+    "copyAssets": true,
+
+    "uglify": false,
+
+    "uglifyOnly": false,
+
+    "interop": true,
+
+    "sourcemap": true,
+
+    "distConfig": {
+        "disabled": false,
+        "format": "iife",
+        "outDir": "dist",
+        "uglify": true,
+        "uglifyOnly": true,
+        "interop": false,
+        "sourcemap": false,
+        "copyAssets": false,
+        "exclude": ["main.js"],
+        "include": ["src/**/*.js"]
+    },
+
+    "libConfig": {
+        "disabled": false,
+        "format": "cjs",
+        "outDir": "lib",
+        "uglify": true,
+        "uglifyOnly": true,
+        "interop": false,
+        "sourcemap": false,
+        "copyAssets": false,
+        "exclude": ["main.js"],
+        "include": ["src/**/*.js"]
+    }
+}

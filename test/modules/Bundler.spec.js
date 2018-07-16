@@ -6,7 +6,7 @@ import rimraf from 'rimraf';
 describe('Bundler', function() {
     let bundler = null;
 
-    beforeEach(function() {
+    afterEach(function() {
         bundler = new Bundler();
         rimraf.sync(path.resolve(__dirname, '../../dist'));
         rimraf.sync(path.resolve(__dirname, '../../lib'));
