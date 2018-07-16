@@ -219,7 +219,7 @@ export default class Bundler {
     */
     process() {
         //resolve user defined settings
-        let entryPath = this.getEntryPath(require.main.filename),
+        let entryPath = this.getEntryPath(require.main? require.main.filename : __dirname),
         config = null;
 
         if (fs.existsSync(entryPath + '/' + this.configPath))
