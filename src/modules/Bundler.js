@@ -25,6 +25,35 @@ export default class Bundler {
     }
 
     /**
+     * resolves the pattern into a regex object
+     *@param {Array|string|RegExp} patterns - array of patterns or string pattern
+     *@param {Array} regexStore - array to store regex objects
+    */
+    resolveRegex(patterns, regexStore) {
+        if (typeof patterns === 'string') {
+            if (patterns === '*') {
+                regexStore.push(new RegExp('.*'));
+            }
+            else {
+                patterns = patterns.replace(/\./g, '\\.').replace(/\*{2}/g, '.*')
+                    .replace(/\*/g, '[^/]+');
+                regexStore.push(new RegExp(patterns, 'i'));
+            }
+        }
+
+        else if (patterns instanceof RegExp) {
+            regexStore.push(patterns);
+        }
+
+        else if (Util.isArray(patterns)) {
+            for (let pattern of patterns)
+                this.resolveRegex(pattern, regexStore);
+        }
+
+        return regexStore;
+    }
+
+    /**
      * returns the entry path
     */
     getEntryPath(mainFileName) {
@@ -59,6 +88,10 @@ export default class Bundler {
 
         //extract lib and dist configs
         let libConfig = config.libConfig,
-        distConfig = config.distConfig;
+        distConfig = config.distConfig,
+
+        //define includes and excludes regex
+        includes = this.resolveRegex(config.include, []),
+        excludes = this.resolveRegex(config.exclude, []);
     }
 }
