@@ -1,2 +1,9 @@
 {
+    "srcDir": "src",
+
+    "mainModuleFileName": "main.js",
+
+    "mainModuleName": "Module",
+
+    "fileExtensions": [".js"]
 }
