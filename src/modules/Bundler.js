@@ -25,6 +25,50 @@ export default class Bundler {
     }
 
     /**
+     * returns the allowed exports for each build kind
+     *@param {Array} exportStore - array to store in the exports
+     *@param {Object} options - options object
+     *@param {string} options.outDir - the out directory for the build kind
+     *@param {string} options.format - the output format for all included modules in this build
+     *@param {boolean} options.uglify - boolean value indicating if modules should be uglified
+     *@param {boolean} options.uglifyOnly - boolean value indicating if only uglified outputs should
+     * be produced
+     *@param {Array} modules - the modules list to build from
+     *@param {Array} externalModules - array of external modules
+     *@param {RegExp[]} includes - array of regex objects that specifies modules to include
+     *@param {RegExp[]} excludes - array of regex objects that specifies modules to exclude
+    */
+    getExports(exportStore, options, modules, externalModules, includes, excludes) {
+        let src = null,
+        regexMatches = function(regex) {
+            return regex.test(src);
+        },
+        filterExternalModules = function(externalModule) {
+            return externalModule !== src;
+        };
+
+        for (let _module of modules) {
+            src = _module.absPath + _module.ext;
+            if (!includes.some(regexMatches) || excludes.some(regexMatches))
+                continue;
+
+            let dest = options.outDir + '/' + _module.relPath;
+            if (_module.isAsset) {
+                if (options.copyAssets) {
+                    const dir = path.dirname(dest);
+                    if (!fs.existsSync(dir))
+                        fs.mkdirSync(dir);
+
+                    fs.writeFileSync(dest, fs.readFileSync(src));
+                }
+                continue;
+            }
+
+            let externals = externalModules.filter(filterExternalModules);
+        }
+    }
+
+    /**
      * returns array of mapped external modules
      *@param {Array} modules - array of modules
     */
@@ -158,6 +202,32 @@ export default class Bundler {
 
         //define the exportStore
         exportStore = [];
+
+        if (!libConfig.disabled)
+            this.getExports(
+                exportStore,
+                {
+                    outDir: path.join(entryPath, libConfig.outDir),
+                    format: libConfig.format,
+
+                    uglifyOnly: typeof libConfig.uglifyOnly !== 'undefined'?
+                        libConfig.uglifyOnly : config.uglifyOnly,
+                    uglify: libConfig.uglify? true : config.uglify,
+
+                    copyAssets: typeof libConfig.copyAssets !== 'undefined'?
+                        libConfig.copyAssets : config.copyAssets,
+
+                    interop: typeof libConfig.interop !== 'undefined'?
+                        libConfig.interop : config.interop,
+
+                    sourcemap: typeof libConfig.sourcemap !== 'undefined'?
+                        libConfig.sourcemap : config.sourcemap
+                },
+                modules,
+                externalModules,
+                libConfig.include? this.resolveRegex(libConfig.include, []) : includes,
+                libConfig.exclude? this.resolveRegex(libConfig.exclude, []) : excludes
+            );
 
         return exportStore;
     }
