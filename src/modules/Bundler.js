@@ -219,8 +219,14 @@ export default class Bundler {
     */
     process() {
         //resolve user defined settings
-        let entryPath = this.getEntryPath(require.main? require.main.filename : __dirname),
-        config = null;
+        let entryPath = '';
+        /* istanbul ignore else */
+        if (require.main)
+            entryPath = this.getEntryPath(require.main.filename);
+        else
+            entryPath = this.getEntryPath(__dirname);
+
+        let config = null;
 
         if (fs.existsSync(entryPath + '/' + this.configPath))
             config = Object.assign({}, _config, require(entryPath + '/' + this.configPath));
