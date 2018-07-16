@@ -19,7 +19,7 @@
 
     "uglifyOnly": false,
 
-    "interop": true,
+    "interop": false,
 
     "sourcemap": true,
 
