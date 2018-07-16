@@ -5,5 +5,7 @@
 
     "mainModuleName": "Module",
 
-    "fileExtensions": [".js"]
+    "fileExtensions": [".js"],
+
+    "externalModules": []
 }
