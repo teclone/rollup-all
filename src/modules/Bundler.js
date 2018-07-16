@@ -25,6 +25,32 @@ export default class Bundler {
     }
 
     /**
+     * returns the config for the given file
+     *@param {boolean} _uglify - boolean value indicating if file should be minified
+     *@param {Object} options - object options
+     *@param {string} options.format - the expected output format
+     *@param {string} options.src - the file source directory
+     *@param {string} options.dest - the file destination directory, omit the .js extension
+     *@param {string} name - the file module name
+     *@param {Array} externals - array of module externals
+     *@returns {Object}
+    */
+    getConfig(uglify, options, name, externals) {
+        return {
+            input: options.src,
+            output: {
+                file: options.dest + (uglify? '.min' : '') + options.ext,
+                format: options.format,
+                name: Util.camelCase(name),
+                interop: options.interop,
+                sourcemap: options.sourcemap
+            },
+            plugins: uglify? this.pluginsWithUglifer : this.plugins,
+            external: externals
+        };
+    }
+
+    /**
      * returns the allowed exports for each build kind
      *@param {Array} exportStore - array to store in the exports
      *@param {Object} options - options object
@@ -65,6 +91,26 @@ export default class Bundler {
             }
 
             let externals = externalModules.filter(filterExternalModules);
+
+            if(!options.uglifyOnly)
+                exportStore.push(this.getConfig(false, {
+                    src: src,
+                    dest: dest,
+                    format: options.format,
+                    interop: options.interop,
+                    sourcemap: options.sourcemap,
+                    ext: _module.ext
+                }, _module.name, externals));
+
+            if (this.pluginsWithUglifer !== null && (options.uglifyOnly || options.uglify))
+                exportStore.push(this.getConfig(true, {
+                    src: src,
+                    dest: dest,
+                    format: options.format,
+                    interop: options.interop,
+                    sourcemap: options.sourcemap,
+                    ext: _module.ext
+                }, _module.name, externals));
         }
     }
 
