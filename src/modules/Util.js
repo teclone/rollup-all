@@ -67,5 +67,45 @@ export default {
             return idx === 0? token : token[0].toUpperCase() + token.substring(1);
         });
         return tokens.join('');
+    },
+
+    /**
+     * performs a deep merge of all comma seperated list of objects and returns a new object
+     *@param {...Object} objects - comma separated list of objects to merge
+     *@returns {Object}
+    */
+    mergeObjects(...objects) {
+        /**
+         * runs the process
+         *@param {Object} dest - the destination object
+         *@param {Object} src - the src object
+         *@returns {Object}
+        */
+        function run(dest, src) {
+            let keys = Object.keys(src);
+            for (let key of keys) {
+                let value = src[key];
+
+                if (typeof dest[key] === 'undefined')
+                    dest[key] = this.isPlainObject(value)?
+                        run.call(this, {}, value) : value;
+
+                else if (this.isPlainObject(value) && !this.isPlainObject(dest[key]))
+                    continue;
+
+                else
+                    dest[key] = this.isPlainObject(value)?
+                        run.call(this, dest[key], value) : value;
+            }
+            return dest;
+        }
+
+        let dest = {};
+        for (let object of objects) {
+            if (!this.isPlainObject(object))
+                continue;
+            dest = run.call(this, dest, object);
+        }
+        return dest;
     }
 };
