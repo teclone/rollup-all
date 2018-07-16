@@ -11,5 +11,27 @@
 
     "include": ["*"],
 
-    "externalModules": []
+    "externalModules": [],
+
+    "copyAssets": false,
+
+    "uglify": false,
+
+    "uglifyOnly": false,
+
+    "interop": true,
+
+    "sourcemap": true,
+
+    "distConfig": {
+        "disabled": false,
+        "format": "iife",
+        "outDir": "dist"
+    },
+
+    "libConfig": {
+        "disabled": false,
+        "format": "cjs",
+        "outDir": "lib"
+    }
 }
