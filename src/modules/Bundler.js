@@ -229,6 +229,32 @@ export default class Bundler {
                 libConfig.exclude? this.resolveRegex(libConfig.exclude, []) : excludes
             );
 
+        if (!distConfig.disabled)
+            this.getExports(
+                exportStore,
+                {
+                    outDir: path.join(entryPath, distConfig.outDir),
+                    format: distConfig.format,
+
+                    uglifyOnly: typeof distConfig.uglifyOnly !== 'undefined'?
+                        distConfig.uglifyOnly : config.uglifyOnly,
+                    uglify: distConfig.uglify? true : config.uglify,
+
+                    copyAssets: typeof distConfig.copyAssets !== 'undefined'?
+                        distConfig.copyAssets : config.copyAssets,
+
+                    interop: typeof distConfig.interop !== 'undefined'?
+                        distConfig.interop : config.interop,
+
+                    sourcemap: typeof distConfig.sourcemap !== 'undefined'?
+                        distConfig.sourcemap : config.sourcemap
+                },
+                modules,
+                [],
+                distConfig.include? this.resolveRegex(distConfig.include, []) : includes,
+                distConfig.exclude? this.resolveRegex(distConfig.exclude, []) : excludes
+            );
+
         return exportStore;
     }
 }
