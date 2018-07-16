@@ -25,6 +25,49 @@ export default class Bundler {
     }
 
     /**
+     * gets all modules
+     *@param {Array} modules - array to store modules
+     *@param {string} resolvedPath - the resolved root module directory to iterate
+     *@param {string} mainModuleFileName - the file name of the main module as set in the config
+     * file
+     *@param {string} mainModuleName - the global module name for the main export file. applies
+     * to iife builds
+     *@param {Array} srcPaths - array of paths relative to the source directory
+     *@param {Array} fileExtensions - array of supported file extensions. files not included here
+     * are regarded as asset files
+     *@returns {Array}
+    */
+    getModules(modules, resolvedPath, mainModuleFileName, mainModuleName, srcPaths,
+        fileExtensions) {
+        let files = fs.readdirSync(resolvedPath);
+        for (let file of files) {
+            let filePath = resolvedPath + '/' + file;
+            if (fs.statSync(filePath).isDirectory()) {
+                this.getModules(modules, filePath, mainModuleFileName, mainModuleName,
+                    [...srcPaths, file], fileExtensions);
+                continue;
+            }
+
+            let baseName = '', extname = path.extname(file);
+            for (const fileExtension of fileExtensions) {
+                if (fileExtension === extname) {
+                    baseName = path.basename(file, fileExtension);
+                    break;
+                }
+            }
+
+            modules.push({
+                name: file === mainModuleFileName && baseName? mainModuleName : baseName,
+                ext: baseName? extname : '',
+                relPath: [...srcPaths, baseName || file].join('/'),
+                absPath: resolvedPath + '/' + (baseName || file),
+                isAsset: baseName? false : true
+            });
+        }
+        return modules;
+    }
+
+    /**
      * resolves the pattern into a regex object
      *@param {Array|string|RegExp} patterns - array of patterns or string pattern
      *@param {Array} regexStore - array to store regex objects
@@ -92,6 +135,21 @@ export default class Bundler {
 
         //define includes and excludes regex
         includes = this.resolveRegex(config.include, []),
-        excludes = this.resolveRegex(config.exclude, []);
+        excludes = this.resolveRegex(config.exclude, []),
+
+        //get modules & extend external modules
+        modules = this.getModules(
+            [],
+            path.resolve(path.join(entryPath, config.srcDir)),
+            config.mainModuleFileName,
+            config.mainModuleName,
+            [],
+            config.fileExtensions
+        );
+
+        //define the exportStore
+        exportStore = [];
+
+        return exportStore;
     }
 }
