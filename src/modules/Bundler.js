@@ -25,6 +25,14 @@ export default class Bundler {
     }
 
     /**
+     * returns array of mapped external modules
+     *@param {Array} modules - array of modules
+    */
+    getExternalModules(modules) {
+        return modules.map(current => current.absPath + current.ext);
+    }
+
+    /**
      * gets all modules
      *@param {Array} modules - array to store modules
      *@param {string} resolvedPath - the resolved root module directory to iterate
@@ -145,7 +153,8 @@ export default class Bundler {
             config.mainModuleName,
             [],
             config.fileExtensions
-        );
+        ),
+        externalModules = [...config.externalModules, ...this.getExternalModules(modules)],
 
         //define the exportStore
         exportStore = [];
