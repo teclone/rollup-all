@@ -229,7 +229,7 @@ export default class Bundler {
         let config = null;
 
         if (fs.existsSync(entryPath + '/' + this.configPath))
-            config = Object.assign({}, _config, require(entryPath + '/' + this.configPath));
+            config = Util.mergeObjects(_config, require(entryPath + '/' + this.configPath));
         else
             config = _config;
 
