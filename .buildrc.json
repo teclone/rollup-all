@@ -15,13 +15,7 @@
 
     "copyAssets": true,
 
-    "uglify": false,
-
-    "uglifyOnly": false,
-
-    "interop": true,
-
-    "sourcemap": true,
+    "sourcemap": false,
 
     "distConfig": {
         "disabled": true,
