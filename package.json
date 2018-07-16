@@ -46,5 +46,14 @@
   },
   "czConfig": {
     "path": "node_modules/cz-conventional-changelog"
+  },
+  "nyc": {
+    "require": [
+      "babel-register",
+      "./test/setup.js"
+    ],
+    "include": [
+      "src/modules/*.js"
+    ]
   }
 }
