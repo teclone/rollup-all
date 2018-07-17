@@ -51,6 +51,19 @@ export default class Bundler {
     }
 
     /**
+     * copies the file from the src to the destination
+     *@param {string} src - the src file
+     *@param {string} dest - the file destination
+    */
+    copyFile(src, dest) {
+        let dir = path.dirname(dest);
+        if (!fs.existsSync(dir))
+            fs.mkdirSync(dir);
+
+        fs.writeFileSync(dest, fs.readFileSync(src));
+    }
+
+    /**
      * returns the allowed exports for each build kind
      *@param {Array} exportStore - array to store in the exports
      *@param {Object} options - options object
@@ -80,13 +93,8 @@ export default class Bundler {
 
             let dest = options.outDir + '/' + _module.relPath;
             if (_module.isAsset) {
-                if (options.copyAssets) {
-                    const dir = path.dirname(dest);
-                    if (!fs.existsSync(dir))
-                        fs.mkdirSync(dir);
-
-                    fs.writeFileSync(dest, fs.readFileSync(src));
-                }
+                if (options.copyAssets)
+                    this.copyFile(src, dest);
                 continue;
             }
 
