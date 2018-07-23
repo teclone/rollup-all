@@ -8,6 +8,7 @@
     "test": "BABEL_ENV=test nyc mocha --recursive",
     "test-watch": "BABEL_ENV=test nyc mocha --recursive -w",
     "prebuild": "rimraf dist && rimraf lib",
+    "lint": "eslint ./src --fix",
     "build": "BABEL_ENV=build rollup --config",
     "report-coverage": "nyc report --reporter=text-lcov | coveralls",
     "semantic-release": "semantic-release"
