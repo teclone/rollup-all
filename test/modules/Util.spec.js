@@ -1,4 +1,7 @@
 import Util from '../../src/modules/Util.js';
+import fs from 'fs';
+import path from 'path';
+import rimraf from 'rimraf';
 
 describe('Util module', function() {
     describe('.isNumber(variable)', function() {
@@ -78,12 +81,12 @@ describe('Util module', function() {
         it(`should deeply merge all the comma separated list of object arguments and return
         the new object`, function() {
             let obj1 = {name: 'house1', details: {height: 30, width: 40}};
-            let obj2 = {nickName: 'Finest House', details: {rooms: 40}};
-            let obj3 = {oldName: 'Fine House', details: {height: 35}};
+            let obj2 = {nickName: 'Finest House', details: {rooms: 40}, name: {value: 'house2'}};
+            let obj3 = {oldName: 'Fine House', details: 'no details'};
 
             expect(Util.mergeObjects(obj1, obj2, obj3)).to.deep.equals({
-                name: 'house1', nickName: 'Finest House', oldName: 'Fine House',
-                details: {height: 35, width: 40, rooms: 40}
+                name: {value: 'house2'}, nickName: 'Finest House', oldName: 'Fine House',
+                details: 'no details'
             });
         });
 
@@ -97,17 +100,29 @@ describe('Util module', function() {
                 details: {height: 35, width: 40, rooms: 40}
             });
         });
+    });
 
-        it(`should not override non object field with an object field`, function() {
-            let obj1 = {name: 'house1', details: {height: 30, width: 40}};
-            let obj2 = {nickName: 'Finest House', details: {rooms: 40}};
-            let obj3 = {oldName: 'Fine House', details: {height: 35}};
-            let obj4 = {name: {value: 'house2'}};
+    describe('.mkDirSync(dir)', function() {
+        it(`should create the directory recursively if it does not exist`, function() {
+            let dir = path.join(__dirname, '../../storage/media/images');
+            Util.mkDirSync(dir);
 
-            expect(Util.mergeObjects(obj1, obj2, obj3, obj4)).to.deep.equals({
-                name: 'house1', nickName: 'Finest House', oldName: 'Fine House',
-                details: {height: 35, width: 40, rooms: 40}
-            });
+            let result = fs.existsSync(dir);
+            rimraf.sync(path.join(__dirname, '../../storage'));
+            expect(result).to.be.true;
+        });
+
+        it(`should throw error if argument is not a string`, function() {
+            expect(function() {
+                Util.mkDirSync(null);
+            }).to.throw(TypeError);
+        });
+
+        it(`should do nothing if the directory exists, or if the directory given is an empty
+        string or the backward slash. it returns false`, function() {
+            expect(Util.mkDirSync(path.resolve(__dirname))).to.be.false;
+            expect(Util.mkDirSync('/')).to.be.false;
+            expect(Util.mkDirSync('')).to.be.false;
         });
     });
 });
