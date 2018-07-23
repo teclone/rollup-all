@@ -6,10 +6,11 @@
   "scripts": {
     "commit": "git-cz",
     "test": "BABEL_ENV=test nyc mocha --recursive",
-    "test-watch": "BABEL_ENV=test nyc mocha --recursive -w",
+    "watch-test": "npm run test -- -w",
     "prebuild": "rimraf dist && rimraf lib",
     "lint": "eslint ./src --fix",
     "build": "BABEL_ENV=build rollup --config",
+    "watch-build": "npm run build -- --watch",
     "report-coverage": "nyc report --reporter=text-lcov | coveralls",
     "semantic-release": "semantic-release"
   },
