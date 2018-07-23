@@ -2,6 +2,9 @@
  * Utility module
  * this module defines a bunch of utility functions that will be relevant to most other modules
 */
+import fs from 'fs';
+import path from 'path';
+
 let toString = Object.prototype.toString;
 
 export default {
@@ -86,16 +89,16 @@ export default {
             for (let key of keys) {
                 let value = src[key];
 
-                if (typeof dest[key] === 'undefined')
-                    dest[key] = this.isPlainObject(value)?
-                        run.call(this, {}, value) : value;
-
-                else if (this.isPlainObject(value) && !this.isPlainObject(dest[key]))
-                    continue;
-
-                else
-                    dest[key] = this.isPlainObject(value)?
-                        run.call(this, dest[key], value) : value;
+                if (typeof dest[key] === 'undefined') {
+                    dest[key] = this.isPlainObject(value)? run.call(this, {}, value) : value;
+                }
+                else if (this.isPlainObject(value)) {
+                    dest[key] = this.isPlainObject(dest[key])?
+                        run.call(this, dest[key], value) : run.call(this, {}, value);
+                }
+                else {
+                    dest[key] = value;
+                }
             }
             return dest;
         }
@@ -107,5 +110,34 @@ export default {
             dest = run.call(this, dest, object);
         }
         return dest;
+    },
+
+    /**
+     * creates a directory recursively and synchronously
+     *@param {string} dir - the directory to create
+     *@returns {boolean}
+    */
+    mkDirSync(dir) {
+        if (typeof dir !== 'string')
+            throw new TypeError('argument one is not a string');
+        if (dir === '/' || dir === '' || fs.existsSync(dir))
+            return false;
+
+        //search backwards
+        dir = dir.replace(/\/+$/, '');
+        let existingPath = '',
+            testPath = dir;
+        while (existingPath === '' && testPath !== '/') {
+            testPath = path.join(testPath, '../');
+            if (fs.existsSync(testPath))
+                existingPath = testPath;
+        }
+
+        let pathTokens = dir.split(existingPath)[1].split('/');
+        for (let pathToken of pathTokens) {
+            existingPath = path.join(existingPath, '/', pathToken);
+            fs.mkdirSync(existingPath);
+        }
+        return true;
     }
 };

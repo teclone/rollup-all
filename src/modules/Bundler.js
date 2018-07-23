@@ -58,7 +58,7 @@ export default class Bundler {
     copyFile(src, dest) {
         let dir = path.dirname(dest);
         if (!fs.existsSync(dir))
-            fs.mkdirSync(dir);
+            Util.mkDirSync(dir);
 
         fs.writeFileSync(dest, fs.readFileSync(src));
     }
@@ -79,19 +79,19 @@ export default class Bundler {
     */
     getExports(exportStore, options, modules, externalModules, includes, excludes) {
         let src = null,
-        regexMatches = function(regex) {
-            return regex.test(src);
-        },
-        filterExternalModules = function(externalModule) {
-            return externalModule !== src;
-        };
+            regexMatches = function(regex) {
+                return regex.test(src);
+            },
+            filterExternalModules = function(externalModule) {
+                return externalModule !== src;
+            };
 
         for (let _module of modules) {
             src = _module.absPath + _module.ext;
             if (!includes.some(regexMatches) || excludes.some(regexMatches))
                 continue;
 
-            let dest = options.outDir + '/' + _module.relPath;
+            let dest = path.join(options.outDir, _module.relPath);
             if (_module.isAsset) {
                 if (options.copyAssets)
                     this.copyFile(src, dest);
@@ -147,7 +147,7 @@ export default class Bundler {
         fileExtensions) {
         let files = fs.readdirSync(resolvedPath);
         for (let file of files) {
-            let filePath = resolvedPath + '/' + file;
+            let filePath = path.join(resolvedPath, file);
             if (fs.statSync(filePath).isDirectory()) {
                 this.getModules(modules, filePath, mainModuleFileName, mainModuleName,
                     [...srcPaths, file], fileExtensions);
@@ -166,7 +166,7 @@ export default class Bundler {
                 name: file === mainModuleFileName && baseName? mainModuleName : baseName,
                 ext: baseName? extname : '',
                 relPath: [...srcPaths, baseName || file].join('/'),
-                absPath: resolvedPath + '/' + (baseName || file),
+                absPath: path.join(resolvedPath, baseName || file),
                 isAsset: baseName? false : true
             });
         }
@@ -210,7 +210,7 @@ export default class Bundler {
             return mainFileName.split('/node_modules')[0];
 
         let currentPath = path.join(mainFileName, '../'),
-        rightPath = '';
+            rightPath = '';
         while (currentPath !== '/') {
             if (fs.existsSync(currentPath + '/package.json')) {
                 rightPath = currentPath;
@@ -236,32 +236,32 @@ export default class Bundler {
 
         let config = null;
 
-        if (fs.existsSync(entryPath + '/' + this.configPath))
-            config = Util.mergeObjects(_config, require(entryPath + '/' + this.configPath));
+        if (fs.existsSync(path.join(entryPath, this.configPath)))
+            config = Util.mergeObjects(_config, require(path.join(entryPath, this.configPath)));
         else
             config = _config;
 
         //extract lib and dist configs
         let libConfig = config.libConfig,
-        distConfig = config.distConfig,
+            distConfig = config.distConfig,
 
-        //define includes and excludes regex
-        includes = this.resolveRegex(config.include, []),
-        excludes = this.resolveRegex(config.exclude, []),
+            //define includes and excludes regex
+            includes = this.resolveRegex(config.include, []),
+            excludes = this.resolveRegex(config.exclude, []),
 
-        //get modules & extend external modules
-        modules = this.getModules(
-            [],
-            path.resolve(path.join(entryPath, config.srcDir)),
-            config.mainModuleFileName,
-            config.mainModuleName,
-            [],
-            config.fileExtensions
-        ),
-        externalModules = [...config.externalModules, ...this.getExternalModules(modules)],
+            //get modules & extend external modules
+            modules = this.getModules(
+                [],
+                path.resolve(path.join(entryPath, config.srcDir)),
+                config.mainModuleFileName,
+                config.mainModuleName,
+                [],
+                config.fileExtensions
+            ),
+            externalModules = [...config.externalModules, ...this.getExternalModules(modules)],
 
-        //define the exportStore
-        exportStore = [];
+            //define the exportStore
+            exportStore = [];
 
         if (!libConfig.disabled)
             this.getExports(
