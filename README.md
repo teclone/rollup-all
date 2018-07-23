@@ -10,9 +10,13 @@
 
 Rollup-all is a lightweight, extensive and configurable npm package for building all your ESNext source codes in one parse using [rollup.js](https://rollupjs.org/guide/en).
 
-It enables you to generate separate project [lib and dist builds](https://stackoverflow.com/questions/39553079/difference-between-lib-and-dist-folders-when-packaging-library-using-webpack) using any of the supported [rollup.js build formats](https://rollupjs.org/guide/en#big-list-of-options) including support for minified build version.
+It enables you to generate separate project [lib and dist builds](https://stackoverflow.com/questions/39553079/difference-between-lib-and-dist-folders-when-packaging-library-using-webpack) using any of the supported [rollup.js build formats](https://rollupjs.org/guide/en#big-list-of-options) including support for minified build versions.
 
 It allows you to configure the build process, letting you define what should be included and excluded in the build, if sourcemap should be generated, if minified or only minified versions of the build should be generated, and lots more...
+
+## What's New
+
+The latest version of this project now has support for `watch` and `globals` [options](https://rollupjs.org/guide/en#big-list-of-options), and can copy asset files to any deep length.
 
 ## Getting Started
 
@@ -28,7 +32,7 @@ npm install it:
 npm install --save-dev rollup-all
 ```
 
-To start using the module, you have to modify your project's `rollup.config.js` file as like shown below, calling the api:
+To start using the module, you have to modify your project's [rollup.js config file](https://rollupjs.org/guide/en#using-config-files) (`rollup.config.js` or any name you gave it) as like shown below, calling the api:
 
 ```javascript
 /**
@@ -39,6 +43,8 @@ import resolve from 'rollup-plugin-node-resolve';
 import babel from 'rollup-plugin-babel';
 import json from 'rollup-plugin-json';
 import uglifier from 'rollup-plugin-uglify';
+
+import rollupAll from 'rollup-all';
 
 /**
  * run all plugins and store results in an array.
@@ -69,7 +75,7 @@ let configPath = '';
 export default rollupAll.getExports(uglifier(), plugins, configPath);
 ```
 
-> **Note**: if you are not using any uglifier plugin, passin null as the first parameter. Note also that you must execute all plugins before passing it to the api call.
+> **Note**: if you are not using any [uglifier](https://github.com/rollup/rollup/wiki/Plugins#output--prettifying) plugin, pass in `null` as the first parameter. Note also that you must execute all plugins before passing it to the api call.
 
 ## How It Works
 
@@ -85,11 +91,11 @@ Rollup-all uses an internal `.buildrc.json` file that defines default build conf
 
     "fileExtensions": [".js"],
 
-    "externalModules": [],
-
     "exclude": [],
 
     "include": ["*"],
+
+    "externalModules": [],
 
     "copyAssets": false,
 
@@ -100,6 +106,10 @@ Rollup-all uses an internal `.buildrc.json` file that defines default build conf
     "interop": false,
 
     "sourcemap": true,
+
+    "watch": {},
+
+    "globals": {},
 
     "distConfig": {
         "disabled": false,
@@ -115,7 +125,7 @@ Rollup-all uses an internal `.buildrc.json` file that defines default build conf
 }
 ```
 
-You can override these options by creating and placing a `.buildrc.json` file right in your project root directory. You can even name it any other thing or place it anywhere provided you supply the file's relative path as a third parameter during the [api call](#getting-started).
+You can override these options by creating and placing a `.buildrc.json` file in your project's root directory. You can even name it any other thing or place it anywhere provided you supply the file's relative path as a third parameter during the [api call](#getting-started).
 
 ## Working with Config Options
 
@@ -131,7 +141,7 @@ These makes it easy to similar build options in the global section and different
 
 ### Config Options Explained
 
-> note that options with asterisk can be defined specifically on the `distConfig` or `libConfig` sections.
+> Options with ending asterisks can be defined locally on the `distConfig` and `libConfig` sections.
 
 - **srcDir**: defines the relative path to your project's source folder. Defaults to `src`.
 
@@ -156,6 +166,10 @@ These makes it easy to similar build options in the global section and different
 - **interop***: defines if the `rollup.js` interop functionality should be enabled. Defuaults to `false`.
 
 - **sourcemap***: defines if the build should produce source maps. value can be `true`, `"inline"` or `false`. Default value is `true` which causes source map files to be generated.
+
+- **globals***: as per [rollup.js](https://rollupjs.org/guide/en#output-globals-g-globals) docs, this is an object of `id: name` pairs, used for `umd/iife` builds. Defaults to empty object `{}`
+
+- **watch***: as per [rollup.js](https://rollupjs.org/guide/en#watch-options) docs, this option only takes effect when running Rollup with the --watch flag.
 
 - **distConfig.outDir** - defines the output directory for your `dist` build. Defaults to `"dist"`.
 
@@ -221,6 +235,24 @@ These makes it easy to similar build options in the global section and different
     }
     ```
 
+- **Using the Watch option**
+
+    To run build and watch for file changes, you can create two separate npm scripts as shown below:
+    ```json
+        ...,
+        "scripts": {
+            "build": "BABEL_ENV=build rollup --config",
+            "watch-build": "npm run build -- --watch"
+        },
+        ...
+    ```
+
+    Then you can run the commands depending on what you need.
+
+    ```bash
+    npm run watch-build #build and watch for changes
+    ```
+
 ## Contributing
 
 We welcome your own contributions, ranging from code refactoring, documentation improvements, new feature implementations, bugs/issues reporting, etc. we recommend you follow the steps below to actively contribute to this project
@@ -237,6 +269,6 @@ All future contributors will be included below and immensely appreciated. We loo
 
 ## About Project Maintainers
 
-This project is maintained by [harrison ifeanyichukwu](mailto:harrisonifeanyichukwu@gmail.com), a young, passionate full stack web developer, an [MDN](https://developer.mozilla.org/en-US/profiles/harrison-feanyichukwu) documentator, maintainer of node.js [xml-serializer](https://www.npmjs.com/package/@harrison-ifeanyichukwu/xml-serializer) [R-Server](https://github.com/harrison-ifeanyichukwu/r-server) and other great projects.
+This project is maintained by [harrison ifeanyichukwu](mailto:harrisonifeanyichukwu@gmail.com), a young, passionate full stack web developer, an [MDN](https://developer.mozilla.org/en-US/profiles/harrison-feanyichukwu) documentator, maintainer of w3c [xml-serializer](https://www.npmjs.com/package/@harrison-ifeanyichukwu/xml-serializer) project, node.js [R-Server](https://github.com/harrison-ifeanyichukwu/r-server) and other amazing projects.
 
-He is available for hire, ready to work on `PHP` projects, `Node.js` projects, `React` and `Angular` projects and stuffs like that. Looks forward to hearing from you soon!!!
+He is available for hire, ready to work on amazing `PHP`,  `Node.js`,  `React`,  `Angular`,  `HTML5`,  `CSS` and database projects. Looks forward to hearing from you soon!!!
