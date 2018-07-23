@@ -33,7 +33,9 @@
         "sourcemap": false,
         "copyAssets": false,
         "exclude": ["main.js"],
-        "include": ["src/**/*.js"]
+        "include": ["src/**/*.js"],
+        "globals": {},
+        "watch": {}
     },
 
     "libConfig": {
@@ -46,6 +48,8 @@
         "sourcemap": false,
         "copyAssets": false,
         "exclude": ["main.js"],
-        "include": ["src/**/*.js"]
+        "include": ["src/**/*.js"],
+        "globals": {},
+        "watch": {}
     }
 }

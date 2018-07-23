@@ -23,6 +23,10 @@
 
     "sourcemap": true,
 
+    "watch": {},
+
+    "globals": {},
+
     "distConfig": {
         "disabled": false,
         "format": "iife",

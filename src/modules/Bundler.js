@@ -43,10 +43,12 @@ export default class Bundler {
                 format: options.format,
                 name: Util.camelCase(name),
                 interop: options.interop,
-                sourcemap: options.sourcemap
+                sourcemap: options.sourcemap,
+                globals: options.globals
             },
             plugins: uglify? this.pluginsWithUglifer : this.plugins,
-            external: externals
+            external: externals,
+            watch: options.watch
         };
     }
 
@@ -228,6 +230,7 @@ export default class Bundler {
     process() {
         //resolve user defined settings
         let entryPath = '';
+
         /* istanbul ignore else */
         if (require.main)
             entryPath = this.getEntryPath(require.main.filename);
@@ -252,7 +255,7 @@ export default class Bundler {
             //get modules & extend external modules
             modules = this.getModules(
                 [],
-                path.resolve(path.join(entryPath, config.srcDir)),
+                path.join(entryPath, config.srcDir),
                 config.mainModuleFileName,
                 config.mainModuleName,
                 [],
@@ -272,6 +275,7 @@ export default class Bundler {
 
                     uglifyOnly: typeof libConfig.uglifyOnly !== 'undefined'?
                         libConfig.uglifyOnly : config.uglifyOnly,
+
                     uglify: libConfig.uglify? true : config.uglify,
 
                     copyAssets: typeof libConfig.copyAssets !== 'undefined'?
@@ -281,7 +285,13 @@ export default class Bundler {
                         libConfig.interop : config.interop,
 
                     sourcemap: typeof libConfig.sourcemap !== 'undefined'?
-                        libConfig.sourcemap : config.sourcemap
+                        libConfig.sourcemap : config.sourcemap,
+
+                    globals: typeof libConfig.globals !== 'undefined'?
+                        libConfig.globals : config.globals,
+
+                    watch: typeof libConfig.watch !== 'undefined'?
+                        libConfig.watch : config.watch
                 },
                 modules,
                 externalModules,
@@ -298,6 +308,7 @@ export default class Bundler {
 
                     uglifyOnly: typeof distConfig.uglifyOnly !== 'undefined'?
                         distConfig.uglifyOnly : config.uglifyOnly,
+
                     uglify: distConfig.uglify? true : config.uglify,
 
                     copyAssets: typeof distConfig.copyAssets !== 'undefined'?
@@ -307,7 +318,13 @@ export default class Bundler {
                         distConfig.interop : config.interop,
 
                     sourcemap: typeof distConfig.sourcemap !== 'undefined'?
-                        distConfig.sourcemap : config.sourcemap
+                        distConfig.sourcemap : config.sourcemap,
+
+                    globals: typeof distConfig.globals !== 'undefined'?
+                        distConfig.globals : config.globals,
+
+                    watch: typeof distConfig.watch !== 'undefined'?
+                        distConfig.watch : config.watch
                 },
                 modules,
                 [],
