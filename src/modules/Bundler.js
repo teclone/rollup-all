@@ -39,7 +39,7 @@ export default class Bundler {
         return {
             input: options.src,
             output: {
-                file: options.dest + (uglify? '.min' : '') + options.ext,
+                file: options.dest + (uglify? '.min.js' : '.js'),
                 format: options.format,
                 name: Util.camelCase(name),
                 interop: options.interop,
