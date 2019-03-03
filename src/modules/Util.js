@@ -139,5 +139,21 @@ export default {
             fs.mkdirSync(existingPath);
         }
         return true;
+    },
+
+    /**
+     * returns true if running in production environment
+     *@returns {boolean}
+     */
+    isProdEnv() {
+        return process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase().indexOf('prod') === 0;
+    },
+
+    /**
+     * returns true if running in development environment
+     *@returns {boolean}
+     */
+    isDevEnv() {
+        return !this.isProdEnv();
     }
 };

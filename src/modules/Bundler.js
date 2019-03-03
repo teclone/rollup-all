@@ -4,6 +4,14 @@ import fs from 'fs';
 import Util from './Util.js';
 import _config from '../.buildrc.json';
 
+
+/**
+ *@typedef {Object} Module
+ *@property {string} relPath - module relative path
+ *@property {string} absPath - module absolute path
+ *@property {boolean} isAsset - boolean indicating if module is an asset file
+ *@property {string} name - module export name
+ */
 export default class Bundler {
 
     /**
@@ -12,9 +20,9 @@ export default class Bundler {
      *@param {string} [configPath='.buildrc.json'] - config file location relative url
     */
     constructor(uglifierPlugin, otherPlugins, configPath) {
-        this.plugins = Util.isArray(otherPlugins)? otherPlugins : [];
-        this.pluginsWithUglifer = uglifierPlugin? [...this.plugins, uglifierPlugin] : null;
-        this.configPath = typeof configPath === 'string'? configPath : '.buildrc.json';
+        this.configPath = configPath ? configPath : '.buildrc.json';
+        this.plugins = Util.isArray(otherPlugins) ? otherPlugins : [];
+        this.pluginsWithUglifer = uglifierPlugin ? [...this.plugins, uglifierPlugin] : null;
     }
 
     /**
@@ -39,14 +47,14 @@ export default class Bundler {
         return {
             input: options.src,
             output: {
-                file: options.dest + (uglify? '.min.js' : '.js'),
+                file: options.dest,
                 format: options.format,
                 name: Util.camelCase(name),
                 interop: options.interop,
                 sourcemap: options.sourcemap,
                 globals: options.globals
             },
-            plugins: uglify? this.pluginsWithUglifer : this.plugins,
+            plugins: uglify ? this.pluginsWithUglifier : this.plugins,
             external: externals,
             watch: options.watch
         };
@@ -62,7 +70,7 @@ export default class Bundler {
         if (!fs.existsSync(dir))
             Util.mkDirSync(dir);
 
-        fs.writeFileSync(dest, fs.readFileSync(src));
+        fs.copyFileSync(src, dest);
     }
 
     /**
@@ -72,64 +80,52 @@ export default class Bundler {
      *@param {string} options.outDir - the out directory for the build kind
      *@param {string} options.format - the output format for all included modules in this build
      *@param {boolean} options.uglify - boolean value indicating if modules should be uglified
-     *@param {boolean} options.uglifyOnly - boolean value indicating if only uglified outputs should
-     * be produced
-     *@param {Array} modules - the modules list to build from
+     *@param {Module[]} modules - the modules list to build from
      *@param {Array} externalModules - array of external modules
      *@param {RegExp[]} includes - array of regex objects that specifies modules to include
      *@param {RegExp[]} excludes - array of regex objects that specifies modules to exclude
     */
     getExports(exportStore, options, modules, externalModules, includes, excludes) {
         let src = null,
-            regexMatches = function(regex) {
+            regexMatches = function (regex) {
                 return regex.test(src);
             },
-            filterExternalModules = function(externalModule) {
+            filterExternalModules = function (externalModule) {
                 return externalModule !== src;
             };
 
-        for (let _module of modules) {
-            src = _module.absPath + _module.ext;
+        for (const _module of modules) {
+
+            src = _module.absPath;
+            const dest = path.join(options.outDir, _module.relPath);
+
             if (!includes.some(regexMatches) || excludes.some(regexMatches))
                 continue;
 
-            let dest = path.join(options.outDir, _module.relPath);
             if (_module.isAsset) {
-                if (options.copyAssets)
-                    this.copyFile(src, dest);
+                this.copyFile(_module.absPath, dest);
                 continue;
             }
 
-            let externals = externalModules.filter(filterExternalModules);
-
-            if(!options.uglifyOnly)
-                exportStore.push(this.getConfig(false, {
-                    src: src,
-                    dest: dest,
-                    format: options.format,
-                    interop: options.interop,
-                    sourcemap: options.sourcemap,
-                    ext: _module.ext
-                }, _module.name, externals));
-
-            if (this.pluginsWithUglifer !== null && (options.uglifyOnly || options.uglify))
-                exportStore.push(this.getConfig(true, {
-                    src: src,
-                    dest: dest,
-                    format: options.format,
-                    interop: options.interop,
-                    sourcemap: options.sourcemap,
-                    ext: _module.ext
-                }, _module.name, externals));
+            const externals = externalModules.filter(filterExternalModules);
+            exportStore.push(this.getConfig(options.uglify, {
+                src: src,
+                dest: dest,
+                format: options.format,
+                interop: options.interop,
+                sourcemap: options.sourcemap,
+                ext: _module.ext
+            }, _module.name, externals));
         }
     }
 
     /**
      * returns array of mapped external modules
-     *@param {Array} modules - array of modules
+     *@param {Module[]} modules - array of modules
+     *@returns {string[]}
     */
     getExternalModules(modules) {
-        return modules.map(current => current.absPath + current.ext);
+        return modules.map(current => current.absPath);
     }
 
     /**
@@ -140,36 +136,39 @@ export default class Bundler {
      * file
      *@param {string} mainModuleName - the global module name for the main export file. applies
      * to iife builds
-     *@param {Array} srcPaths - array of paths relative to the source directory
-     *@param {Array} fileExtensions - array of supported file extensions. files not included here
-     * are regarded as asset files
-     *@returns {Array}
+     *@param {string} relDir - current directory relative to src directory
+     *@param {Array} fileExtensions - array of supported file extensions. file extensions not
+     * included here are regarded as asset files
+     *@returns {Module[]}
     */
-    getModules(modules, resolvedPath, mainModuleFileName, mainModuleName, srcPaths,
+    getModules(modules, resolvedPath, mainModuleFileName, mainModuleName, relDir,
         fileExtensions) {
-        let files = fs.readdirSync(resolvedPath);
-        for (let file of files) {
-            let filePath = path.join(resolvedPath, file);
+        const files = fs.readdirSync(resolvedPath);
+        for (const file of files) {
+            const filePath = path.join(resolvedPath, file);
+
             if (fs.statSync(filePath).isDirectory()) {
-                this.getModules(modules, filePath, mainModuleFileName, mainModuleName,
-                    [...srcPaths, file], fileExtensions);
+                relDir = path.join(relDir, file);
+                this.getModules(
+                    modules, filePath, mainModuleFileName, mainModuleName,
+                    relDir, fileExtensions
+                );
                 continue;
             }
 
-            let baseName = '', extname = path.extname(file);
-            for (const fileExtension of fileExtensions) {
-                if (fileExtension === extname) {
-                    baseName = path.basename(file, fileExtension);
-                    break;
-                }
-            }
+            const extname = path.extname(file);
+            const baseName = path.basename(file, extname);
+
+            const isAsset = !fileExtensions.includes(extname);
+
+            const oldRelPath = path.join(relDir, file);
+            const relPath = path.join(relDir, baseName + '.js');
 
             modules.push({
-                name: file === mainModuleFileName && baseName? mainModuleName : baseName,
-                ext: baseName? extname : '',
-                relPath: [...srcPaths, baseName || file].join('/'),
-                absPath: path.join(resolvedPath, baseName || file),
-                isAsset: baseName? false : true
+                relPath: isAsset ? oldRelPath : relPath,
+                name: oldRelPath === mainModuleFileName ? mainModuleName : baseName,
+                isAsset,
+                absPath: filePath
             });
         }
         return modules;
@@ -245,20 +244,21 @@ export default class Bundler {
             config = _config;
 
         //extract lib and dist configs
-        let libConfig = config.libConfig,
+        const libConfig = config.libConfig,
             distConfig = config.distConfig,
 
             //define includes and excludes regex
             includes = this.resolveRegex(config.include, []),
             excludes = this.resolveRegex(config.exclude, []),
 
+
             //get modules & extend external modules
             modules = this.getModules(
                 [],
-                path.join(entryPath, config.srcDir),
+                path.resolve(entryPath, config.srcDir),
                 config.mainModuleFileName,
                 config.mainModuleName,
-                [],
+                '',
                 config.fileExtensions
             ),
             externalModules = [...config.externalModules, ...this.getExternalModules(modules)],
@@ -270,33 +270,30 @@ export default class Bundler {
             this.getExports(
                 exportStore,
                 {
-                    outDir: path.join(entryPath, libConfig.outDir),
+                    outDir: path.resolve(entryPath, libConfig.outDir),
                     format: libConfig.format,
 
-                    uglifyOnly: typeof libConfig.uglifyOnly !== 'undefined'?
-                        libConfig.uglifyOnly : config.uglifyOnly,
+                    uglify: Util.isProdEnv() || libConfig.uglify,
 
-                    uglify: libConfig.uglify? true : config.uglify,
-
-                    copyAssets: typeof libConfig.copyAssets !== 'undefined'?
+                    copyAssets: typeof libConfig.copyAssets !== 'undefined' ?
                         libConfig.copyAssets : config.copyAssets,
 
-                    interop: typeof libConfig.interop !== 'undefined'?
+                    interop: typeof libConfig.interop !== 'undefined' ?
                         libConfig.interop : config.interop,
 
-                    sourcemap: typeof libConfig.sourcemap !== 'undefined'?
+                    sourcemap: typeof libConfig.sourcemap !== 'undefined' ?
                         libConfig.sourcemap : config.sourcemap,
 
-                    globals: typeof libConfig.globals !== 'undefined'?
+                    globals: typeof libConfig.globals !== 'undefined' ?
                         libConfig.globals : config.globals,
 
-                    watch: typeof libConfig.watch !== 'undefined'?
+                    watch: typeof libConfig.watch !== 'undefined' ?
                         libConfig.watch : config.watch
                 },
                 modules,
                 externalModules,
-                libConfig.include? this.resolveRegex(libConfig.include, []) : includes,
-                libConfig.exclude? this.resolveRegex(libConfig.exclude, []) : excludes
+                libConfig.include ? this.resolveRegex(libConfig.include, []) : includes,
+                libConfig.exclude ? this.resolveRegex(libConfig.exclude, []) : excludes
             );
 
         if (!distConfig.disabled)
@@ -306,30 +303,27 @@ export default class Bundler {
                     outDir: path.join(entryPath, distConfig.outDir),
                     format: distConfig.format,
 
-                    uglifyOnly: typeof distConfig.uglifyOnly !== 'undefined'?
-                        distConfig.uglifyOnly : config.uglifyOnly,
+                    uglify: Util.isProdEnv() || distConfig.uglify,
 
-                    uglify: distConfig.uglify? true : config.uglify,
-
-                    copyAssets: typeof distConfig.copyAssets !== 'undefined'?
+                    copyAssets: typeof distConfig.copyAssets !== 'undefined' ?
                         distConfig.copyAssets : config.copyAssets,
 
-                    interop: typeof distConfig.interop !== 'undefined'?
+                    interop: typeof distConfig.interop !== 'undefined' ?
                         distConfig.interop : config.interop,
 
-                    sourcemap: typeof distConfig.sourcemap !== 'undefined'?
+                    sourcemap: typeof distConfig.sourcemap !== 'undefined' ?
                         distConfig.sourcemap : config.sourcemap,
 
-                    globals: typeof distConfig.globals !== 'undefined'?
+                    globals: typeof distConfig.globals !== 'undefined' ?
                         distConfig.globals : config.globals,
 
-                    watch: typeof distConfig.watch !== 'undefined'?
+                    watch: typeof distConfig.watch !== 'undefined' ?
                         distConfig.watch : config.watch
                 },
                 modules,
                 [],
-                distConfig.include? this.resolveRegex(distConfig.include, []) : includes,
-                distConfig.exclude? this.resolveRegex(distConfig.exclude, []) : excludes
+                distConfig.include ? this.resolveRegex(distConfig.include, []) : includes,
+                distConfig.exclude ? this.resolveRegex(distConfig.exclude, []) : excludes
             );
 
         return exportStore;
