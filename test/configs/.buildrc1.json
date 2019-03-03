@@ -17,8 +17,6 @@
 
     "uglify": false,
 
-    "uglifyOnly": false,
-
     "interop": true,
 
     "sourcemap": true,

@@ -1,28 +1,25 @@
 {
     "srcDir": "src",
-
     "mainModuleFileName": "main.js",
-
     "mainModuleName": "RollupAll",
-
-    "fileExtensions": [".js"],
-
+    "fileExtensions": [
+        ".js"
+    ],
     "exclude": [],
-
-    "include": ["*"],
-
-    "externalModules": ["fs", "path"],
-
+    "include": [
+        "*"
+    ],
+    "externalModules": [
+        "fs",
+        "path"
+    ],
     "copyAssets": true,
-
-    "sourcemap": false,
-
+    "sourcemap": true,
     "distConfig": {
         "disabled": true,
         "format": "iife",
         "outDir": "dist"
     },
-
     "libConfig": {
         "disabled": false,
         "format": "cjs",

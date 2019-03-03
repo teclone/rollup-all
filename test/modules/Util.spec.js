@@ -125,4 +125,28 @@ describe('Util module', function() {
             expect(Util.mkDirSync('')).to.be.false;
         });
     });
+
+    describe('.isProdEnv()', function() {
+        it(`should return true if NODE_ENV starts with prod, case insensitive`, function() {
+            process.env.NODE_ENV = 'production';
+            expect(Util.isProdEnv()).to.be.true;
+        });
+
+        it(`should return false if NODE_ENV does not start with prod`, function() {
+            process.env.NODE_ENV = 'Droduction';
+            expect(Util.isProdEnv()).to.be.false;
+        });
+    });
+
+    describe('.isDevEnv()', function() {
+        it(`should return true if NODE_ENV does not start with prod, case insensitive`, function() {
+            process.env.NODE_ENV = 'Droduction';
+            expect(Util.isDevEnv()).to.be.true;
+        });
+
+        it(`should return false if NODE_ENV does start with prod, case insensitive`, function() {
+            process.env.NODE_ENV = 'Production';
+            expect(Util.isDevEnv()).to.be.false;
+        });
+    });
 });

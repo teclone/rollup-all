@@ -10,13 +10,17 @@
 
 Rollup-all is a lightweight, extensive and configurable npm package for building all your ESNext source codes in one parse using [rollup.js](https://rollupjs.org/guide/en).
 
-It enables you to generate separate project [lib and dist builds](https://stackoverflow.com/questions/39553079/difference-between-lib-and-dist-folders-when-packaging-library-using-webpack) using any of the supported [rollup.js build formats](https://rollupjs.org/guide/en#big-list-of-options) including support for minified build versions.
+It enables you to generate separate project [lib and dist builds](https://stackoverflow.com/questions/39553079/difference-between-lib-and-dist-folders-when-packaging-library-using-webpack) using any of the supported [rollup.js build formats](https://rollupjs.org/guide/en#big-list-of-options) including support for minification.
 
-It allows you to configure the build process, letting you define what should be included and excluded in the build, if sourcemap should be generated, if minified or only minified versions of the build should be generated, and lots more...
+It allows you to configure the build process, letting you define what should be included and excluded in the build, if sourcemap should be generated, if minified versions of the build should be generated, and lots more...
 
 ## What's New
 
 The latest version of this project now has support for `watch` and `globals` [options](https://rollupjs.org/guide/en#big-list-of-options), and can copy asset files to any deep length.
+
+The latest version also checks for `process.env.NODE_ENV`, and will minify build if running in production environment, ignoring config settings.
+
+**Minified files no longer has .min extension attached, that is to say, there is no separate file created for a minified build anymore. We decided to just generate one output file, to keep things consistent.**
 
 ## Getting Started
 
@@ -42,7 +46,7 @@ To start using the module, you have to modify your project's [rollup.js config f
 import resolve from 'rollup-plugin-node-resolve';
 import babel from 'rollup-plugin-babel';
 import json from 'rollup-plugin-json';
-import uglifier from 'rollup-plugin-uglify';
+import {uglify} from 'rollup-plugin-uglify';
 
 import rollupAll from 'rollup-all';
 
@@ -50,7 +54,7 @@ import rollupAll from 'rollup-all';
  * run all plugins and store results in an array.
  *  do not include the uglifier plugin here.
 */
-let plugins = [
+const plugins = [
     resolve(),
     babel({
         exclude: 'node_modules/**',
@@ -65,14 +69,14 @@ let plugins = [
  * or placed in the root directory,
  * then specify the relative path here
 */
-let configPath = '';
+const configPath = '';
 
 /**
  * call the api and export the result.
  * if you are not using any uglifier
  * pass in null as second paramter
 */
-export default rollupAll.getExports(uglifier(), plugins, configPath);
+export default rollupAll.getExports(uglify(), plugins, configPath);
 ```
 
 > **Note**: if you are not using any [uglifier](https://github.com/rollup/rollup/wiki/Plugins#output--prettifying) plugin, pass in `null` as the first parameter. Note also that you must execute all plugins before passing it to the api call.
@@ -100,8 +104,6 @@ Rollup-all uses an internal `.buildrc.json` file that defines default build conf
     "copyAssets": false,
 
     "uglify": false,
-
-    "uglifyOnly": false,
 
     "interop": false,
 
@@ -159,9 +161,7 @@ These makes it easy to similar build options in the global section and different
 
 - **copyAssets***: defines if asset files should be copied over during the build process. Asset files are files whose extensions are not part of the **fileExtensions** entry options.
 
-- **uglify***: defines if the build should produce minified versions too. minified versions has `.min` attached to their output file names. When set to true, you should also supply an uglifier plugin for it to work. It ignores the option if no uglifier plugin is supplied. Default value is `false`.
-
-- **uglifyOnly***: defines if the build should produce only minified versions. minified versions has `.min` attached to their output file names. When set to true, you should also supply an uglifier plugin for it to work. It ignores the option if no uglifier plugin is supplied. Default value is `false`. **Note that no unminified build is produced if set to true**
+- **uglify***: defines if the build should be minified. **when running in production environment, this value is automatically set to true**. When set to true, you should also supply an uglifier plugin for it to work. It ignores the option if no uglifier plugin is supplied. Default value is `false`.
 
 - **interop***: defines if the `rollup.js` interop functionality should be enabled. Defuaults to `false`.
 
@@ -222,7 +222,7 @@ These makes it easy to similar build options in the global section and different
 
 - **Generating minified builds**
 
-    We can also generate separate minified builds for all modules during the build process. Minified builds are named with `.min` format. We can even decide to generate only minified builds. You must pass in an [uglifier plugin](https://github.com/rollup/rollup/wiki/Plugins#output--prettifying) as first parameter to the API for this to work. Below, we uglify only the `dist` build.
+    We can also decide to minify the build output. You must pass in an [uglifier plugin](https://github.com/rollup/rollup/wiki/Plugins#output--prettifying) as first parameter to the API for this to work. Below, we uglify only the `dist` build.
 
     ```json
     {
@@ -238,6 +238,7 @@ These makes it easy to similar build options in the global section and different
 - **Using the Watch option**
 
     To run build and watch for file changes, you can create two separate npm scripts as shown below:
+
     ```json
         ...,
         "scripts": {
