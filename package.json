@@ -1,65 +1,67 @@
 {
-  "name": "rollup-all",
-  "version": "0.0.0-development",
-  "description": "A lightweight, extensive and configurable npm package for building all your ES6 source codes in one parse using rollup.js",
-  "main": "lib/main.js",
-  "scripts": {
-    "commit": "git-cz",
-    "test": "BABEL_ENV=test nyc mocha --recursive",
-    "watch-test": "npm run test -- -w",
-    "prebuild": "rimraf dist && rimraf lib",
-    "lint": "eslint ./src --fix",
-    "build": "BABEL_ENV=build rollup --config",
-    "watch-build": "npm run build -- --watch",
-    "report-coverage": "nyc report --reporter=text-lcov | coveralls",
-    "semantic-release": "semantic-release"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/harrison-ifeanyichukwu/rollup-all.git"
-  },
-  "keywords": [
-    "rollup.js",
-    "asset-bundling",
-    "build",
-    "src",
-    "generate-dist-bundles",
-    "generate-lib-bundles"
-  ],
-  "author": "Harrison Ifeanyichukwu <Harrisonifeanyichukwu@gmail.com> (http://fjsfoundations.com/)",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/harrison-ifeanyichukwu/rollup-all/issues"
-  },
-  "homepage": "https://github.com/harrison-ifeanyichukwu/rollup-all#readme",
-  "devDependencies": {
-    "babel-plugin-external-helpers": "6.22.0",
-    "babel-preset-env": "1.7.0",
-    "babel-register": "6.26.0",
-    "chai": "4.1.2",
-    "commitizen": "2.10.1",
-    "coveralls": "3.0.2",
-    "cz-conventional-changelog": "2.1.0",
-    "istanbul": "0.4.5",
-    "mocha": "5.2.0",
-    "nyc": "12.0.2",
-    "rimraf": "2.6.2",
-    "rollup": "0.59.1",
-    "rollup-plugin-babel": "3.0.4",
-    "rollup-plugin-node-resolve": "3.3.0",
-    "rollup-plugin-uglify": "4.0.0",
-    "semantic-release": "^15.7.2"
-  },
-  "czConfig": {
-    "path": "node_modules/cz-conventional-changelog"
-  },
-  "nyc": {
-    "require": [
-      "babel-register",
-      "./test/setup.js"
+    "name": "rollup-all",
+    "version": "0.0.0-development",
+    "description": "A lightweight, extensive and configurable npm package for building all your ES6 source codes in one parse using rollup.js",
+    "main": "lib/main.js",
+    "scripts": {
+        "commit": "git-cz",
+        "test": "BABEL_ENV=test nyc mocha --recursive",
+        "watch-test": "npm run test -- -w",
+        "prebuild": "rimraf dist && rimraf lib",
+        "lint": "eslint ./src --fix",
+        "build": "BABEL_ENV=build rollup --config",
+        "watch-build": "npm run build -- --watch",
+        "report-coverage": "nyc report --reporter=text-lcov | coveralls",
+        "semantic-release": "semantic-release"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/harrison-ifeanyichukwu/rollup-all.git"
+    },
+    "keywords": [
+        "rollup.js",
+        "asset-bundling",
+        "build",
+        "src",
+        "generate-dist-bundles",
+        "generate-lib-bundles"
     ],
-    "include": [
-      "src/modules/*.js"
-    ]
-  }
+    "author": "Harrison Ifeanyichukwu <Harrisonifeanyichukwu@gmail.com> (http://fjsfoundations.com/)",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/harrison-ifeanyichukwu/rollup-all/issues"
+    },
+    "homepage": "https://github.com/harrison-ifeanyichukwu/rollup-all#readme",
+    "devDependencies": {
+        "babel-plugin-external-helpers": "6.22.0",
+        "babel-preset-env": "1.7.0",
+        "babel-register": "6.26.0",
+        "chai": "4.1.2",
+        "commitizen": "2.10.1",
+        "coveralls": "3.0.2",
+        "cz-conventional-changelog": "2.1.0",
+        "istanbul": "0.4.5",
+        "mocha": "5.2.0",
+        "nyc": "12.0.2",
+        "rimraf": "2.6.2",
+        "rollup": "0.59.1",
+        "rollup-plugin-babel": "3.0.4",
+        "rollup-plugin-node-resolve": "3.3.0",
+        "rollup-plugin-uglify": "4.0.0",
+        "semantic-release": "15.13.4"
+    },
+    "config": {
+        "commitizen": {
+            "path": "cz-conventional-changelog"
+        }
+    },
+    "nyc": {
+        "require": [
+            "babel-register",
+            "./test/setup.js"
+        ],
+        "include": [
+            "src/modules/*.js"
+        ]
+    }
 }
