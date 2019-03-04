@@ -148,28 +148,27 @@ export default class Bundler {
             const filePath = path.join(resolvedPath, file);
 
             if (fs.statSync(filePath).isDirectory()) {
-                relDir = path.join(relDir, file);
                 this.getModules(
                     modules, filePath, mainModuleFileName, mainModuleName,
-                    relDir, fileExtensions
+                    path.join(relDir, file), fileExtensions
                 );
-                continue;
             }
+            else {
+                const extname = path.extname(file);
+                const baseName = path.basename(file, extname);
 
-            const extname = path.extname(file);
-            const baseName = path.basename(file, extname);
+                const isAsset = !fileExtensions.includes(extname);
 
-            const isAsset = !fileExtensions.includes(extname);
+                const oldRelPath = path.join(relDir, file);
+                const relPath = path.join(relDir, baseName + '.js');
 
-            const oldRelPath = path.join(relDir, file);
-            const relPath = path.join(relDir, baseName + '.js');
-
-            modules.push({
-                relPath: isAsset ? oldRelPath : relPath,
-                name: oldRelPath === mainModuleFileName ? mainModuleName : baseName,
-                isAsset,
-                absPath: filePath
-            });
+                modules.push({
+                    relPath: isAsset ? oldRelPath : relPath,
+                    name: oldRelPath === mainModuleFileName ? mainModuleName : baseName,
+                    isAsset,
+                    absPath: filePath
+                });
+            }
         }
         return modules;
     }
@@ -265,6 +264,9 @@ export default class Bundler {
 
             //define the exportStore
             exportStore = [];
+
+        console.log(modules);
+        console.log(externalModules);
 
         if (!libConfig.disabled)
             this.getExports(
