@@ -1,7 +1,7 @@
 {
     "srcDir": "src",
 
-    "mainModuleFileName": "main.js",
+    "mainModuleFileName": "index.js",
 
     "mainModuleName": "Module",
 
@@ -17,8 +17,6 @@
 
     "uglify": false,
 
-    "uglifyOnly": false,
-
     "interop": false,
 
     "sourcemap": true,
@@ -28,13 +26,13 @@
     "globals": {},
 
     "distConfig": {
-        "disabled": false,
+        "enabled": false,
         "format": "iife",
         "outDir": "dist"
     },
 
     "libConfig": {
-        "disabled": false,
+        "enabled": false,
         "format": "cjs",
         "outDir": "lib"
     }

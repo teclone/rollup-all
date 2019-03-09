@@ -15,14 +15,7 @@
     ],
     "copyAssets": true,
     "sourcemap": true,
-    "distConfig": {
-        "disabled": true,
-        "format": "iife",
-        "outDir": "dist"
-    },
     "libConfig": {
-        "disabled": false,
-        "format": "cjs",
-        "outDir": "lib"
+        "enabled": true
     }
 }

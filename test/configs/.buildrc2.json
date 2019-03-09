@@ -13,7 +13,7 @@
 
     "externalModules": ["fs", "path"],
 
-    "copyAssets": true,
+    "copyAssets": false,
 
     "uglify": false,
 
@@ -22,11 +22,10 @@
     "sourcemap": true,
 
     "distConfig": {
-        "disabled": false,
+        "enabled": true,
         "format": "iife",
         "outDir": "dist",
         "uglify": true,
-        "uglifyOnly": true,
         "interop": false,
         "sourcemap": false,
         "copyAssets": false,
@@ -37,11 +36,10 @@
     },
 
     "libConfig": {
-        "disabled": false,
+        "enabled": true,
         "format": "cjs",
         "outDir": "lib",
         "uglify": true,
-        "uglifyOnly": true,
         "interop": false,
         "sourcemap": false,
         "copyAssets": false,

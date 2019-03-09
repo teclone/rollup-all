@@ -89,7 +89,7 @@ Rollup-all uses an internal `.buildrc.json` file that defines default build conf
 {
     "srcDir": "src",
 
-    "mainModuleFileName": "main.js",
+    "mainModuleFileName": "index.js",
 
     "mainModuleName": "Module",
 
@@ -114,13 +114,13 @@ Rollup-all uses an internal `.buildrc.json` file that defines default build conf
     "globals": {},
 
     "distConfig": {
-        "disabled": false,
+        "enabled": false,
         "format": "iife",
         "outDir": "dist"
     },
 
     "libConfig": {
-        "disabled": false,
+        "enabled": false,
         "format": "cjs",
         "outDir": "lib"
     }
@@ -147,11 +147,11 @@ These makes it easy to similar build options in the global section and different
 
 - **srcDir**: defines the relative path to your project's source folder. Defaults to `src`.
 
-- **mainModuleFileName**: defines the projects main file name such as `index.js`, `main.js`, `entry.js`. Defaults to `main.js`.
+- **mainModuleFileName**: defines the projects main file name such as `index.js`, `main.js`, `entry.js`. Defaults to `index.js`.
 
 - **mainModuleName**: defines the globally exposed module name. this applies specifically to projects that has `iife` dist builds. e.g, `JQuery` for jquery, `React` for react, `FJS` for forensic-js, etc.
 
-- **fileExtensions**: defines an array of project src code file extensions, such as `.jsx`, `.js` etc. Defaults to `[".js"]`. Every other file within the src directory are regarded as asset files.
+- **fileExtensions**: defines an array of project src code file extensions, such as `.jsx`, `.js` , `.ts`, `.tsx`, etc. Defaults to `[".js"]`. Every other file within the src directory are regarded as asset files.
 
 - **externalModules**: defines a list of external modules used by library that should not bundled into your build. such as node.js inbuild packages. e.g [`"fs"`, `"path"`,...], etc. defaults to empty array.
 
@@ -173,13 +173,13 @@ These makes it easy to similar build options in the global section and different
 
 - **distConfig.outDir** - defines the output directory for your `dist` build. Defaults to `"dist"`.
 
-- **distConfig.disabled** - defines if the module should not generate distributed build. Defaults to `false`.
+- **distConfig.enabled** - defines if the disttribution build is enabled. Defaults to `false`.
 
 - **distConfig.format** - defines the build format for the distributed code. Defaults to `"iife"`. Most distributed codes are always in the `"umd"` or `"iife"` browser friendly formats.
 
 - **libConfig.outDir** - defines the output directory for your `library` build. Defaults to `"lib"`.
 
-- **libConfig.disabled** - defines if the module should not generate library build. Defaults to `false`.
+- **libConfig.enabled** - defines if library build is enabled. Defaults to `false`.
 
 - **libConfig.format** - defines the build format for the library code. Defaults to `"cjs"`. Most library codes are always in the `"cjs"` format for node.js.
 
@@ -200,7 +200,7 @@ These makes it easy to similar build options in the global section and different
     ```json
     {
         "distConfig": {
-            "disabled": true
+            "enabled": false
         }
     }
     ```
@@ -211,10 +211,8 @@ These makes it easy to similar build options in the global section and different
 
     ```json
     {
-        "distConfig": {
-            "copyAssets": false
-        },
         "libConfig" {
+            "enabled": true,
             "copyAssets": true
         }
     }

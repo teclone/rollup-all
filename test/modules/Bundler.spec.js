@@ -1,13 +1,18 @@
 import Bundler from '../../src/modules/Bundler.js';
 import { uglify } from 'rollup-plugin-uglify';
 import path from 'path';
+import fs from 'fs';
 import rimraf from 'rimraf';
 
 describe('Bundler', function () {
+    const rootDir = path.resolve(__dirname, '../../');
     let bundler = null;
 
-    afterEach(function () {
+    beforeEach(function() {
         bundler = new Bundler();
+    });
+
+    afterEach(function () {
         rimraf.sync(path.resolve(__dirname, '../../dist'));
         rimraf.sync(path.resolve(__dirname, '../../lib'));
     });
@@ -28,6 +33,29 @@ describe('Bundler', function () {
         it(`can take an optional string path denoting the relative location of the config file to
             use as athird parameter`, function () {
             expect(new Bundler(null, null, 'somedirectory/.buildrc.json')).to.be.a('Bundler');
+        });
+    });
+
+    describe('#copyFile(src, dest)', function() {
+        it(`should copy given file to the given destination, creating the directory if it does not exist`, function() {
+            expect(fs.existsSync(path.join(rootDir + 'lib/.buildrc.json'))).to.be.false;
+            expect(fs.existsSync(path.join(rootDir + 'package-copy.json'))).to.be.false;
+
+            bundler.copyFile(
+                path.join(rootDir, 'src/.buildrc.json'),
+                path.join(rootDir, 'lib/.buildrc.json')
+            );
+            expect(fs.existsSync(path.join(rootDir, 'lib/.buildrc.json'))).to.be.true;
+
+            bundler.copyFile(
+                path.join(rootDir, 'package.json'),
+                path.join(rootDir, 'package-copy.json')
+            );
+            expect(fs.existsSync(path.join(rootDir, 'package-copy.json'))).to.be.true;
+
+            fs.unlinkSync(
+                path.join(rootDir, 'package-copy.json')
+            );
         });
     });
 
@@ -116,9 +144,9 @@ describe('Bundler', function () {
             bundler = new Bundler(null, [], 'test/config.json');
             expect(bundler.process()).to.be.an('array');
 
-            //use test config 1 json file. it disables lib config bundling
+            //use test config 1 json file
             bundler = new Bundler(null, [], 'test/configs/.buildrc1.json');
-            expect(bundler.process()).to.be.an('array').and.lengthOf(0);
+            expect(bundler.process()).to.be.an('array').and.lengthOf(6);
 
             //use test config 2 json file.
             bundler = new Bundler(uglify(), [], 'test/configs/.buildrc2.json');

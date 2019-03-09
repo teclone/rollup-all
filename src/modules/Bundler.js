@@ -66,7 +66,7 @@ export default class Bundler {
      *@param {string} dest - the file destination
     */
     copyFile(src, dest) {
-        let dir = path.dirname(dest);
+        const dir = path.dirname(dest);
         if (!fs.existsSync(dir))
             Util.mkDirSync(dir);
 
@@ -222,6 +222,18 @@ export default class Bundler {
     }
 
     /**
+     * picks config value for the given property on cofig, else picks from the fallback config
+    */
+    pickConfig(prop, config, fallbackConfig) {
+        if (typeof config[prop] !== 'undefined') {
+            return config[prop];
+        }
+        else {
+            return fallbackConfig[prop];
+        }
+    }
+
+    /**
      * runs the process
      *@returns {Array}
     */
@@ -260,73 +272,67 @@ export default class Bundler {
                 '',
                 config.fileExtensions
             ),
-            externalModules = [...config.externalModules, ...this.getExternalModules(modules)],
 
             //define the exportStore
             exportStore = [];
 
-        console.log(modules);
-        console.log(externalModules);
-
-        if (!libConfig.disabled)
+        if (libConfig.enabled) {
+            const externalModules = [
+                ...config.externalModules,
+                ...this.getExternalModules(modules)
+            ];
             this.getExports(
                 exportStore,
                 {
                     outDir: path.resolve(entryPath, libConfig.outDir),
+
                     format: libConfig.format,
 
                     uglify: Util.isProdEnv() || libConfig.uglify,
 
-                    copyAssets: typeof libConfig.copyAssets !== 'undefined' ?
-                        libConfig.copyAssets : config.copyAssets,
+                    copyAssets: this.pickConfig('copyAssets', libConfig, config),
 
-                    interop: typeof libConfig.interop !== 'undefined' ?
-                        libConfig.interop : config.interop,
+                    interop: this.pickConfig('interop', libConfig, config),
 
-                    sourcemap: typeof libConfig.sourcemap !== 'undefined' ?
-                        libConfig.sourcemap : config.sourcemap,
+                    sourcemap: this.pickConfig('sourcemap', libConfig, config),
 
-                    globals: typeof libConfig.globals !== 'undefined' ?
-                        libConfig.globals : config.globals,
+                    globals: this.pickConfig('globals', libConfig, config),
 
-                    watch: typeof libConfig.watch !== 'undefined' ?
-                        libConfig.watch : config.watch
+                    watch: this.pickConfig('watch', libConfig, config)
                 },
                 modules,
                 externalModules,
                 libConfig.include ? this.resolveRegex(libConfig.include, []) : includes,
                 libConfig.exclude ? this.resolveRegex(libConfig.exclude, []) : excludes
             );
+        }
 
-        if (!distConfig.disabled)
+        if (distConfig.enabled) {
             this.getExports(
                 exportStore,
                 {
                     outDir: path.join(entryPath, distConfig.outDir),
+
                     format: distConfig.format,
 
                     uglify: Util.isProdEnv() || distConfig.uglify,
 
-                    copyAssets: typeof distConfig.copyAssets !== 'undefined' ?
-                        distConfig.copyAssets : config.copyAssets,
+                    copyAssets: this.pickConfig('copyAssets', distConfig, config),
 
-                    interop: typeof distConfig.interop !== 'undefined' ?
-                        distConfig.interop : config.interop,
+                    interop: this.pickConfig('interop', distConfig, config),
 
-                    sourcemap: typeof distConfig.sourcemap !== 'undefined' ?
-                        distConfig.sourcemap : config.sourcemap,
+                    sourcemap: this.pickConfig('sourcemap', distConfig, config),
 
-                    globals: typeof distConfig.globals !== 'undefined' ?
-                        distConfig.globals : config.globals,
+                    globals: this.pickConfig('globals', distConfig, config),
 
-                    watch: typeof distConfig.watch !== 'undefined' ?
-                        distConfig.watch : config.watch
+                    watch: this.pickConfig('watch', distConfig, config),
                 },
                 modules,
                 [],
                 distConfig.include ? this.resolveRegex(distConfig.include, []) : includes,
                 distConfig.exclude ? this.resolveRegex(distConfig.exclude, []) : excludes
             );
+        }
 
         return exportStore;
     }
