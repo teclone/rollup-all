@@ -8,15 +8,15 @@
 
 ## Overview
 
-Rollup-all is a lightweight, extensive and configurable npm package for building all your ESNext source codes in one parse using [rollup.js](https://rollupjs.org/guide/en).
+Rollup-all is a lightweight, extensive and configurable npm package for building all your shiny new JavaScript Library source codes in one parse using [rollup.js](https://rollupjs.org/guide/en).
 
 It enables you to generate separate project [lib and dist builds](https://stackoverflow.com/questions/39553079/difference-between-lib-and-dist-folders-when-packaging-library-using-webpack) using any of the supported [rollup.js build formats](https://rollupjs.org/guide/en#big-list-of-options) including support for minification.
 
-It allows you to configure the build process, letting you define what should be included and excluded in the build, if sourcemap should be generated, if minified versions of the build should be generated, and lots more...
+It allows you to configure the build process, letting you define what should be included and excluded in the build, if sourcemap should be generated, if minified versions of the build should be generated, if asset files should be copied over, and lots more...
 
 ## What's New
 
-The latest version of this project now has support for `watch` and `globals` [options](https://rollupjs.org/guide/en#big-list-of-options), and can copy asset files to any deep length.
+The latest version of this project can copy asset files to any deep length.
 
 The latest version also checks for `process.env.NODE_ENV`, and will minify build if running in production environment, ignoring config settings.
 
@@ -45,7 +45,6 @@ To start using the module, you have to modify your project's [rollup.js config f
 */
 import resolve from 'rollup-plugin-node-resolve';
 import babel from 'rollup-plugin-babel';
-import json from 'rollup-plugin-json';
 import {uglify} from 'rollup-plugin-uglify';
 
 import rollupAll from 'rollup-all';
@@ -57,10 +56,8 @@ import rollupAll from 'rollup-all';
 const plugins = [
     resolve(),
     babel({
-        exclude: 'node_modules/**',
-        plugins: ['external-helpers']
-    }),
-    json(),
+        exclude: 'node_modules/**'
+    })
 ];
 
 /**
@@ -98,8 +95,6 @@ Rollup-all uses an internal `.buildrc.json` file that defines default build conf
     "exclude": [],
 
     "include": ["*"],
-
-    "externalModules": [],
 
     "copyAssets": false,
 
@@ -153,8 +148,6 @@ These makes it easy to similar build options in the global section and different
 
 - **fileExtensions**: defines an array of project src code file extensions, such as `.jsx`, `.js` , `.ts`, `.tsx`, etc. Defaults to `[".js"]`. Every other file within the src directory are regarded as asset files.
 
-- **externalModules**: defines a list of external modules used by library that should not bundled into your build. such as node.js inbuild packages. e.g [`"fs"`, `"path"`,...], etc. defaults to empty array.
-
 - **exclude***: defines a list of modules to exclude from the build. This option can be defined specifically for a particular build as well. entries can be strings or regex. e.g `"src/modules/*.js"` ignores every .js file in the modules directory. `"src/**/*.js"` ignores all .js files in the src directory. `"*"` ignores all files. It defaults to an empty array.
 
 - **include***: defines a list of modules to include in the build. This option can be defined specifically for a particular build as well. entries can be strings or regex. Defaults to `["*"]`, which includes everything.
@@ -175,35 +168,13 @@ These makes it easy to similar build options in the global section and different
 
 - **distConfig.enabled** - defines if the disttribution build is enabled. Defaults to `false`.
 
-- **distConfig.format** - defines the build format for the distributed code. Defaults to `"iife"`. Most distributed codes are always in the `"umd"` or `"iife"` browser friendly formats.
+- **distConfig.format** - defines the build format for the distributed code. Defaults to `"iife"`. Most distributed codes are always in the `"iife"` browser format.
 
-- **libConfig.outDir** - defines the output directory for your `library` build. Defaults to `"lib"`.
+- **libConfig.outDir** - defines the output directory for your `library` build. Defaults to `"lib"`. Note that lib build are always on **cjs** format, you cannot override this.
 
-- **libConfig.enabled** - defines if library build is enabled. Defaults to `false`.
-
-- **libConfig.format** - defines the build format for the library code. Defaults to `"cjs"`. Most library codes are always in the `"cjs"` format for node.js.
+- **libConfig.enabled** - defines if lib build is enabled. Defaults to `false`.
 
 ## Examples
-
-- **Specifying externalModules**
-
-    ```json
-    {
-        "externalModules": ["fs", "path", "crypto", "lodash"]
-    }
-    ```
-
-- **Disabling dist build**
-
-    Not all projects are meant to be have distritubed builds, some projects are only done for the node.js environment, and such should have only a `lib` build. We can disable the dist build as shown below:
-
-    ```json
-    {
-        "distConfig": {
-            "enabled": false
-        }
-    }
-    ```
 
 - **Copying Asset files during Build**
 

@@ -29,7 +29,6 @@
 
     "libConfig": {
         "enabled": true,
-        "format": "cjs",
         "outDir": "lib"
     }
 }

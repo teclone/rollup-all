@@ -11,9 +11,7 @@
 
     "include": ["*"],
 
-    "externalModules": [],
-
-    "copyAssets": false,
+    "copyAssets": true,
 
     "uglify": false,
 
@@ -33,7 +31,6 @@
 
     "libConfig": {
         "enabled": false,
-        "format": "cjs",
         "outDir": "lib"
     }
 }

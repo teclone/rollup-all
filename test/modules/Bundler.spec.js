@@ -119,17 +119,6 @@ describe('Bundler', function () {
         });
     });
 
-    describe(`#getExternalModules(modules)`, function () {
-        it(`should return a map of all modules abs path`, function () {
-            let modules = [];
-            bundler.getModules(modules, path.resolve(__dirname, '../../src'), 'main.js',
-                'Module', '', ['.js']);
-
-            let externalModules = bundler.getExternalModules(modules);
-            expect(externalModules).to.be.lengthOf(4);
-        });
-    });
-
     describe('#process', function () {
         it(`should return array of exports when called`, function () {
             //with uglify
@@ -146,7 +135,10 @@ describe('Bundler', function () {
 
             //use test config 1 json file
             bundler = new Bundler(null, [], 'test/configs/.buildrc1.json');
-            expect(bundler.process()).to.be.an('array').and.lengthOf(6);
+            const entries = bundler.process();
+            expect(entries).to.be.an('array').and.lengthOf(6);
+            entries[0].external();
+
 
             //use test config 2 json file.
             bundler = new Bundler(uglify(), [], 'test/configs/.buildrc2.json');

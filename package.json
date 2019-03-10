@@ -33,6 +33,7 @@
     },
     "homepage": "https://github.com/harrison-ifeanyichukwu/rollup-all#readme",
     "devDependencies": {
+        "babel-core": "6.26.3",
         "babel-plugin-external-helpers": "6.22.0",
         "babel-preset-env": "1.7.0",
         "babel-register": "6.26.0",
@@ -44,7 +45,7 @@
         "mocha": "5.2.0",
         "nyc": "13.3.0",
         "rimraf": "2.6.2",
-        "rollup": "0.59.1",
+        "rollup": "0.66.6",
         "rollup-plugin-babel": "3.0.4",
         "rollup-plugin-node-resolve": "3.3.0",
         "rollup-plugin-uglify": "4.0.0",

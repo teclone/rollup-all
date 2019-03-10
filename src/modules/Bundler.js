@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 
-import Util from './Util.js';
+import Util from './Util';
 import _config from '../.buildrc.json';
 
 
@@ -40,10 +40,9 @@ export default class Bundler {
      *@param {string} options.src - the file source directory
      *@param {string} options.dest - the file destination directory, omit the .js extension
      *@param {string} name - the file module name
-     *@param {Array} externals - array of module externals
      *@returns {Object}
     */
-    getConfig(uglify, options, name, externals) {
+    getConfig(uglify, options, name) {
         return {
             input: options.src,
             output: {
@@ -55,7 +54,9 @@ export default class Bundler {
                 globals: options.globals
             },
             plugins: uglify ? this.pluginsWithUglifier : this.plugins,
-            external: externals,
+            external: () => {
+                return options.format === 'cjs';
+            },
             watch: options.watch
         };
     }
@@ -81,17 +82,13 @@ export default class Bundler {
      *@param {string} options.format - the output format for all included modules in this build
      *@param {boolean} options.uglify - boolean value indicating if modules should be uglified
      *@param {Module[]} modules - the modules list to build from
-     *@param {Array} externalModules - array of external modules
      *@param {RegExp[]} includes - array of regex objects that specifies modules to include
      *@param {RegExp[]} excludes - array of regex objects that specifies modules to exclude
     */
-    getExports(exportStore, options, modules, externalModules, includes, excludes) {
+    getExports(exportStore, options, modules, includes, excludes) {
         let src = null,
             regexMatches = function (regex) {
                 return regex.test(src);
-            },
-            filterExternalModules = function (externalModule) {
-                return externalModule !== src;
             };
 
         for (const _module of modules) {
@@ -107,7 +104,6 @@ export default class Bundler {
                 continue;
             }
 
-            const externals = externalModules.filter(filterExternalModules);
             exportStore.push(this.getConfig(options.uglify, {
                 src: src,
                 dest: dest,
@@ -115,17 +111,8 @@ export default class Bundler {
                 interop: options.interop,
                 sourcemap: options.sourcemap,
                 ext: _module.ext
-            }, _module.name, externals));
+            }, _module.name));
         }
-    }
-
-    /**
-     * returns array of mapped external modules
-     *@param {Module[]} modules - array of modules
-     *@returns {string[]}
-    */
-    getExternalModules(modules) {
-        return modules.map(current => current.absPath);
     }
 
     /**
@@ -277,16 +264,12 @@ export default class Bundler {
             exportStore = [];
 
         if (libConfig.enabled) {
-            const externalModules = [
-                ...config.externalModules,
-                ...this.getExternalModules(modules)
-            ];
             this.getExports(
                 exportStore,
                 {
                     outDir: path.resolve(entryPath, libConfig.outDir),
 
-                    format: libConfig.format,
+                    format: 'cjs',
 
                     uglify: Util.isProdEnv() || libConfig.uglify,
 
@@ -301,7 +284,6 @@ export default class Bundler {
                     watch: this.pickConfig('watch', libConfig, config)
                 },
                 modules,
-                externalModules,
                 libConfig.include ? this.resolveRegex(libConfig.include, []) : includes,
                 libConfig.exclude ? this.resolveRegex(libConfig.exclude, []) : excludes
             );
@@ -328,7 +310,6 @@ export default class Bundler {
                     watch: this.pickConfig('watch', distConfig, config),
                 },
                 modules,
-                [],
                 distConfig.include ? this.resolveRegex(distConfig.include, []) : includes,
                 distConfig.exclude ? this.resolveRegex(distConfig.exclude, []) : excludes
             );

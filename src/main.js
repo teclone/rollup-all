@@ -1,4 +1,4 @@
-import Bundler from './modules/Bundler.js';
+import Bundler from './modules/Bundler';
 
 export default {
     /**
