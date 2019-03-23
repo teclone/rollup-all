@@ -22,7 +22,7 @@ export default class Bundler {
     constructor(uglifierPlugin, otherPlugins, configPath) {
         this.configPath = configPath ? configPath : '.buildrc.json';
         this.plugins = Util.isArray(otherPlugins) ? otherPlugins : [];
-        this.pluginsWithUglifer = uglifierPlugin ? [...this.plugins, uglifierPlugin] : null;
+        this.pluginsWithUglifier = uglifierPlugin ? [...this.plugins, uglifierPlugin] : null;
     }
 
     /**
