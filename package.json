@@ -1,7 +1,7 @@
 {
     "name": "rollup-all",
     "version": "0.0.0-development",
-    "description": "A lightweight, extensive and configurable npm package for building all your ES6 source codes in one parse using rollup.js",
+    "description": "A lightweight, extensive and configurable npm package for building all your ES6 source codes in one parse using rollup",
     "main": "lib/index",
     "typings": "lib/typings/index",
     "scripts": {
@@ -19,14 +19,17 @@
         "url": "https://github.com/harrison-ifeanyichukwu/rollup-all.git"
     },
     "keywords": [
-        "rollup.js",
+        "rollup",
         "asset-bundling",
         "build",
-        "src",
-        "generate-dist-bundles",
-        "generate-lib-bundles"
+        "generate-dist",
+        "generate-lib",
+        "esnext",
+        "typescript",
+        "library",
+        "minified-versions"
     ],
-    "author": "Harrison Ifeanyichukwu <Harrisonifeanyichukwu@gmail.com> (http://fjsfoundations.com/)",
+    "author": "Harrison Ifeanyichukwu <Harrisonifeanyichukwu@gmail.com>",
     "license": "MIT",
     "bugs": {
         "url": "https://github.com/harrison-ifeanyichukwu/rollup-all/issues"
@@ -52,7 +55,7 @@
         "rollup-plugin-commonjs": "9.3.4",
         "rollup-plugin-node-resolve": "3.4.0",
         "rollup-plugin-uglify": "6.0.2",
-        "semantic-release": "^15.13.2",
+        "semantic-release": "15.13.3",
         "typescript": "3.4.5"
     },
     "config": {
