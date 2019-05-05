@@ -2,8 +2,8 @@
     "name": "rollup-all",
     "version": "0.0.0-development",
     "description": "A lightweight, extensive and configurable npm package for building all your ES6 source codes in one parse using rollup.js",
-    "main": "lib/main",
-    "typings": "lib/typings/main",
+    "main": "lib/index",
+    "typings": "lib/typings/index",
     "scripts": {
         "commit": "git-cz",
         "test": "BABEL_ENV=test jest",
