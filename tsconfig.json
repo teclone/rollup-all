@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "moduleResolution": "node",
+        "target": "esnext",
+        "declaration": true,
+        "declarationDir": "./lib/typings",
+        "noImplicitAny": false,
+        "downlevelIteration": true,
+        "outDir": "./temp",
+        "lib": [
+            "dom",
+            "es5",
+            "es2015.collection",
+            "es2015.iterable"
+        ]
+    },
+    "include": [
+        "src"
+    ]
+}
