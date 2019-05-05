@@ -206,7 +206,8 @@ rollupAll.getExports(uglifierPlugin: object | null, otherPlugins: object[], conf
             "rollup-plugin-babel": "4.3.2",
             "rollup-plugin-commonjs": "9.3.4",
             "rollup-plugin-node-resolve": "3.4.0",
-            "rollup-plugin-uglify": "6.0.2"
+            "rollup-plugin-uglify": "6.0.2",
+            "typescript": "3.4.5"
         },
         "dependencies": {
             "@babel/plugin-transform-runtime": "7.4.3",
