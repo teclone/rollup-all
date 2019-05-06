@@ -1,7 +1,6 @@
 import Bundler from '../../src/modules/Bundler';
 import { uglify } from 'rollup-plugin-uglify';
 import path from 'path';
-import fs from 'fs';
 import rimraf from 'rimraf';
 import { UserConfig } from '../../src/@types';
 
@@ -57,7 +56,7 @@ describe('Bundler', function () {
     describe('#process()', function () {
         it(`should return array of module build objects for the enabled builds`, function () {
             let builds = bundler.process();
-            expect(builds.length).toEqual(5);
+            expect(builds.length).toEqual(4);
 
             expect(typeof builds[0].external()).toEqual('boolean');
             expect(builds).toBeInstanceOf(Array);
@@ -69,7 +68,7 @@ describe('Bundler', function () {
                 }
             });
             builds = bundler2.process();
-            expect(builds.length).toEqual(10);
+            expect(builds.length).toEqual(8);
         });
 
         it(`should include return array of module build objects for the enabled builds`, function () {

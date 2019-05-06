@@ -4,7 +4,7 @@ import {copy, value as pickValue, isString, camelCase} from '@forensic-js/utils'
 import { Config, UserConfig, CommonConfig, LibConfig, DistConfig, Module, Build } from '../@types';
 import defualtConfig from '../.buildrc';
 import { COMMON_CONFIGS } from '../Constants';
-import { mkDirSync, isProdEnv } from './Util';
+import {mkDirSync, isProdEnv, getEntryPath} from '@forensic-js/node-utils';
 
 export default class Bundler {
 
@@ -30,36 +30,8 @@ export default class Bundler {
             this.pluginsWithUglifier.push(uglifierPlugin);
         }
 
-        /* istanbul ignore else */
-        if (require.main) {
-            this.entryPath = this.getEntryPath(require.main.filename);
-        }
-        else {
-            this.entryPath = this.getEntryPath(__dirname);
-        }
+        this.entryPath = getEntryPath();
         this.config = this.resolveConfig(this.entryPath, config);
-    }
-
-    /**
-     * returns the entry path
-    */
-    private getEntryPath(mainFileName: string) {
-        /* istanbul ignore if */
-        if (mainFileName.indexOf('node_modules') > 0) {
-            return mainFileName.split('/node_modules')[0];
-        }
-
-        let currentPath: string = path.join(mainFileName, '../');
-        let result = '';
-
-        while (currentPath !== '/') {
-            if (fs.existsSync(currentPath + '/package.json')) {
-                result = currentPath;
-                break;
-            }
-            currentPath = path.join(currentPath, '../');
-        }
-        return result;
     }
 
     /**
