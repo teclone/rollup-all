@@ -339,7 +339,7 @@ Rollup-all uses an internal `.buildrc.js` file that defines default build config
          * boolean value indicating if typescript type definition files should be copied to the
          * specified typings directory
          */
-        copyTypings: true,
+        copyTypings: false,
 
         /**
          * defines folder to copy all type definition files to, if the copy typings option
@@ -399,6 +399,10 @@ You can override these options by creating and placing a `.buildrc.js` file in y
 - **include**: defines a list of modules to include in the build. Entries can be strings or regex. Defaults to `["*"]`, which includes everything.
 
 - **copyAssets**: defines if asset files should be copied over during the build process.
+
+- **copyTypings**: defines if type definition files should be copied over during the build process. Defaults to true for lib build, but false for dist build.
+
+- **typingsDir**: defines directory to copy type definition files to. defaults to **lib/typings** for lib build, and **dist/typings** for dist build. The typings directory should match with the entry in your **tsconfig.json** file.
 
 - **uglify***: defines if the build should be minified. **Note that when running in production environment, this value is automatically set to true**. You must supply an uglifier plugin for it to work. Default value is `false`.
 

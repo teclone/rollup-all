@@ -75,7 +75,7 @@ const config: Config = {
          * boolean value indicating if typescript type definition files should be copied to the
          * specified typings directory
          */
-        copyTypings: true,
+        copyTypings: false,
 
         /**
          * defines folder to copy all type definition files to, if the copy typings option
