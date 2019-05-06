@@ -118,13 +118,13 @@ export default class Bundler {
 
         for (const {isAsset, filePath, oldRelativePath, newRelativePath, isTypeDefinitionFile, name} of modules) {
             src = filePath;
-            if (isAsset) {
+            if (isAsset && config.copyAssets) {
                 this.copyFile(filePath, path.join(config.outDir, oldRelativePath));
             }
             else if (isTypeDefinitionFile && config.copyTypings) {
                 this.copyFile(filePath, path.join(config.typingsDir, oldRelativePath));
             }
-            else if (config.include.some(regexMatches) &&
+            else if (!isAsset && !isTypeDefinitionFile && config.include.some(regexMatches) &&
                 (config.exclude.length === 0 || !config.exclude.some(regexMatches))) {
                 exportStore.push({
                     input: filePath,
@@ -168,7 +168,7 @@ export default class Bundler {
 
                 const tdTester = /\.d\.ts$/i; //type definition tester
 
-                const isAsset = !fileExtensions.includes(extname) && ! tdTester.test(file);
+                const isAsset = !fileExtensions.includes(extname) && !tdTester.test(file);
                 const isTypeDefinitionFile = tdTester.test(file);
 
                 const oldRelativePath = path.join(currentRelativeDir, file);
