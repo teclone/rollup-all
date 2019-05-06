@@ -272,6 +272,9 @@ export declare interface Module {
     name: string;
 }
 
+/**
+ * build object export format
+ */
 export declare interface Build {
     input: string;
     output: {
