@@ -69,6 +69,9 @@ const config: Config = {
          */
         outDir: 'dist',
 
+        /**
+         * build format to use.
+         */
         format: 'iife',
 
         /**
