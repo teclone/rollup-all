@@ -55,6 +55,7 @@ describe('Bundler', function () {
 
     describe('#process()', function () {
         it(`should return array of module build objects for the enabled builds`, function () {
+            process.env.NODE_ENV = 'prod';
             let builds = bundler.process();
             expect(builds.length).toEqual(4);
 
