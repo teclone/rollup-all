@@ -6,16 +6,18 @@ notifications:
   email: false
 node_js:
   - "9"
-  - "8"
+#  - "8"
 script:
   - npm run test
-jobs:
-  include:
-    - stage: release
-      node_js: "11.12.0"
-      script:
-        - npm run test
-        - npm run build
-      after_success:
-        - npm run report-coverage
-        - ls
+  - npm run build
+  - ls
+# jobs:
+#   include:
+#     - stage: release
+#       node_js: "11.12.0"
+#       script:
+#         - npm run test
+#         - npm run build
+#       after_success:
+#         - npm run report-coverage
+#         - ls
