@@ -16,6 +16,7 @@ jobs:
       script:
         - npm run test
         - npm run build
+        - ls -a
       after_success:
         - npm run report-coverage
         - ls && npm run semantic-release
