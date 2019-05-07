@@ -1,4 +1,11 @@
 import RollupAll from '../src';
+import rimraf from 'rimraf';
+import * as path from 'path';
+
+afterEach(function () {
+    rimraf.sync(path.resolve(__dirname, '../dist'));
+    rimraf.sync(path.resolve(__dirname, '../lib'));
+});
 
 describe('Index', function() {
 

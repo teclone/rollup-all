@@ -57,6 +57,12 @@ export default class Bundler {
         });
     }
 
+    /**
+     * pick config from target config or global config
+     * @param prop config property
+     * @param targetConfig target config
+     * @param config global config
+     */
     private pickConfig(prop: keyof CommonConfig, targetConfig: LibConfig | DistConfig,
         config: Config) {
         if (prop !== 'include' && prop !== 'exclude') {
