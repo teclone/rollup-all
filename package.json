@@ -12,7 +12,7 @@
         "build": "tsc && BABEL_ENV=build rollup --config && rimraf temp",
         "lint": "eslint ./src --fix",
         "report-coverage": "jest --coverage --coverageReporters=text-lcov | coveralls",
-        "semantic-release": "semantic-release"
+        "semantic-release": "semantic-release --dry-run"
     },
     "repository": {
         "type": "git",
