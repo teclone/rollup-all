@@ -132,9 +132,6 @@ export default class Bundler {
             }
             else if (!isAsset && !isTypeDefinitionFile && config.include.some(regexMatches) &&
                 (config.exclude.length === 0 || !config.exclude.some(regexMatches))) {
-                console.log(this.entryPath);
-                console.log(filePath);
-                console.log(path.resolve(this.entryPath, config.outDir, newRelativePath));
                 exportStore.push({
                     input: filePath,
                     output: {
