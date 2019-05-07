@@ -135,7 +135,7 @@ export default class Bundler {
                 exportStore.push({
                     input: filePath,
                     output: {
-                        file: path.resolve(this.entryPath, config.outDir, newRelativePath),
+                        file: path.resolve(config.outDir, newRelativePath),
                         format: config.format,
                         name: camelCase(name),
                         interop: config.interop,
