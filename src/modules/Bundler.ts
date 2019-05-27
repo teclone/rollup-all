@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import {copy, value as pickValue, isString, camelCase} from '@forensic-js/utils';
+import {copy, pickValue, isString, camelCase} from '@forensic-js/utils';
 import { Config, UserConfig, CommonConfig, LibConfig, DistConfig, Module, Build } from '../@types';
 import defualtConfig from '../.buildrc';
 import { COMMON_CONFIGS } from '../Constants';
