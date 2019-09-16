@@ -157,6 +157,7 @@ export default class Bundler {
           },
           plugins: config.uglify ? this.pluginsWithUglifier : this.plugins,
           external: config.externals,
+
           // external: (id, parent, isResolved) => {
           //   console.log(id);
           //   return config.format === 'cjs';
