@@ -1,5 +1,13 @@
 import { CommonConfig } from './@types';
 
 export const COMMON_CONFIGS: (keyof CommonConfig)[] = [
-    'copyAssets', 'include', 'exclude', 'sourcemap', 'uglify', 'interop'
+  'assets',
+  'include',
+  'exclude',
+  'sourcemap',
+  'uglify',
+  'interop',
+  'externals',
 ];
+
+export const REGEX_FIELDS: (keyof CommonConfig)[] = ['assets', 'include', 'exclude'];

@@ -1,9 +1,9 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import { copy, pickValue, isString, camelCase } from '@forensic-js/utils';
+import { copy, pickValue, isString, camelCase, isArray, isBoolean } from '@forensic-js/utils';
 import { Config, UserConfig, CommonConfig, LibConfig, DistConfig, Module, Build } from '../@types';
 import defualtConfig from '../.buildrc';
-import { COMMON_CONFIGS } from '../Constants';
+import { COMMON_CONFIGS, REGEX_FIELDS } from '../Constants';
 import { mkDirSync, isProdEnv, getEntryPath } from '@forensic-js/node-utils';
 
 export default class Bundler {
@@ -37,36 +37,48 @@ export default class Bundler {
    *@param {Array|string|RegExp} patterns - array of patterns or string pattern
    *@param {Array} regexStore - array to store regex objects
    */
-  private resolveRegex(patterns: (string | RegExp)[]) {
-    return patterns.map(pattern => {
-      if (isString(pattern)) {
-        if (pattern === '*') {
-          return new RegExp('.*');
-        } else {
-          pattern = pattern
-            .replace(/\./g, '\\.')
-            .replace(/\*{2}/g, '.*')
-            .replace(/\*/g, '[^/]+');
-          return new RegExp(pattern, 'i');
-        }
+  private resolveRegex(pattern: string | RegExp) {
+    if (isString(pattern)) {
+      if (pattern === '*') {
+        return new RegExp('^.*$', 'i');
       } else {
-        return pattern;
+        pattern = pattern
+          .replace(/\./g, '\\.')
+          .replace(/\*{2}/g, '.*')
+          .replace(/\*/g, '[^/]+');
+        return new RegExp('^' + pattern + '$', 'i');
       }
-    });
+    } else {
+      return pattern;
+    }
+  }
+
+  private mergeConfig(prop: keyof CommonConfig, config: Config, target: LibConfig | DistConfig) {
+    const configValue = config[prop];
+    const targetValue = target[prop];
+
+    if (targetValue === undefined) {
+      target[prop as string] = configValue;
+    } else if (isString(targetValue) || isBoolean(targetValue) || !isArray(targetValue)) {
+      target[prop as string] = targetValue;
+    } else {
+      target[prop as string] = [...configValue, ...targetValue];
+    }
+
+    if (REGEX_FIELDS.includes(prop)) {
+      target[prop as string] = (target[prop as string] as (string | RegExp)[]).map(this.resolveRegex);
+    }
   }
 
   /**
-   * pick config from target config or global config
-   * @param prop config property
-   * @param targetConfig target config
-   * @param config global config
+   * loads the given file and returns the result
+   * @param file
    */
-  private pickConfig(prop: keyof CommonConfig, targetConfig: LibConfig | DistConfig, config: Config) {
-    if (prop !== 'include' && prop !== 'exclude') {
-      //@ts-ignore
-      targetConfig[prop] = pickValue(prop, targetConfig, config[prop]);
-    } else {
-      targetConfig[prop] = this.resolveRegex(pickValue(prop, targetConfig, config[prop]));
+  private loadFile(entryPath: string, file: string) {
+    try {
+      return require(path.resolve(entryPath, file));
+    } catch (ex) {
+      return {};
     }
   }
 
@@ -74,22 +86,28 @@ export default class Bundler {
    * resolves the config object
    */
   private resolveConfig(entryPath: string, config: string | UserConfig): Config {
-    if (isString(config)) {
-      const absPath = path.resolve(entryPath, config);
-      try {
-        config = require(absPath) as UserConfig;
-      } catch (ex) {
-        console.info(`Proceeding with default config options. "${config}" did not match any file`);
-        config = {};
-      }
-    }
+    const packageFile = this.loadFile(entryPath, 'package.json');
+    config = isString(config) ? this.loadFile(entryPath, config) : config;
+
     const resolvedConfig: Config = copy({}, defualtConfig, config as Config);
+
+    //resolve module name
+    resolvedConfig.moduleName = resolvedConfig.moduleName || camelCase(packageFile.name);
 
     //resolve lib config
     COMMON_CONFIGS.forEach(prop => {
-      this.pickConfig(prop, resolvedConfig.libConfig, resolvedConfig);
-      this.pickConfig(prop, resolvedConfig.distConfig, resolvedConfig);
+      this.mergeConfig(prop, resolvedConfig, resolvedConfig.libConfig);
+      this.mergeConfig(prop, resolvedConfig, resolvedConfig.distConfig);
     });
+
+    //for lib config, add all dependencies as externals
+    if (packageFile.dependencies) {
+      Object.keys(packageFile.dependencies).forEach(key => resolvedConfig.libConfig.externals.push(key));
+    }
+    //for lib config, add all per dependencies as externals
+    if (packageFile.peerDependencies) {
+      Object.keys(packageFile.peerDependencies).forEach(key => resolvedConfig.libConfig.externals.push(key));
+    }
 
     //enable output compression if running in production environment
     if (isProdEnv()) {
@@ -116,16 +134,15 @@ export default class Bundler {
     let src = null;
     const regexMatches = regex => regex.test(src);
 
-    for (const { isAsset, filePath, oldRelativePath, newRelativePath, isTypeDefinitionFile, name } of modules) {
-      src = filePath;
-      if (isAsset && config.copyAssets) {
+    for (const { ext, isBuildFile, filePath, oldRelativePath, newRelativePath, name } of modules) {
+      src = oldRelativePath;
+      const isTypeDefinitionFile = ext === '.d.ts';
+
+      if ((isTypeDefinitionFile && config.copyTypings) || (!isBuildFile && config.assets.some(regexMatches))) {
         this.copyFile(filePath, path.join(config.outDir, oldRelativePath));
-      } else if (isTypeDefinitionFile && config.copyTypings) {
-        this.copyFile(filePath, path.join(config.typingsDir, oldRelativePath));
       } else if (
-        !isAsset &&
-        !isTypeDefinitionFile &&
-        config.include.some(regexMatches) &&
+        isBuildFile &&
+        (config.include.length === 0 || config.include.some(regexMatches)) &&
         (config.exclude.length === 0 || !config.exclude.some(regexMatches))
       ) {
         exportStore.push({
@@ -139,9 +156,11 @@ export default class Bundler {
             globals: this.config.globals,
           },
           plugins: config.uglify ? this.pluginsWithUglifier : this.plugins,
-          external: () => {
-            return config.format === 'cjs';
-          },
+          external: config.externals,
+          // external: (id, parent, isResolved) => {
+          //   console.log(id);
+          //   return config.format === 'cjs';
+          // },
           watch: this.config.watch,
         });
       }
@@ -154,8 +173,8 @@ export default class Bundler {
   private getModules(
     modules: Module[],
     resolvedPath: string,
-    mainModuleFileName: string,
-    mainModuleName: string,
+    entryFile: string,
+    moduleName: string,
     currentRelativeDir: string,
     fileExtensions: string[]
   ) {
@@ -163,34 +182,22 @@ export default class Bundler {
     for (const file of files) {
       const filePath = path.join(resolvedPath, file);
       if (fs.statSync(filePath).isDirectory()) {
-        this.getModules(
-          modules,
-          filePath,
-          mainModuleFileName,
-          mainModuleName,
-          path.join(currentRelativeDir, file),
-          fileExtensions
-        );
+        this.getModules(modules, filePath, entryFile, moduleName, path.join(currentRelativeDir, file), fileExtensions);
       } else {
         const firstDotPos = file.charAt(0) === '.' ? file.indexOf('.', 1) : file.indexOf('.');
         const baseName = firstDotPos > -1 ? file.substring(0, firstDotPos) : file;
         const extname = firstDotPos > -1 ? file.substring(firstDotPos) : '';
 
-        const tdTester = /\.d\.ts$/i; //type definition tester
-
-        const isAsset = !fileExtensions.includes(extname) && !tdTester.test(file);
-        const isTypeDefinitionFile = tdTester.test(file);
-
         const oldRelativePath = path.join(currentRelativeDir, file);
         const newRelativePath = path.join(currentRelativeDir, baseName + '.js');
 
         modules.push({
+          ext: extname,
           oldRelativePath,
           newRelativePath,
-          isAsset,
-          isTypeDefinitionFile,
           filePath,
-          name: oldRelativePath === mainModuleFileName ? mainModuleName : baseName,
+          name: oldRelativePath === entryFile ? moduleName : baseName,
+          isBuildFile: fileExtensions.includes(extname),
         });
       }
     }
@@ -210,14 +217,7 @@ export default class Bundler {
   process() {
     const startAt = path.resolve(this.entryPath, this.config.srcDir);
     const config = this.config;
-    const modules = this.getModules(
-      [],
-      startAt,
-      config.mainModuleFileName,
-      config.mainModuleName,
-      '',
-      config.fileExtensions
-    );
+    const modules = this.getModules([], startAt, config.entryFile, config.moduleName, '', config.fileExtensions);
 
     const exportStore: Build[] = [];
     if (config.libConfig.enabled) {

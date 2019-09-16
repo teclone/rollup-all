@@ -44,8 +44,8 @@ describe('Bundler', function() {
         },
       };
       const bundler = new Bundler(null, [], userConfig);
-      expect(bundler.getConfig().libConfig.include[0]).toEqual(/.*/);
-      expect(bundler.getConfig().libConfig.include[1]).toEqual(/src\/[^\/]+/i);
+      expect(bundler.getConfig().libConfig.include[0]).toEqual(/^.*$/i);
+      expect(bundler.getConfig().libConfig.include[1]).toEqual(/^src\/[^\/]+$/i);
     });
   });
 
@@ -53,7 +53,6 @@ describe('Bundler', function() {
     it(`should return array of module build objects for the enabled builds`, function() {
       process.env.NODE_ENV = 'prod';
       let builds = bundler.process();
-      console.log(builds);
       expect(builds.length).toEqual(4);
 
       expect(typeof builds[0].external()).toEqual('boolean');
@@ -92,7 +91,7 @@ describe('Bundler', function() {
         the exclude option excludes all files`, function() {
       const bundler = new Bundler(null, [], {
         libConfig: {
-          include: [],
+          include: ['utils/*'],
         },
       });
       const builds = bundler.process();

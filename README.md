@@ -38,345 +38,363 @@ rollupAll.getExports(uglifierPlugin: object | null, otherPlugins: object[], conf
 
 1. **Install Dependencies & Dev Dependencies**
 
-    **install Rollup and rollup-all:**
+   **install Rollup and rollup-all:**
 
-    ```bash
-    npm install --save-dev rollup rollup-plugin-babel rollup-plugin-commonjs rollup-plugin-node-resolve rollup-plugin-uglify rollup-all
-    ```
+   ```bash
+   npm install --save-dev rollup rollup-plugin-babel rollup-plugin-commonjs rollup-plugin-node-resolve rollup-plugin-uglify rollup-all
+   ```
 
-    **install babel 7:**
+   **install babel 7:**
 
-    ```bash
-    npm install --save-dev @babel/core @babel/preset-env @babel/plugin-proposal-class-properties @babel/plugin-proposal-object-rest-spread
-    ```
+   ```bash
+   npm install --save-dev @babel/core @babel/preset-env @babel/plugin-proposal-class-properties @babel/plugin-proposal-object-rest-spread
+   ```
 
-    **install Typescript & Typescript babel plugin:**
+   **install Typescript & Typescript babel plugin:**
 
-    ```bash
-    npm install --save-dev typescript @babel/preset-typescript
-    ```
+   ```bash
+   npm install --save-dev typescript @babel/preset-typescript
+   ```
 
-    **install Jest & Babel-Jest:**
+   **install Jest & Babel-Jest:**
 
-    ```bash
-    npm install --save-dev jest @types/jest babel-jest
-    ```
+   ```bash
+   npm install --save-dev jest @types/jest babel-jest
+   ```
 
-    **Install babel runtime helpers:**
+   **Install babel runtime helpers:**
 
-    ```bash
-    npm install --save @babel/runtime @babel/plugin-transform-runtime
-    ```
+   ```bash
+   npm install --save @babel/runtime @babel/plugin-transform-runtime
+   ```
 
-    this is optional if you want to use **ES2017^** features such as `async-await`
+   this is optional if you want to use **ES2017^** features such as `async-await`
 
 2. **Create a `rollup.js` file in your root directory containing the following sample code:**
 
-    ```javascript
-    import resolve from 'rollup-plugin-node-resolve';
-    import commonjs from 'rollup-plugin-commonjs';
-    import babel from 'rollup-plugin-babel';
-    import { uglify } from 'rollup-plugin-uglify';
+   ```javascript
+   import resolve from 'rollup-plugin-node-resolve';
+   import commonjs from 'rollup-plugin-commonjs';
+   import babel from 'rollup-plugin-babel';
+   import { uglify } from 'rollup-plugin-uglify';
 
-    import RollupAll from 'rollup-all';
+   import RollupAll from 'rollup-all';
 
-    const plugins = [
-        resolve({
-            extensions: ['.ts', '.js'],
-        }),
-        commonjs({
-            include: 'node_modules/**'
-        }),
-        babel({
-            exclude: 'node_modules/**',
-            extensions: ['.ts', '.js'],
-            runtimeHelpers: true // use this option if your code makes use of es2017 async-await
-        }),
-    ];
+   const plugins = [
+     resolve({
+       extensions: ['.ts', '.js'],
+     }),
+     commonjs({
+       include: 'node_modules/**',
+     }),
+     babel({
+       exclude: 'node_modules/**',
+       extensions: ['.ts', '.js'],
+       runtimeHelpers: true, // use this option if your code makes use of es2017 async-await
+     }),
+   ];
 
-    export default RollupAll.getExports(uglify(), plugins);
-    ```
+   export default RollupAll.getExports(uglify(), plugins);
+   ```
 
-    > **Note**: if you are not using any [uglifier](https://github.com/rollup/rollup/wiki/Plugins#output--prettifying) plugin, pass in `null` as the first parameter to **getExports**.
+   > **Note**: if you are not using any [uglifier](https://github.com/rollup/rollup/wiki/Plugins#output--prettifying) plugin, pass in `null` as the first parameter to **getExports**.
 
 3. **Create a `.babelrc` file in your root directory containing the following sample code:**
 
-    ```json
-    {
-        "env": {
-            "test": {
-                "presets": [
-                    [
-                        "@babel/preset-env",
-                    ],
-                    "@babel/preset-typescript",
-                ],
-                "plugins": [
-                    "@babel/plugin-transform-runtime",
-                    "@babel/proposal-class-properties",
-                    "@babel/proposal-object-rest-spread"
-                ]
-            },
-            "build": {
-                "presets": [
-                    [
-                        "@babel/env",
-                        {
-                            "modules": false,
-                        }
-                    ],
-                    "@babel/preset-typescript",
-                ],
-                "plugins": [
-                    "@babel/plugin-transform-runtime",
-                    "@babel/proposal-class-properties",
-                    "@babel/proposal-object-rest-spread"
-                ]
-            }
-        }
-    }
-    ```
+   ```json
+   {
+     "env": {
+       "test": {
+         "presets": [["@babel/preset-env"], "@babel/preset-typescript"],
+         "plugins": [
+           "@babel/plugin-transform-runtime",
+           "@babel/proposal-class-properties",
+           "@babel/proposal-object-rest-spread"
+         ]
+       },
+       "build": {
+         "presets": [
+           [
+             "@babel/env",
+             {
+               "modules": false
+             }
+           ],
+           "@babel/preset-typescript"
+         ],
+         "plugins": [
+           "@babel/plugin-transform-runtime",
+           "@babel/proposal-class-properties",
+           "@babel/proposal-object-rest-spread"
+         ]
+       }
+     }
+   }
+   ```
 
 4. **Add a `tsconfig.json` file to your root directory containing the following sample code:**
 
-    ```json
-    {
-        "compilerOptions": {
-            "moduleResolution": "node",
-            "target": "esnext",
-            "declaration": true,
-            "emitDeclarationOnly": true,
-            "declarationDir": "./typings",
-            "noImplicitAny": false,
-            "downlevelIteration": true,
-            "strictNullChecks": true,
-            "lib": [
-                "dom",
-                "es5",
-                "es2015.collection",
-                "es2015.iterable"
-            ]
-        },
-        "include": [
-            "src"
-        ]
-    }
-    ```
+   ```json
+   {
+     "compilerOptions": {
+       "moduleResolution": "node",
+       "target": "esnext",
+       "declaration": true,
+       "emitDeclarationOnly": true,
+       "declarationDir": "./typings",
+       "noImplicitAny": false,
+       "downlevelIteration": true,
+       "strictNullChecks": true,
+       "lib": ["dom", "es5", "es2015.collection", "es2015.iterable"]
+     },
+     "include": ["src"]
+   }
+   ```
 
 5. **Setup jest for testing, add a jest.config.js file with the following sample code:**
 
-    ```js
-    module.exports = {
-        testEnvironment: 'node',
-        collectCoverage: true,
-        transform: {
-            '^.+\\.tsx?$': 'babel-jest'
-        },
-        testRegex: '\\.spec\\.ts',
-    };
-    ```
+   ```js
+   module.exports = {
+     testEnvironment: 'node',
+     collectCoverage: true,
+     transform: {
+       '^.+\\.tsx?$': 'babel-jest',
+     },
+     testRegex: '\\.spec\\.ts',
+   };
+   ```
 
 6. **Add relevant scripts and properties to your package.json file:**
 
-    ```json
-    {
-        "name": "project-name",
-        "version": "1.0.0",
-        "description": "project description",
-        "main": "lib/index",
-        "typings": "lib/typings/index",
-        "scripts": {
-            "test": "BABEL_ENV=test jest",
-            "watch-test": "BABEL_ENV=test jest --watch",
-            "build": "tsc && BABEL_ENV=build rollup --config",
-            "lint": "eslint ./src --fix"
-        },
-        "devDependencies": {
-            "@babel/core": "7.4.0",
-            "@babel/plugin-proposal-class-properties": "^7.4.0",
-            "@babel/plugin-proposal-object-rest-spread": "^7.4.0",
-            "@babel/preset-env": "7.4.0",
-            "@babel/preset-typescript": "7.3.3",
-            "@types/jest": "24.0.11",
-            "@typescript-eslint/eslint-plugin": "1.6.0",
-            "@typescript-eslint/parser": "1.6.0",
-            "babel-jest": "24.3.1",
-            "jest": "24.3.1",
-            "rollup": "0.66.6",
-            "rollup-plugin-babel": "4.3.2",
-            "rollup-plugin-commonjs": "9.3.4",
-            "rollup-plugin-node-resolve": "3.4.0",
-            "rollup-plugin-uglify": "6.0.2",
-            "typescript": "3.4.5"
-        },
-        "dependencies": {
-            "@babel/plugin-transform-runtime": "7.4.3",
-            "@babel/runtime": "7.4.3"
-        }
-    }
-    ```
+   ```json
+   {
+     "name": "project-name",
+     "version": "1.0.0",
+     "description": "project description",
+     "main": "lib/index",
+     "typings": "lib/typings/index",
+     "scripts": {
+       "test": "BABEL_ENV=test jest",
+       "watch-test": "BABEL_ENV=test jest --watch",
+       "build": "tsc && BABEL_ENV=build rollup --config",
+       "lint": "eslint ./src --fix"
+     },
+     "devDependencies": {
+       "@babel/core": "7.4.0",
+       "@babel/plugin-proposal-class-properties": "^7.4.0",
+       "@babel/plugin-proposal-object-rest-spread": "^7.4.0",
+       "@babel/preset-env": "7.4.0",
+       "@babel/preset-typescript": "7.3.3",
+       "@types/jest": "24.0.11",
+       "@typescript-eslint/eslint-plugin": "1.6.0",
+       "@typescript-eslint/parser": "1.6.0",
+       "babel-jest": "24.3.1",
+       "jest": "24.3.1",
+       "rollup": "0.66.6",
+       "rollup-plugin-babel": "4.3.2",
+       "rollup-plugin-commonjs": "9.3.4",
+       "rollup-plugin-node-resolve": "3.4.0",
+       "rollup-plugin-uglify": "6.0.2",
+       "typescript": "3.4.5"
+     },
+     "dependencies": {
+       "@babel/plugin-transform-runtime": "7.4.3",
+       "@babel/runtime": "7.4.3"
+     }
+   }
+   ```
 
 7. **Define your optional .buildrc.js config file for customizing your build:**
 
-    ```javascript
-    module.exports = {
-        /**
-         * defines code src directory
-         */
-        srcDir: 'src',
+   ```typescript
+   module.exports = {
+     /**
+      * defines code src directory
+      */
+     srcDir: 'src',
 
-        mainModuleFileName: 'index.ts',
+     entryFile: 'index.ts',
 
-        mainModuleName: 'ModuleName',
+     moduleName: 'ModuleName',
 
-        /**
-         * boolean value indicating if files that are not part of the listed allowed
-         * fileExtensions and are not type definition files should be copied over
-         */
-        copyAssets: true,
+     // array of asset files to copy over
+     assets: [],
 
-        /**
-         * boolean indicating if sourcemap should be generated, can be true, false, or 'inline'
-         */
-        sourcemap: true,
+     /**
+      * boolean indicating if sourcemap should be generated, can be true, false, or 'inline'
+      */
+     sourcemap: true,
 
-        /**
-         * defines config settings for generating distributed codes. such as browser iife outputs
-         */
-        distConfig: {
-            enabled: false
-        },
+     /**
+      * defines config settings for generating distributed codes. such as browser iife outputs
+      */
+     distConfig: {
+       enabled: false,
+     },
 
-        /**
-         * defines config settings for generating lib codes. output format is cjs.
-         */
-        libConfig: {
-            enabled: true
-        }
-    }
-    ```
+     /**
+      * defines config settings for generating lib codes. output format is cjs.
+      */
+     libConfig: {
+       enabled: true,
+     },
+   };
+   ```
 
 8. **Ready to go, start creating, testing and building your project.**
 
 ## How It Works
 
-Rollup-all uses an internal `.buildrc.js` file that defines default build configurations for your project. the full config options is as shown below:
+Rollup-all uses an internal `.buildrc.js` file that defines default build configurations for your project. the full config options interface is as shown below:
 
 ```typescript
-{
+export declare interface CommonConfig {
+  /**
+   * boolean value indicating if build is enabled. default value is false
+   */
+  enabled?: boolean;
 
-    srcDir: 'src',
+  /**
+   * specifies build output directory. defaults to 'lib' for lib build but defaults to
+   * 'dist' for distribution build
+   */
+  outDir?: string;
 
-    mainModuleFileName: 'index.js',
+  /**
+   * defines specific string of file patterns to process for the build
+   */
+  include?: (string | RegExp)[];
 
-    mainModuleName: 'Module',
+  /**
+   * defines specific string of file patterns to ignore for the build.
+   * by default, type definition files are ignore
+   */
+  exclude?: (string | RegExp)[];
 
-    /**
-     * allowed file extensions
-     */
-    fileExtensions: ['.js', '.ts'],
+  /**
+   * array of asset files to copy over during the build
+   */
+  assets?: (string | RegExp)[];
 
-    /**
-     * defines string of file patterns to process
-     */
-    include: ['*'],
+  /**
+   * boolean indicating if generated output files should be uglified,
+   * you must pass in an uglifier plugin if set to true
+   */
+  uglify?: boolean;
 
-    /**
-     * defines string of file patterns to ignore. by default, type definition files are ignore
-     */
-    exclude: [],
+  /**
+   * boolean indicating if the interop rollup setting should be enabled for the build
+   */
+  interop?: boolean;
 
-    /**
-     * boolean value indicating if files that are not part of the listed allowed
-     * fileExtensions and are not type definition files should be copied over
-     */
-    copyAssets: true,
+  /**
+   * boolean indicating if sourcemap files should be generated
+   */
+  sourcemap?: true | false | 'inline';
 
-    /**
-     * boolean indicating if generated output files should be uglified, you must
-     * pass in an uglifier plugin if set to true
-     */
-    uglify: false,
+  /**
+   * boolean value indicating if typescript type definition files should be copied over during the build. defaults to true
+   */
+  copyTypings?: boolean;
 
-    /**
-     * boolean indicating if the interop rollup setting should be enabled
-     */
-    interop: false,
+  /**
+   * list of external modules for the specific build, by default, peer dependencie modules are auto included as externals for lib builds
+   */
+  externals?: string[];
+}
 
-    /**
-     * boolean indicating if sourcemap should be generated, can be true, false, or 'inline'
-     */
-    sourcemap: true,
+export declare interface LibConfig extends CommonConfig {
+  /**
+   * build format to use. must be 'cjs'
+   */
+  format: 'cjs';
+}
 
-    /**
-     * rollup watch config, you must pass in the --watch command line argument for this to
-     * work
-     */
-    watch: {},
+export declare interface DistConfig extends CommonConfig {
+  /**
+   * build format to use. defaults to 'iife'
+   */
+  format: 'iife' | 'umd';
+}
 
-    /**
-     * rollup globals config
-     */
-    globals: {},
+interface UserConfig {
+  /**
+   * defines code src directory, defaults to 'src'
+   */
+  srcDir?: string;
 
-    /**
-     * defines config settings for generating distributed codes. such as browser iife outputs
-     */
-    distConfig: {
-        /**
-         * defines if dist is enabled
-         */
-        enabled: false,
+  /**
+   * defaults to index.js
+   */
+  entryFile?: string;
 
-        /**
-         * defines output directory
-         */
-        outDir: 'dist',
+  /**
+   * defaults to project package.json name camel-cased
+   */
+  moduleName?: string;
 
-        format: 'iife',
+  /**
+   * allowed file extensions. defaults to .js, .ts
+   */
+  fileExtensions?: string[];
 
-        /**
-         * boolean value indicating if typescript type definition files should be copied to the
-         * specified typings directory
-         */
-        copyTypings: false,
+  /**
+   * defines specific string of file patterns to process for all builds. defaults to everything
+   */
+  include?: (string | RegExp)[];
 
-        /**
-         * defines folder to copy all type definition files to, if the copy typings option
-         * is set to true
-         */
-        typingsDir: 'dist/typings',
-    },
+  /**
+   * defines specific string of file patterns to ignore for all builds. defaults to nothing
+   */
+  exclude?: (string | RegExp)[];
 
-    /**
-     * defines config settings for generating lib codes. output format is cjs.
-     */
-    libConfig: {
+  /**
+   * defines specific string of file patterns to copy over for all builds.
+   */
+  assets?: (string | RegExp)[];
 
-        /**
-         * defines if lib is enabled
-         */
-        enabled: true,
+  /**
+   * boolean indicating if generated output files should be uglified for all builds,
+   * you must pass in an uglifier plugin if set to true
+   */
+  uglify?: boolean;
 
-        /**
-         * defines output directory
-         */
-        outDir: 'lib',
+  /**
+   * boolean indicating if the interop rollup setting should be enabled for all builds
+   */
+  interop?: boolean;
 
-        format: 'cjs',
+  /**
+   * boolean indicating if sourcemap should be generated for all builds,
+   * can be true, false, or 'inline'
+   */
+  sourcemap?: true | false | 'inline';
 
-        /**
-         * boolean value indicating if typescript type definition files should be copied to the
-         * specified typings directory
-         */
-        copyTypings: true,
+  /**
+   * rollup watch config, you must pass in the --watch command line argument for this to
+   * work
+   */
+  watch?: object;
 
-        /**
-         * defines folder to copy all type definition files to, if the copy typings option
-         * is set to true
-         */
-        typingsDir: 'lib/typings',
-    }
+  /**
+   * rollup globals config
+   */
+  globals?: object;
+
+  /**
+   * list of external modules for all builds
+   */
+  externals?: string[];
+
+  /**
+   * defines config settings for generating distributed codes.
+   */
+  distConfig?: UserDistConfig;
+
+  /**
+   * defines config settings for generating lib codes.
+   */
+  libConfig?: UserLibConfig;
 }
 ```
 
@@ -388,23 +406,21 @@ You can override these options by creating and placing a `.buildrc.js` file in y
 
 - **srcDir**: defines the relative path to your project's source folder. Defaults to `src`.
 
-- **mainModuleFileName**: defines the projects main file name such as `index.js`, `main.js`, `entry.js`. Defaults to `index.js`.
+- **entryFile**: defines the projects main file name such as `index.js`, `main.js`, `entry.js`. Defaults to `index.js`.
 
-- **mainModuleName**: defines the globally exposed module name. this applies specifically to projects that uses `iife` dist builds. e.g, `JQuery` for jquery, `React` for react,
+- **moduleName**: defines the globally exposed module name. this applies specifically to projects that uses `iife` dist builds. e.g, `JQuery` for jquery, `React` for react. Default value is read from your projects `package.json` file.
 
 - **fileExtensions**: defines an array of project src code file extensions to process. Every other file within the src directory is regarded as asset files, except **.d.ts** files which are regarded as type definition files.
 
-- **exclude**: defines a list of modules to exclude from the build. Entries can be strings or regex. e.g `"src/modules/*.js"` ignores every .js file inside src/modules directory.
+- **exclude**: defines a list of modules to exclude from the build. Entries can be strings or RegExp expressions. e.g `"modules/*.js"` ignores every .js file inside src/modules directory.
 
-- **include**: defines a list of modules to include in the build. Entries can be strings or regex. Defaults to `["*"]`, which includes everything.
+- **include**: defines a list of modules to include in the build. Entries can be strings or regex.
 
-- **copyAssets**: defines if asset files should be copied over during the build process.
+- **assets**: defines array of asset files to copy during the build process. entries can be string or regex values.
 
 - **copyTypings**: defines if type definition files should be copied over during the build process. Defaults to true for lib build, but false for dist build.
 
-- **typingsDir**: defines directory to copy type definition files to. defaults to **lib/typings** for lib build, and **dist/typings** for dist build. The typings directory should match with the entry in your **tsconfig.json** file.
-
-- **uglify***: defines if the build should be minified. **Note that when running in production environment, this value is automatically set to true**. You must supply an uglifier plugin for it to work. Default value is `false`.
+- **uglify\***: defines if the build should be minified. **Note that when running in production environment, this value is automatically set to true**. You must supply an uglifier plugin for it to work. Default value is `false`.
 
 - **interop**: defines if `rollup.js` interop functionality should be enabled.
 
@@ -417,6 +433,8 @@ You can override these options by creating and placing a `.buildrc.js` file in y
 - **outDir** - defines build output directory.
 
 - **enabled** - defines if a specific build type is enabled. By default, **Node.JS** lib build is enabled, while browser based dist build is disabled.
+
+- **externals**: Defines list of external modules. By default, peerDependency and dependency modules are read from your project's package.json file and included automatically when generating lib builds. So you don't add those.
 
 ## Contributing
 

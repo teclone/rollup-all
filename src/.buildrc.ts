@@ -1,120 +1,109 @@
-import {Config} from './@types';
+import { Config } from './@types';
 const config: Config = {
+  srcDir: 'src',
 
-    srcDir: 'src',
+  entryFile: 'index.js',
 
-    mainModuleFileName: 'index.js',
+  moduleName: '',
 
-    mainModuleName: 'Module',
+  /**
+   * allowed file extensions
+   */
+  fileExtensions: ['.js', '.ts'],
+
+  /**
+   * defines string of file patterns to process
+   */
+  include: [],
+
+  /**
+   * defines string of file patterns to ignore. by default, type definition files are ignore
+   */
+  exclude: [],
+
+  /**
+   * boolean value indicating if files that are not part of the listed allowed
+   * fileExtensions and are not type definition files should be copied over
+   */
+  assets: [],
+
+  /**
+   * boolean indicating if generated output files should be uglified, you must
+   * pass in an uglifier plugin if set to true
+   */
+  uglify: false,
+
+  /**
+   * boolean indicating if the interop rollup setting should be enabled
+   */
+  interop: false,
+
+  /**
+   * boolean indicating if sourcemap should be generated, can be true, false, or 'inline'
+   */
+  sourcemap: true,
+
+  /**
+   * rollup watch config, you must pass in the --watch command line argument for this to
+   * work
+   */
+  watch: {},
+
+  /**
+   * rollup globals config
+   */
+  globals: {},
+
+  externals: [],
+
+  /**
+   * defines config settings for generating distributed codes. such as browser iife outputs
+   */
+  distConfig: {
+    /**
+     * defines if dist is enabled
+     */
+    enabled: false,
 
     /**
-     * allowed file extensions
+     * defines output directory
      */
-    fileExtensions: ['.js', '.ts'],
+    outDir: 'dist',
 
     /**
-     * defines string of file patterns to process
+     * build format to use.
      */
-    include: ['*'],
+    format: 'iife',
 
     /**
-     * defines string of file patterns to ignore. by default, type definition files are ignore
+     * boolean value indicating if typescript type definition files should be copied to the
+     * specified typings directory
      */
-    exclude: [],
+    copyTypings: false,
+  },
+
+  /**
+   * defines config settings for generating lib codes. output format is cjs.
+   */
+  libConfig: {
+    /**
+     * defines if lib is enabled
+     */
+    enabled: true,
 
     /**
-     * boolean value indicating if files that are not part of the listed allowed
-     * fileExtensions and are not type definition files should be copied over
+     * defines output directory
      */
-    copyAssets: true,
+    outDir: 'lib',
+
+    format: 'cjs',
 
     /**
-     * boolean indicating if generated output files should be uglified, you must
-     * pass in an uglifier plugin if set to true
+     * boolean value indicating if typescript type definition files should be copied to the
+     * specified typings directory
      */
-    uglify: false,
+    copyTypings: true,
+  },
+};
 
-    /**
-     * boolean indicating if the interop rollup setting should be enabled
-     */
-    interop: false,
-
-    /**
-     * boolean indicating if sourcemap should be generated, can be true, false, or 'inline'
-     */
-    sourcemap: true,
-
-    /**
-     * rollup watch config, you must pass in the --watch command line argument for this to
-     * work
-     */
-    watch: {},
-
-    /**
-     * rollup globals config
-     */
-    globals: {},
-
-    /**
-     * defines config settings for generating distributed codes. such as browser iife outputs
-     */
-    distConfig: {
-        /**
-         * defines if dist is enabled
-         */
-        enabled: false,
-
-        /**
-         * defines output directory
-         */
-        outDir: 'dist',
-
-        /**
-         * build format to use.
-         */
-        format: 'iife',
-
-        /**
-         * boolean value indicating if typescript type definition files should be copied to the
-         * specified typings directory
-         */
-        copyTypings: false,
-
-        /**
-         * defines folder to copy all type definition files to, if the copy typings option
-         * is set to true
-         */
-        typingsDir: 'dist/typings',
-    },
-
-    /**
-     * defines config settings for generating lib codes. output format is cjs.
-     */
-    libConfig: {
-
-        /**
-         * defines if lib is enabled
-         */
-        enabled: true,
-
-        /**
-         * defines output directory
-         */
-        outDir: 'lib',
-
-        format: 'cjs',
-
-        /**
-         * boolean value indicating if typescript type definition files should be copied to the
-         * specified typings directory
-         */
-        copyTypings: true,
-
-        /**
-         * defines folder to copy all type definition files to, if the copy typings option
-         * is set to true
-         */
-        typingsDir: 'lib/typings',
-    }
-}
 export default config;
