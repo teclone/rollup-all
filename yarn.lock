@@ -694,10 +694,10 @@
     "@babel/plugin-transform-runtime" "7.4.3"
     "@babel/runtime" "7.4.3"
 
-"@forensic-js/utils@2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@forensic-js/utils/-/utils-2.0.0.tgz#de684ed92047772864c8fa464bc222964ae697a6"
-  integrity sha512-Ajm5oyjMS19YIfPmYc3XcQegLZz5qrr5UJ1TUvk43aogb0rQF4j0wuKKjQj8iBBmZZ+42tSZs8fWqD2CeqXBEQ==
+"@forensic-js/utils@2.7.0":
+  version "2.7.0"
+  resolved "https://registry.yarnpkg.com/@forensic-js/utils/-/utils-2.7.0.tgz#6fd3d883db1b1868bc32f11b498385a0683a691c"
+  integrity sha512-ZfTr3PTRm2uJjrtknyq+g3GiliMzrfL6AQ5zKDh187JOx81vJdEQRiNY/DuhgoP6D+78xZ4tmeOC8BXETrUXGw==
 
 "@jest/console@^24.7.1", "@jest/console@^24.9.0":
   version "24.9.0"
