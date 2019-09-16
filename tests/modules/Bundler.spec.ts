@@ -55,7 +55,6 @@ describe('Bundler', function() {
       let builds = bundler.process();
       expect(builds.length).toEqual(4);
 
-      expect(typeof builds[0].external()).toEqual('boolean');
       expect(builds).toBeInstanceOf(Array);
 
       const bundler2 = new Bundler(null, [], {
@@ -70,7 +69,9 @@ describe('Bundler', function() {
 
     it(`should include return array of module build objects for the enabled builds`, function() {
       const builds = bundler.process();
-      expect(typeof builds[0].external()).toEqual('boolean');
+      if (!Array.isArray(builds[0].external)) {
+        expect(typeof builds[0].external('', '', false)).toEqual('boolean');
+      }
       expect(builds).toBeInstanceOf(Array);
     });
 
