@@ -1,72 +1,73 @@
 {
-    "name": "rollup-all",
-    "version": "0.0.0-development",
-    "description": "A lightweight, extensive and configurable npm package for building all your ES6 source codes in one parse using rollup",
-    "main": "lib/index",
-    "typings": "lib/typings/index",
-    "scripts": {
-        "commit": "git-cz",
-        "test": "BABEL_ENV=test jest",
-        "watch-test": "BABEL_ENV=test jest --watch",
-        "prebuild": "rimraf lib typings temp",
-        "build": "tsc && BABEL_ENV=build rollup --config && rimraf temp",
-        "lint": "eslint ./src --fix",
-        "report-coverage": "jest --coverage --coverageReporters=text-lcov | coveralls",
-        "semantic-release": "semantic-release"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/harrison-ifeanyichukwu/rollup-all.git"
-    },
-    "keywords": [
-        "rollup",
-        "asset-bundling",
-        "build",
-        "generate-dist",
-        "generate-lib",
-        "esnext",
-        "typescript",
-        "library",
-        "minified-versions"
-    ],
-    "author": "Harrison Ifeanyichukwu <Harrisonifeanyichukwu@gmail.com>",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/harrison-ifeanyichukwu/rollup-all/issues"
-    },
-    "homepage": "https://github.com/harrison-ifeanyichukwu/rollup-all#readme",
-    "devDependencies": {
-        "@babel/core": "7.4.0",
-        "@babel/plugin-proposal-class-properties": "^7.4.0",
-        "@babel/plugin-proposal-object-rest-spread": "^7.4.0",
-        "@babel/preset-env": "7.4.0",
-        "@babel/preset-typescript": "7.3.3",
-        "@forensic-js/utils": "2.0.0",
-        "@types/jest": "24.0.11",
-        "@typescript-eslint/eslint-plugin": "1.6.0",
-        "@typescript-eslint/parser": "1.6.0",
-        "babel-jest": "24.3.1",
-        "commitizen": "3.0.7",
-        "coveralls": "3.0.3",
-        "cz-conventional-changelog": "2.1.0",
-        "jest": "24.3.1",
-        "rimraf": "2.6.2",
-        "rollup": "0.66.6",
-        "rollup-plugin-babel": "4.3.2",
-        "rollup-plugin-commonjs": "9.3.4",
-        "rollup-plugin-node-resolve": "3.4.0",
-        "rollup-plugin-uglify": "6.0.2",
-        "semantic-release": "15.13.3",
-        "typescript": "3.4.5"
-    },
-    "config": {
-        "commitizen": {
-            "path": "cz-conventional-changelog"
-        }
-    },
-    "dependencies": {
-        "@babel/plugin-transform-runtime": "7.4.3",
-        "@babel/runtime": "7.4.3",
-        "@forensic-js/node-utils": "1.0.0"
+  "name": "rollup-all",
+  "version": "0.0.0-development",
+  "description": "A lightweight, extensive and configurable npm package for building all your ES6 source codes in one parse using rollup",
+  "main": "lib/index",
+  "typings": "lib/typings/index",
+  "scripts": {
+    "commit": "git-cz",
+    "test": "BABEL_ENV=test jest --runInBand",
+    "watch-test": "BABEL_ENV=test jest --watch --runInBand",
+    "prebuild": "rimraf lib typings temp",
+    "build": "tsc && BABEL_ENV=build rollup --config && rimraf temp",
+    "lint": "eslint ./src --fix",
+    "report-coverage": "jest --coverage --coverageReporters=text-lcov | coveralls",
+    "semantic-release": "semantic-release"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/harrison-ifeanyichukwu/rollup-all.git"
+  },
+  "keywords": [
+    "rollup",
+    "asset-bundling",
+    "build",
+    "generate-dist",
+    "generate-lib",
+    "esnext",
+    "typescript",
+    "library",
+    "minified-versions"
+  ],
+  "author": "Harrison Ifeanyichukwu <Harrisonifeanyichukwu@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/harrison-ifeanyichukwu/rollup-all/issues"
+  },
+  "homepage": "https://github.com/harrison-ifeanyichukwu/rollup-all#readme",
+  "devDependencies": {
+    "@babel/core": "7.4.0",
+    "@babel/plugin-proposal-class-properties": "^7.4.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.4.0",
+    "@babel/preset-env": "7.4.0",
+    "@babel/preset-typescript": "7.3.3",
+    "@forensic-js/utils": "2.0.0",
+    "@types/jest": "24.0.11",
+    "@typescript-eslint/eslint-plugin": "1.6.0",
+    "@typescript-eslint/parser": "1.6.0",
+    "babel-jest": "24.3.1",
+    "commitizen": "3.0.7",
+    "coveralls": "3.0.3",
+    "cz-conventional-changelog": "2.1.0",
+    "jest": "24.3.1",
+    "rimraf": "2.6.2",
+    "rollup": "0.66.6",
+    "rollup-plugin-babel": "4.3.2",
+    "rollup-plugin-commonjs": "9.3.4",
+    "rollup-plugin-node-resolve": "3.4.0",
+    "rollup-plugin-uglify": "6.0.2",
+    "semantic-release": "15.13.3",
+    "typescript": "3.4.5"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
     }
+  },
+  "dependencies": {
+    "@babel/plugin-transform-runtime": "7.4.3",
+    "@babel/runtime": "7.4.3",
+    "@forensic-js/node-utils": "1.0.0",
+    "semantic-release-cli": "5.2.1"
+  }
 }
