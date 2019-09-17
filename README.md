@@ -434,7 +434,7 @@ You can override these options by creating and placing a `.buildrc.js` file in y
 
 - **enabled** - defines if a specific build type is enabled. By default, **Node.JS** lib build is enabled, while browser based dist build is disabled.
 
-- **externals**: Defines list of external modules. By default, peerDependency and dependency modules are read from your project's package.json file and included automatically when generating lib builds. So you don't add those.
+- **externals**: Defines list of external modules. By default, `peerDependency` modules are read from your project's package.json file and included automatically when generating lib builds. So you don't need to add those.
 
 ## Contributing
 

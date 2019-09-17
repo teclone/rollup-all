@@ -100,10 +100,6 @@ export default class Bundler {
       this.mergeConfig(prop, resolvedConfig, resolvedConfig.distConfig);
     });
 
-    //for lib config, add all dependencies as externals
-    if (packageFile.dependencies) {
-      Object.keys(packageFile.dependencies).forEach(key => resolvedConfig.libConfig.externals.push(key));
-    }
     //for lib config, add all per dependencies as externals
     if (packageFile.peerDependencies) {
       Object.keys(packageFile.peerDependencies).forEach(key => resolvedConfig.libConfig.externals.push(key));
