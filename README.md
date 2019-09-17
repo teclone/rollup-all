@@ -436,6 +436,8 @@ You can override these options by creating and placing a `.buildrc.js` file in y
 
 - **externals**: Defines list of external modules. By default, `peerDependency` modules are read from your project's package.json file and included automatically when generating lib builds. So you don't need to add those.
 
+- **typingsDir**: Defines output folder to copy typings file over to. defaults to each build type `{outDir}/typings`
+
 ## Contributing
 
 We welcome your own contributions, ranging from code refactoring, documentation improvements, new feature implementations, bugs/issues reporting, etc. **Thanks in advance!!!**

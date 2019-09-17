@@ -56,6 +56,8 @@ const config: Config = {
 
   externals: [],
 
+  typingsDir: '',
+
   /**
    * defines config settings for generating distributed codes. such as browser iife outputs
    */

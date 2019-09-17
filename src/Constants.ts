@@ -8,6 +8,7 @@ export const COMMON_CONFIGS: (keyof CommonConfig)[] = [
   'uglify',
   'interop',
   'externals',
+  'typingsDir',
 ];
 
 export const REGEX_FIELDS: (keyof CommonConfig)[] = ['assets', 'include', 'exclude'];

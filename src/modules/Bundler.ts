@@ -100,6 +100,14 @@ export default class Bundler {
       this.mergeConfig(prop, resolvedConfig, resolvedConfig.distConfig);
     });
 
+    //resolve typings folder
+    if (resolvedConfig.libConfig.typingsDir === '') {
+      resolvedConfig.libConfig.typingsDir = path.join(resolvedConfig.libConfig.outDir, 'typings');
+    }
+    if (resolvedConfig.distConfig.typingsDir === '') {
+      resolvedConfig.distConfig.typingsDir = path.join(resolvedConfig.distConfig.outDir, 'typings');
+    }
+
     //for lib config, add all per dependencies as externals
     if (packageFile.peerDependencies) {
       Object.keys(packageFile.peerDependencies).forEach(key => resolvedConfig.libConfig.externals.push(key));
@@ -134,7 +142,9 @@ export default class Bundler {
       src = oldRelativePath;
       const isTypeDefinitionFile = ext === '.d.ts';
 
-      if ((isTypeDefinitionFile && config.copyTypings) || (!isBuildFile && config.assets.some(regexMatches))) {
+      if (isTypeDefinitionFile && config.copyTypings) {
+        this.copyFile(filePath, path.join(config.typingsDir, oldRelativePath));
+      } else if (!isTypeDefinitionFile && !isBuildFile && config.assets.some(regexMatches)) {
         this.copyFile(filePath, path.join(config.outDir, oldRelativePath));
       } else if (
         isBuildFile &&

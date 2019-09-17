@@ -51,6 +51,11 @@ export declare interface CommonConfig {
    * list of external modules for the specific build, by default, peer dependencie modules are auto included as externals for lib builds
    */
   externals?: string[];
+
+  /**
+   * typings directory, defaults to .typings folder inside your output directory
+   */
+  typingsDir?: string;
 }
 
 export declare interface LibConfig extends CommonConfig {
@@ -135,6 +140,11 @@ export declare interface Config {
    * list of external modules for all builds
    */
   externals: string[];
+
+  /**
+   * typings folder
+   */
+  typingsDir: string;
 
   /**
    * defines config settings for generating distributed codes
@@ -229,6 +239,11 @@ export declare interface UserConfig {
    * list of external modules for all builds
    */
   externals?: string[];
+
+  /**
+   * typings directory, defaults to .typings folder inside your output directory
+   */
+  typingsDir?: string;
 
   /**
    * defines config settings for generating distributed codes.
