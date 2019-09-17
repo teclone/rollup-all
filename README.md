@@ -422,7 +422,7 @@ You can override these options by creating and placing a `.buildrc.js` file in y
 
 - **uglify\***: defines if the build should be minified. **Note that when running in production environment, this value is automatically set to true**. You must supply an uglifier plugin for it to work. Default value is `false`.
 
-- **interop**: defines if `rollup.js` interop functionality should be enabled.
+- **interop**: defines if `rollup.js` interop functionality should be enabled. defaults to true.
 
 - **sourcemap**: defines if the build should produce source maps. value can be `true`, `"inline"` or `false`. Default value is `true`.
 
