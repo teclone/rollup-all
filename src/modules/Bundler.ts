@@ -143,6 +143,7 @@ export default class Bundler {
       ) {
         exportStore.push({
           input: filePath,
+
           output: {
             file: path.resolve(this.entryPath, config.outDir, newRelativePath),
             format: config.format,
@@ -151,13 +152,18 @@ export default class Bundler {
             sourcemap: config.sourcemap,
             globals: this.config.globals,
           },
-          plugins: config.uglify ? this.pluginsWithUglifier : this.plugins,
-          external: config.externals,
 
-          // external: (id, parent, isResolved) => {
-          //   console.log(id);
-          //   return config.format === 'cjs';
-          // },
+          plugins: config.uglify ? this.pluginsWithUglifier : this.plugins,
+
+          external: (id, parent, isResolved) => {
+            if (config.format === 'cjs') {
+              return true;
+            } else if (config.externals.length > 0 && config.externals.includes(id)) {
+              return true;
+            } else {
+              return false;
+            }
+          },
           watch: this.config.watch,
         });
       }
