@@ -1,36 +1,15 @@
-export declare interface CommonConfig {
+import { Plugin } from 'rollup';
+
+export interface CommonConfig {
   /**
    * boolean value indicating if build is enabled. default value is false
    */
   enabled?: boolean;
 
   /**
-   * specifies build output directory. defaults to 'lib' for lib build but defaults to
-   * 'dist' for distribution build
+   * specifies build output directory. defaults to 'cjs', 'dist' and 'esm' for the specific builds
    */
   outDir?: string;
-
-  /**
-   * defines specific string of file patterns to process for the build
-   */
-  include?: (string | RegExp)[];
-
-  /**
-   * defines specific string of file patterns to ignore for the build.
-   * by default, type definition files are ignore
-   */
-  exclude?: (string | RegExp)[];
-
-  /**
-   * array of asset files to copy over during the build
-   */
-  assets?: (string | RegExp)[];
-
-  /**
-   * boolean indicating if generated output files should be uglified,
-   * you must pass in an uglifier plugin if set to true
-   */
-  uglify?: boolean;
 
   /**
    * boolean indicating if the interop rollup setting should be enabled for the build
@@ -41,38 +20,40 @@ export declare interface CommonConfig {
    * boolean indicating if sourcemap files should be generated
    */
   sourcemap?: true | false | 'inline';
-
-  /**
-   * boolean value indicating if typescript type definition files should be copied over during the build. defaults to true
-   */
-  copyTypings?: boolean;
-
-  /**
-   * list of external modules for the specific build, by default, peer dependencie modules are auto included as externals for lib builds
-   */
-  externals?: string[];
-
-  /**
-   * typings directory, defaults to .typings folder inside your output directory
-   */
-  typingsDir?: string;
 }
 
-export declare interface LibConfig extends CommonConfig {
+export interface CJSConfig extends CommonConfig {
   /**
    * build format to use. must be 'cjs'
    */
   format: 'cjs';
 }
 
-export declare interface DistConfig extends CommonConfig {
+export interface ESMConfig extends CommonConfig {
+  /**
+   * build format to use. must be 'esm'
+   */
+  format: 'esm';
+}
+
+export interface DistConfig extends CommonConfig {
   /**
    * build format to use. defaults to 'iife'
    */
   format: 'iife' | 'umd';
+
+  /**
+   * list of modules to regard as external, defaults to empty array
+   */
+  externals: string[];
 }
 
-export declare interface Config {
+export interface Config {
+  /**
+   * plugins to apply
+   */
+  plugins: Plugin[];
+
   /**
    * defines code src directory, defaults to 'src'
    */
@@ -91,7 +72,7 @@ export declare interface Config {
   /**
    * allowed file extensions. defaults to .js, .ts
    */
-  fileExtensions: string[];
+  extensions: string[];
 
   /**
    * defines specific string of file patterns to process for all builds
@@ -109,12 +90,6 @@ export declare interface Config {
   assets: (string | RegExp)[];
 
   /**
-   * boolean indicating if generated output files should be uglified for all builds,
-   * you must pass in an uglifier plugin if set to true
-   */
-  uglify: boolean;
-
-  /**
    * boolean indicating if the interop rollup setting should be enabled for all builds
    */
   interop: boolean;
@@ -126,8 +101,13 @@ export declare interface Config {
   sourcemap: true | false | 'inline';
 
   /**
-   * rollup watch config, you must pass in the --watch command line argument for this to
-   * work
+   * boolean indicating if rollup plugin terser should be applied to the build, when in production mode
+   * default to false
+   */
+  uglify: boolean;
+
+  /**
+   * rollup watch config
    */
   watch: object;
 
@@ -137,41 +117,53 @@ export declare interface Config {
   globals: object;
 
   /**
-   * list of external modules for all builds
-   */
-  externals: string[];
-
-  /**
-   * typings folder
-   */
-  typingsDir: string;
-
-  /**
    * defines config settings for generating distributed codes
    */
   distConfig: DistConfig;
 
   /**
-   * defines config settings for generating lib files
+   * defines config settings for generating cjs files
    */
-  libConfig: LibConfig;
+  cjsConfig: CJSConfig;
+
+  /**
+   * defines config settings for generating esm files
+   */
+  esmConfig: ESMConfig;
 }
 
-declare interface UserDistConfig extends CommonConfig {
+interface UserDistConfig extends CommonConfig {
   /**
    * build format to use. defaults to 'iife'
    */
   format?: 'iife' | 'umd';
+
+  /**
+   * list of modules to regard as external, defaults to empty array
+   */
+  externals?: string[];
 }
 
-declare interface UserLibConfig extends CommonConfig {
+interface UserCJSConfig extends CommonConfig {
   /**
    * build format to use. must be 'cjs'
    */
   format?: 'cjs';
 }
 
-export declare interface UserConfig {
+interface UserESMConfig extends CommonConfig {
+  /**
+   * build format to use. must be 'esm'
+   */
+  format?: 'esm';
+}
+
+export interface UserConfig {
+  /**
+   * plugins to apply
+   */
+  plugins?: Plugin[];
+
   /**
    * defines code src directory, defaults to 'src'
    */
@@ -188,12 +180,13 @@ export declare interface UserConfig {
   moduleName?: string;
 
   /**
-   * allowed file extensions. defaults to .js, .ts
+   * allowed file extensions. defaults to .js, .ts, .jsx, .tsx
    */
-  fileExtensions?: string[];
+  extensions?: string[];
 
   /**
-   * defines specific string of file patterns to process for all builds. defaults to everything
+   * defines specific string of file patterns to process for all builds. defaults to everything matching the file extensions within
+   * the src directory
    */
   include?: (string | RegExp)[];
 
@@ -208,12 +201,6 @@ export declare interface UserConfig {
   assets?: (string | RegExp)[];
 
   /**
-   * boolean indicating if generated output files should be uglified for all builds,
-   * you must pass in an uglifier plugin if set to true
-   */
-  uglify?: boolean;
-
-  /**
    * boolean indicating if the interop rollup setting should be enabled for all builds
    */
   interop?: boolean;
@@ -223,6 +210,12 @@ export declare interface UserConfig {
    * can be true, false, or 'inline'
    */
   sourcemap?: true | false | 'inline';
+
+  /**
+   * boolean indicating if rollup plugin terser should be applied to the build, when in production mode
+   * default to false
+   */
+  uglify?: boolean;
 
   /**
    * rollup watch config, you must pass in the --watch command line argument for this to
@@ -236,27 +229,25 @@ export declare interface UserConfig {
   globals?: object;
 
   /**
-   * list of external modules for all builds
-   */
-  externals?: string[];
-
-  /**
-   * typings directory, defaults to .typings folder inside your output directory
-   */
-  typingsDir?: string;
-
-  /**
    * defines config settings for generating distributed codes.
    */
   distConfig?: UserDistConfig;
 
   /**
-   * defines config settings for generating lib codes.
+   * defines config settings for generating cjs codes.
    */
-  libConfig?: UserLibConfig;
+  cjsConfig?: UserCJSConfig;
+
+  /**
+   * defines config settings for generating esm codes.
+   */
+  esmConfig?: UserESMConfig;
 }
 
-export declare interface Module {
+export interface Module {
+  // id for indexing this file
+  id: number;
+
   /**
    * module old relative path, as it is relative to the src directory
    */
@@ -277,27 +268,27 @@ export declare interface Module {
    */
   name: string;
 
+  /**
+   * file extension
+   */
   ext: string;
 
+  /**
+   * boolean indicating if file is a build file
+   */
   isBuildFile: boolean;
 }
 
-/**
- * build object export format
- */
-type ExternalCallBack = (id: string, parent: string, isResolved: boolean) => boolean;
+export interface ModuleFiles {
+  assetFiles: Module[];
+  buildFiles: Module[];
+  typeDefinitionFiles: Module[];
+}
 
-export declare interface Build {
-  input: string;
-  output: {
-    file: string;
-    format: string;
-    name: string;
-    interop: boolean;
-    sourcemap: true | false | 'inline';
-    globals: object;
+export interface GeneralConfig {
+  config?: UserConfig;
+  babelConfig?: {
+    presets?: any[];
+    plugins?: any[];
   };
-  plugins: object[];
-  watch: object;
-  external: string[] | ExternalCallBack;
 }

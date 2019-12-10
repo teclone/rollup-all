@@ -1,35 +1,42 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import { copy, pickValue, isString, camelCase, isArray, isBoolean } from '@forensic-js/utils';
-import { Config, UserConfig, CommonConfig, LibConfig, DistConfig, Module, Build } from '../@types';
-import defualtConfig from '../.buildrc';
-import { COMMON_CONFIGS, REGEX_FIELDS } from '../Constants';
-import { mkDirSync, isProdEnv, getEntryPath } from '@forensic-js/node-utils';
+import { copy, isString, camelCase } from '@forensic-js/utils';
+import {
+  Config,
+  UserConfig,
+  CommonConfig,
+  DistConfig,
+  Module,
+  CJSConfig,
+  ESMConfig,
+  ModuleFiles,
+  GeneralConfig
+} from '../@types';
+import { config as defualtConfig } from '../config';
+import { COMMON_CONFIGS, REGEX_FIELDS } from '../constants';
+import { mkDirSync, getEntryPath } from '@forensic-js/node-utils';
+import { rollup } from 'rollup';
+import { getRollupPlugins } from './utils';
 
-export default class Bundler {
-  private plugins: object[] = [];
-
-  private pluginsWithUglifier: object[] = [];
-
+class Bundler {
   private entryPath: string = '';
 
   private config: Config = defualtConfig;
 
+  private generalConfig: GeneralConfig = {};
+
   /**
-   * @param uglifierPlugin uglifier plugin if uglify settings is enabled
-   * @param otherPlugins array of other plugins
+   * @param plugins array of extra plugins to be applied
    * @param config path to user defined build config or the user defined config object
    */
-  constructor(uglifierPlugin: object | null, otherPlugins: object[], config: string | UserConfig) {
-    this.plugins = otherPlugins;
-    this.pluginsWithUglifier = [...otherPlugins];
-
-    if (uglifierPlugin) {
-      this.pluginsWithUglifier.push(uglifierPlugin);
-    }
-
+  constructor(generalConfig: GeneralConfig = {}) {
     this.entryPath = getEntryPath();
-    this.config = this.resolveConfig(this.entryPath, config);
+    this.generalConfig = generalConfig;
+
+    this.config = this.resolveConfig(
+      this.entryPath,
+      generalConfig.config ?? {}
+    );
   }
 
   /**
@@ -53,20 +60,16 @@ export default class Bundler {
     }
   }
 
-  private mergeConfig(prop: keyof CommonConfig, config: Config, target: LibConfig | DistConfig) {
+  private mergeConfig(
+    prop: keyof CommonConfig,
+    config: Config,
+    target: CJSConfig | ESMConfig | DistConfig
+  ) {
     const configValue = config[prop];
     const targetValue = target[prop];
 
     if (targetValue === undefined) {
       target[prop as string] = configValue;
-    } else if (isString(targetValue) || isBoolean(targetValue) || !isArray(targetValue)) {
-      target[prop as string] = targetValue;
-    } else {
-      target[prop as string] = [...configValue, ...targetValue];
-    }
-
-    if (REGEX_FIELDS.includes(prop)) {
-      target[prop as string] = (target[prop as string] as (string | RegExp)[]).map(this.resolveRegex);
     }
   }
 
@@ -85,39 +88,29 @@ export default class Bundler {
   /**
    * resolves the config object
    */
-  private resolveConfig(entryPath: string, config: string | UserConfig): Config {
+  private resolveConfig(entryPath: string, config: UserConfig): Config {
     const packageFile = this.loadFile(entryPath, 'package.json');
-    config = isString(config) ? this.loadFile(entryPath, config) : config;
-
     const resolvedConfig: Config = copy({}, defualtConfig, config as Config);
 
     //resolve module name
-    resolvedConfig.moduleName = resolvedConfig.moduleName || camelCase(packageFile.name);
+    resolvedConfig.moduleName =
+      resolvedConfig.moduleName || camelCase(packageFile.name ?? 'Unknown');
 
-    //resolve lib config
+    //resolve configs config
     COMMON_CONFIGS.forEach(prop => {
-      this.mergeConfig(prop, resolvedConfig, resolvedConfig.libConfig);
+      this.mergeConfig(prop, resolvedConfig, resolvedConfig.cjsConfig);
       this.mergeConfig(prop, resolvedConfig, resolvedConfig.distConfig);
+      this.mergeConfig(prop, resolvedConfig, resolvedConfig.esmConfig);
     });
 
-    //resolve typings folder
-    if (resolvedConfig.libConfig.typingsDir === '') {
-      resolvedConfig.libConfig.typingsDir = path.join(resolvedConfig.libConfig.outDir, 'typings');
-    }
-    if (resolvedConfig.distConfig.typingsDir === '') {
-      resolvedConfig.distConfig.typingsDir = path.join(resolvedConfig.distConfig.outDir, 'typings');
-    }
+    /**
+     * resolve regex fields
+     */
+    REGEX_FIELDS.forEach(field => {
+      const values = resolvedConfig[field] as Array<string | RegExp>;
+      resolvedConfig[field] = values.map(this.resolveRegex);
+    });
 
-    //for lib config, add all per dependencies as externals
-    if (packageFile.peerDependencies) {
-      Object.keys(packageFile.peerDependencies).forEach(key => resolvedConfig.libConfig.externals.push(key));
-    }
-
-    //enable output compression if running in production environment
-    if (isProdEnv()) {
-      resolvedConfig.libConfig.uglify = true;
-      resolvedConfig.distConfig.uglify = true;
-    }
     return resolvedConfig;
   }
 
@@ -125,63 +118,27 @@ export default class Bundler {
    * copies the file from the src to the destination
    */
   private copyFile(src: string, filePath: string) {
-    const dest = path.resolve(this.entryPath, filePath);
-    mkDirSync(dest);
-
-    fs.copyFileSync(src, dest);
+    return new Promise((resolve, reject) => {
+      const dest = path.resolve(this.entryPath, filePath);
+      mkDirSync(dest);
+      fs.copyFile(src, dest, err => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
   }
 
   /**
-   * generates build export for each module
-   */
-  private getExports(exportStore: Build[], modules: Module[], config: DistConfig | LibConfig) {
-    let src = null;
-    const regexMatches = regex => regex.test(src);
-
-    for (const { ext, isBuildFile, filePath, oldRelativePath, newRelativePath, name } of modules) {
-      src = oldRelativePath;
-      const isTypeDefinitionFile = ext === '.d.ts';
-
-      if (isTypeDefinitionFile && config.copyTypings) {
-        this.copyFile(filePath, path.join(config.typingsDir, oldRelativePath));
-      } else if (!isTypeDefinitionFile && !isBuildFile && config.assets.some(regexMatches)) {
-        this.copyFile(filePath, path.join(config.outDir, oldRelativePath));
-      } else if (
-        isBuildFile &&
-        (config.include.length === 0 || config.include.some(regexMatches)) &&
-        (config.exclude.length === 0 || !config.exclude.some(regexMatches))
-      ) {
-        exportStore.push({
-          input: filePath,
-
-          output: {
-            file: path.resolve(this.entryPath, config.outDir, newRelativePath),
-            format: config.format,
-            name: camelCase(name),
-            interop: config.interop,
-            sourcemap: config.sourcemap,
-            globals: this.config.globals,
-          },
-
-          plugins: config.uglify ? this.pluginsWithUglifier : this.plugins,
-
-          external: (id, parent, isResolved) => {
-            if (config.format === 'cjs') {
-              return true;
-            } else if (config.externals.length > 0 && config.externals.includes(id)) {
-              return true;
-            } else {
-              return false;
-            }
-          },
-          watch: this.config.watch,
-        });
-      }
-    }
-  }
-
-  /**
-   * gets all modules
+   * parses all files into module targets
+   * @param modules
+   * @param resolvedPath
+   * @param entryFile
+   * @param moduleName
+   * @param currentRelativeDir
+   * @param extensions
    */
   private getModules(
     modules: Module[],
@@ -189,56 +146,177 @@ export default class Bundler {
     entryFile: string,
     moduleName: string,
     currentRelativeDir: string,
-    fileExtensions: string[]
-  ) {
-    const files = fs.readdirSync(resolvedPath);
-    for (const file of files) {
-      const filePath = path.join(resolvedPath, file);
-      if (fs.statSync(filePath).isDirectory()) {
-        this.getModules(modules, filePath, entryFile, moduleName, path.join(currentRelativeDir, file), fileExtensions);
-      } else {
-        const firstDotPos = file.charAt(0) === '.' ? file.indexOf('.', 1) : file.indexOf('.');
-        const baseName = firstDotPos > -1 ? file.substring(0, firstDotPos) : file;
-        const extname = firstDotPos > -1 ? file.substring(firstDotPos) : '';
+    extensions: string[]
+  ): Promise<Module[]> {
+    return new Promise((resolve, reject) => {
+      fs.readdir(resolvedPath, (err, files) => {
+        if (err) {
+          return reject(err);
+        }
 
-        const oldRelativePath = path.join(currentRelativeDir, file);
-        const newRelativePath = path.join(currentRelativeDir, baseName + '.js');
+        const promises: Promise<any>[] = [];
+        for (const file of files) {
+          const filePath = path.join(resolvedPath, file);
+          if (fs.statSync(filePath).isDirectory()) {
+            promises.push(
+              this.getModules(
+                modules,
+                filePath,
+                entryFile,
+                moduleName,
+                path.join(currentRelativeDir, file),
+                extensions
+              )
+            );
+          } else {
+            const firstDotPos =
+              file.charAt(0) === '.' ? file.indexOf('.', 1) : file.indexOf('.');
+            const baseName =
+              firstDotPos > -1 ? file.substring(0, firstDotPos) : file;
+            const extname = firstDotPos > -1 ? file.substring(firstDotPos) : '';
 
-        modules.push({
-          ext: extname,
-          oldRelativePath,
-          newRelativePath,
-          filePath,
-          name: oldRelativePath === entryFile ? moduleName : baseName,
-          isBuildFile: fileExtensions.includes(extname),
-        });
-      }
-    }
-    return modules;
+            const oldRelativePath = path.join(currentRelativeDir, file);
+            const newRelativePath = path.join(
+              currentRelativeDir,
+              baseName + '.js'
+            );
+
+            modules.push({
+              id: modules.length + 1,
+              ext: extname,
+              oldRelativePath,
+              newRelativePath,
+              filePath,
+              name: oldRelativePath === entryFile ? moduleName : baseName,
+              isBuildFile: extensions.includes(extname)
+            });
+          }
+        }
+        Promise.all(promises).then(() => resolve(modules));
+      });
+    });
   }
 
-  /**
-   * returns the resolved config object
-   */
-  getConfig() {
-    return this.config;
+  private async getModulesFiles(): Promise<ModuleFiles> {
+    const startAt = path.resolve(this.entryPath, this.config.srcDir);
+    const config = this.config;
+
+    const modules = await this.getModules(
+      [],
+      startAt,
+      config.entryFile,
+      config.moduleName,
+      '',
+      config.extensions
+    );
+
+    const result: ModuleFiles = {
+      assetFiles: [],
+      buildFiles: [],
+      typeDefinitionFiles: []
+    };
+
+    let src = '';
+    const regexMatches = regex => regex.test(src);
+
+    for (const current of modules) {
+      const { ext, isBuildFile, oldRelativePath } = current;
+      const isTypeDefinitionFile = ext === '.d.ts';
+      const isAssetFile = !isTypeDefinitionFile && !isBuildFile;
+
+      src = oldRelativePath;
+      if (isTypeDefinitionFile && config.cjsConfig.enabled) {
+        result.typeDefinitionFiles.push(current);
+      } else if (isAssetFile && config.assets.some(regexMatches)) {
+        result.assetFiles.push(current);
+      } else if (
+        isBuildFile &&
+        (config.include.length === 0 || config.include.some(regexMatches)) &&
+        (config.exclude.length === 0 || !config.exclude.some(regexMatches))
+      ) {
+        result.buildFiles.push(current);
+      }
+    }
+    return result;
+  }
+
+  runBuild(
+    promises: Promise<any>[],
+    moduleFiles: ModuleFiles,
+    config: DistConfig | CJSConfig | ESMConfig,
+    plugins: Plugin[]
+  ) {
+    const { assetFiles, typeDefinitionFiles, buildFiles } = moduleFiles;
+    if (config.enabled) {
+      const external =
+        config.format === 'iife' || config.format === 'umd'
+          ? config.externals
+          : () => true;
+      buildFiles.forEach(buildFile => {
+        promises.push(
+          rollup({
+            input: buildFile.filePath,
+            plugins,
+            external
+          }).then(bundler =>
+            bundler.write({
+              file: path.resolve(
+                this.entryPath,
+                config.outDir,
+                buildFile.newRelativePath
+              ),
+              format: config.format,
+              interop: config.interop,
+              sourcemap: config.sourcemap
+            })
+          )
+        );
+      });
+
+      assetFiles.forEach(assetFile => {
+        promises.push(
+          this.copyFile(
+            assetFile.filePath,
+            path.resolve(
+              this.entryPath,
+              config.outDir,
+              assetFile.oldRelativePath
+            )
+          )
+        );
+      });
+
+      typeDefinitionFiles.forEach(typeDefinitionFile => {
+        promises.push(
+          this.copyFile(
+            typeDefinitionFile.filePath,
+            path.resolve(
+              this.entryPath,
+              config.outDir,
+              typeDefinitionFile.oldRelativePath
+            )
+          )
+        );
+      });
+    }
   }
 
   /**
    * runs the process
    */
-  process() {
-    const startAt = path.resolve(this.entryPath, this.config.srcDir);
-    const config = this.config;
-    const modules = this.getModules([], startAt, config.entryFile, config.moduleName, '', config.fileExtensions);
+  async process() {
+    let promises: Promise<any>[] = [];
 
-    const exportStore: Build[] = [];
-    if (config.libConfig.enabled) {
-      this.getExports(exportStore, modules, config.libConfig);
-    }
-    if (config.distConfig.enabled) {
-      this.getExports(exportStore, modules, config.distConfig);
-    }
-    return exportStore;
+    // assemble module files
+    const moduleFiles = await this.getModulesFiles();
+    const plugins = getRollupPlugins(this.config, this.generalConfig);
+
+    this.runBuild(promises, moduleFiles, this.config.cjsConfig, plugins);
+    this.runBuild(promises, moduleFiles, this.config.esmConfig, plugins);
+    this.runBuild(promises, moduleFiles, this.config.distConfig, plugins);
+
+    await Promise.all(promises);
   }
 }
+
+export { Bundler };
