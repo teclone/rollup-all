@@ -4,7 +4,7 @@
   "description": "A lightweight, extensive and configurable npm package for building all your ES6 source codes in one parse using rollup",
   "main": "lib/index",
   "typings": "lib/index",
-  "bin": "bin/index",
+  "bin": "./bin/index.js",
   "scripts": {
     "commit": "git-cz",
     "test": "BABEL_ENV=test jest --runInBand",
