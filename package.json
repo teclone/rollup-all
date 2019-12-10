@@ -2,9 +2,9 @@
   "name": "rollup-all",
   "version": "0.0.0-development",
   "description": "A lightweight, extensive and configurable npm package for building all your ES6 source codes in one parse using rollup",
-  "main": "build/cjs/index",
+  "main": "build/index",
   "module": "build/esm/index",
-  "typings": "build/cjs/index",
+  "typings": "build/index",
   "bin": "./bin/index.js",
   "scripts": {
     "commit": "git-cz",

@@ -5,7 +5,7 @@ args.options([
   {
     name: 'dir',
     description: 'defines the directory to locate the cjs build output',
-    defaultValue: '../build/cjs'
+    defaultValue: '../build'
   }
 ]);
 

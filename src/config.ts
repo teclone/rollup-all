@@ -67,7 +67,7 @@ export const config: Config = {
     /**
      * defines output directory
      */
-    outDir: 'build/cjs',
+    outDir: 'build',
 
     format: 'cjs'
   },
