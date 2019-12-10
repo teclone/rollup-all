@@ -17,6 +17,12 @@ import { COMMON_CONFIGS, REGEX_FIELDS } from '../constants';
 import { mkDirSync, getEntryPath } from '@forensic-js/node-utils';
 import { rollup } from 'rollup';
 import { getRollupPlugins } from './utils';
+import chalk from 'chalk';
+
+const allExternal = () => true;
+const returnNull = () => null;
+
+const log = console.log;
 
 class Bundler {
   private entryPath: string = '';
@@ -255,6 +261,8 @@ class Bundler {
   ) {
     const { assetFiles, typeDefinitionFiles, buildFiles } = moduleFiles;
     if (config.enabled) {
+      log(chalk.yellow(`generating ${config.format} builds...\n`));
+
       const plugins = getRollupPlugins(
         this.config,
         this.generalConfig,
@@ -263,24 +271,26 @@ class Bundler {
       const external =
         config.format === 'iife' || config.format === 'umd'
           ? config.externals
-          : () => true;
-      buildFiles.forEach(buildFile => {
+          : allExternal;
+      buildFiles.forEach(({ filePath, newRelativePath, oldRelativePath }) => {
         promises.push(
           rollup({
-            input: buildFile.filePath,
+            input: filePath,
             plugins,
             external
           }).then(bundler =>
-            bundler.write({
-              file: path.resolve(
-                this.entryPath,
-                config.outDir,
-                buildFile.newRelativePath
-              ),
-              format: config.format,
-              interop: config.interop,
-              sourcemap: config.sourcemap
-            })
+            bundler
+              .write({
+                file: path.resolve(
+                  this.entryPath,
+                  config.outDir,
+                  newRelativePath
+                ),
+                format: config.format,
+                interop: config.interop,
+                sourcemap: config.sourcemap
+              })
+              .then(returnNull)
           )
         );
       });

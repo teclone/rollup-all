@@ -1,2 +1,2 @@
 const { config } = require('./lib');
-module.exports = config();
+module.exports = config({});

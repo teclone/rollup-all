@@ -13,7 +13,7 @@ import path from 'path';
  */
 export const loadFile = (entryPath: string, file: string) => {
   try {
-    return require(path.resolve(entryPath, file)).default;
+    return require(path.resolve(entryPath, file));
   } catch (ex) {
     return {};
   }

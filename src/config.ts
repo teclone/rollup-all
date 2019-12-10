@@ -67,7 +67,7 @@ export const config: Config = {
     /**
      * defines output directory
      */
-    outDir: 'lib',
+    outDir: 'build/cjs',
 
     format: 'cjs'
   },
@@ -84,7 +84,7 @@ export const config: Config = {
     /**
      * defines output directory
      */
-    outDir: 'esm',
+    outDir: 'build/esm',
 
     format: 'esm'
   },
@@ -101,7 +101,7 @@ export const config: Config = {
     /**
      * defines output directory
      */
-    outDir: 'dist',
+    outDir: 'build/dist',
 
     /**
      * build format to use.
