@@ -19,12 +19,15 @@ export const loadFile = (entryPath: string, file: string) => {
   }
 };
 
-export const getBabelPlugins = (extraPlugins: Array<any> = []) => {
+export const getBabelPlugins = (
+  extraPlugins: Array<any> = [],
+  useESModules: boolean
+) => {
   return [
     [
       '@babel/plugin-transform-runtime',
       {
-        useESModules: true
+        useESModules
       }
     ],
     '@babel/proposal-class-properties',
@@ -50,7 +53,8 @@ export const getBabelPresets = (extraPresets: Array<any> = []) => {
 
 export const getRollupPlugins = (
   config: Config,
-  generalConfig: GeneralConfig
+  generalConfig: GeneralConfig,
+  useESModules: boolean = false
 ) => {
   return [
     resolve({
@@ -66,7 +70,10 @@ export const getRollupPlugins = (
 
       presets: getBabelPresets(generalConfig?.babelConfig?.presets),
 
-      plugins: getBabelPlugins(generalConfig?.babelConfig?.plugins),
+      plugins: getBabelPlugins(
+        generalConfig?.babelConfig?.plugins,
+        useESModules
+      ),
 
       exclude: 'node_modules/**',
 

@@ -240,14 +240,26 @@ class Bundler {
     return result;
   }
 
+  handleWarnings(warning) {
+    console.log(warning.message);
+  }
+
+  handleErrors(ex) {
+    console.log(ex);
+  }
+
   runBuild(
     promises: Promise<any>[],
     moduleFiles: ModuleFiles,
-    config: DistConfig | CJSConfig | ESMConfig,
-    plugins: Plugin[]
+    config: DistConfig | CJSConfig | ESMConfig
   ) {
     const { assetFiles, typeDefinitionFiles, buildFiles } = moduleFiles;
     if (config.enabled) {
+      const plugins = getRollupPlugins(
+        this.config,
+        this.generalConfig,
+        config.format === 'esm'
+      );
       const external =
         config.format === 'iife' || config.format === 'umd'
           ? config.externals
@@ -309,11 +321,10 @@ class Bundler {
 
     // assemble module files
     const moduleFiles = await this.getModulesFiles();
-    const plugins = getRollupPlugins(this.config, this.generalConfig);
 
-    this.runBuild(promises, moduleFiles, this.config.cjsConfig, plugins);
-    this.runBuild(promises, moduleFiles, this.config.esmConfig, plugins);
-    this.runBuild(promises, moduleFiles, this.config.distConfig, plugins);
+    this.runBuild(promises, moduleFiles, this.config.cjsConfig);
+    this.runBuild(promises, moduleFiles, this.config.esmConfig);
+    this.runBuild(promises, moduleFiles, this.config.distConfig);
 
     await Promise.all(promises);
   }

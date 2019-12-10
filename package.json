@@ -4,13 +4,13 @@
   "description": "A lightweight, extensive and configurable npm package for building all your ES6 source codes in one parse using rollup",
   "main": "lib/index",
   "typings": "lib/index",
-  "bin": "lib/bin/index",
+  "bin": "bin/index",
   "scripts": {
     "commit": "git-cz",
     "test": "BABEL_ENV=test jest --runInBand",
     "watch-test": "BABEL_ENV=test jest --watch --runInBand",
-    "prebuild": "rimraf lib temp esm",
-    "build": "tsc && BABEL_ENV=build babel src --out-dir temp --extensions .ts && node temp/bin/index && rimraf temp",
+    "prebuild": "rimraf lib esm",
+    "build": "tsc && BABEL_ENV=build babel src --out-dir lib --extensions .ts && node bin/index",
     "lint": "eslint ./src --fix",
     "report-coverage": "jest --coverage --coverageReporters=text-lcov | coveralls",
     "semantic-release": "semantic-release"
