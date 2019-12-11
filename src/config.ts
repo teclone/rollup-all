@@ -31,7 +31,7 @@ export const config: Config = {
   /**
    * boolean indicating if the interop rollup setting should be enabled
    */
-  interop: false,
+  interop: true,
 
   /**
    * boolean indicating if sourcemap should be generated, can be true, false, or 'inline'
