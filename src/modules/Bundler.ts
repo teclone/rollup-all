@@ -324,19 +324,31 @@ class Bundler {
   }
 
   /**
+   * runs build process for a specific module
+   * @param moduleFiles
+   * @param config
+   */
+  processModule(
+    moduleFiles: ModuleFiles,
+    config: CJSConfig | ESMConfig | DistConfig
+  ) {
+    let promises: Promise<any>[] = [];
+    this.runBuild(promises, moduleFiles, config);
+    return Promise.all(promises).then(() => {
+      return (promises = null);
+    });
+  }
+
+  /**
    * runs the process
    */
   async process() {
-    let promises: Promise<any>[] = [];
-
     // assemble module files
     const moduleFiles = await this.getModulesFiles();
 
-    this.runBuild(promises, moduleFiles, this.config.cjsConfig);
-    this.runBuild(promises, moduleFiles, this.config.esmConfig);
-    this.runBuild(promises, moduleFiles, this.config.distConfig);
-
-    await Promise.all(promises);
+    await this.processModule(moduleFiles, this.config.cjsConfig);
+    await this.processModule(moduleFiles, this.config.esmConfig);
+    await this.processModule(moduleFiles, this.config.distConfig);
   }
 }
 
