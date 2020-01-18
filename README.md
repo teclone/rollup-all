@@ -71,8 +71,8 @@ The config object is where you configure build specific options, and also where 
 to the already used plugins. Below is a list of already added plugins
 
 1. `rollup-plugin-babel`
-2. `rollup-plugin-commonjs`
-3. `rollup-plugin-node-resolve`
+2. `@rollup/plugin-commonjs`
+3. `@rollup/plugin-node-resolve`
 4. `rollup-plugin-terser`
 5. `@rollup/plugin-json`
 

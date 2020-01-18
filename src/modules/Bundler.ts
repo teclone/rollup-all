@@ -31,11 +31,16 @@ class Bundler {
 
   private generalConfig: GeneralConfig = {};
 
+  private generateOutputLogs: boolean;
+
   /**
    * @param plugins array of extra plugins to be applied
    * @param config path to user defined build config or the user defined config object
    */
-  constructor(generalConfig: GeneralConfig = {}) {
+  constructor(
+    generalConfig: GeneralConfig = {},
+    generateOutputLogs: boolean = true
+  ) {
     this.entryPath = getEntryPath();
     this.generalConfig = generalConfig;
 
@@ -43,6 +48,8 @@ class Bundler {
       this.entryPath,
       generalConfig.config ?? {}
     );
+
+    this.generateOutputLogs = !!generateOutputLogs;
   }
 
   /**
@@ -254,7 +261,7 @@ class Bundler {
     console.log(ex);
   }
 
-  runBuild(
+  async runBuild(
     promises: Promise<any>[],
     moduleFiles: ModuleFiles,
     config: DistConfig | CJSConfig | ESMConfig
@@ -272,28 +279,39 @@ class Bundler {
         config.format === 'iife' || config.format === 'umd'
           ? config.externals
           : allExternal;
-      buildFiles.forEach(({ filePath, newRelativePath, oldRelativePath }) => {
-        promises.push(
-          rollup({
+
+      for (const { filePath, newRelativePath, oldRelativePath } of buildFiles) {
+        try {
+          const bundler = await rollup({
             input: filePath,
             plugins,
             external
-          }).then(bundler =>
+          });
+
+          const out = path.resolve(
+            this.entryPath,
+            config.outDir,
+            newRelativePath
+          );
+          promises.push(
             bundler
               .write({
-                file: path.resolve(
-                  this.entryPath,
-                  config.outDir,
-                  newRelativePath
-                ),
+                file: out,
                 format: config.format,
                 interop: config.interop,
                 sourcemap: config.sourcemap
               })
-              .then(returnNull)
-          )
-        );
-      });
+              .then(() => {
+                if (this.generateOutputLogs) {
+                  log(chalk.green(`${oldRelativePath} ... ${out} \n`));
+                }
+              })
+              .catch(this.handleErrors)
+          );
+        } catch (ex) {
+          console.log(ex.message);
+        }
+      }
 
       assetFiles.forEach(assetFile => {
         promises.push(
@@ -328,12 +346,12 @@ class Bundler {
    * @param moduleFiles
    * @param config
    */
-  processModule(
+  async processModule(
     moduleFiles: ModuleFiles,
     config: CJSConfig | ESMConfig | DistConfig
   ) {
     let promises: Promise<any>[] = [];
-    this.runBuild(promises, moduleFiles, config);
+    await this.runBuild(promises, moduleFiles, config);
     return Promise.all(promises).then(() => {
       return (promises = null);
     });
