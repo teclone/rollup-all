@@ -48,11 +48,11 @@ export const getBabelPlugins = (
     ],
     resolveDependency(
       internalNodeModulesDir,
-      '@babel/proposal-class-properties'
+      '@babel/plugin-proposal-class-properties'
     ),
     resolveDependency(
       internalNodeModulesDir,
-      '@babel/proposal-object-rest-spread'
+      '@babel/plugin-proposal-object-rest-spread'
     ),
     [
       resolveDependency(
@@ -76,7 +76,7 @@ export const getBabelPresets = (
 ) => {
   return [
     [
-      resolveDependency(internalNodeModulesDir, '@babel/env'),
+      resolveDependency(internalNodeModulesDir, '@babel/preset-env'),
       {
         modules: false
       }
