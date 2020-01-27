@@ -292,3 +292,8 @@ export interface GeneralConfig {
     plugins?: any[];
   };
 }
+
+export interface BundlerOptions {
+  generateOutputLogs: boolean;
+  internalNodeModulesDir: string;
+}

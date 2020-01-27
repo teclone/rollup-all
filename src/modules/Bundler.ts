@@ -10,7 +10,8 @@ import {
   CJSConfig,
   ESMConfig,
   ModuleFiles,
-  GeneralConfig
+  GeneralConfig,
+  BundlerOptions
 } from '../@types';
 import { config as defualtConfig } from '../config';
 import { COMMON_CONFIGS, REGEX_FIELDS } from '../constants';
@@ -31,7 +32,7 @@ class Bundler {
 
   private generalConfig: GeneralConfig = {};
 
-  private generateOutputLogs: boolean;
+  private bundlerOptions: BundlerOptions;
 
   /**
    * @param plugins array of extra plugins to be applied
@@ -39,7 +40,7 @@ class Bundler {
    */
   constructor(
     generalConfig: GeneralConfig = {},
-    generateOutputLogs: boolean = true
+    bundlerOptions: BundlerOptions
   ) {
     this.entryPath = getEntryPath();
     this.generalConfig = generalConfig;
@@ -49,7 +50,7 @@ class Bundler {
       generalConfig.config ?? {}
     );
 
-    this.generateOutputLogs = !!generateOutputLogs;
+    this.bundlerOptions = bundlerOptions;
   }
 
   /**
@@ -273,6 +274,7 @@ class Bundler {
       const plugins = getRollupPlugins(
         this.config,
         this.generalConfig,
+        this.bundlerOptions.internalNodeModulesDir,
         config.format === 'esm'
       );
       const external =
@@ -302,7 +304,7 @@ class Bundler {
                 sourcemap: config.sourcemap
               })
               .then(() => {
-                if (this.generateOutputLogs) {
+                if (this.bundlerOptions.generateOutputLogs) {
                   log(chalk.green(`${oldRelativePath} ... ${out} \n`));
                 }
               })

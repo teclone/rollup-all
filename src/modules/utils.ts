@@ -6,6 +6,18 @@ import { terser } from 'rollup-plugin-terser';
 import { Config, GeneralConfig } from '../@types';
 import { isProdEnv } from '@forensic-js/node-utils';
 import path from 'path';
+import fs from 'fs';
+
+const resolveDependency = (dir: string, name: string) => {
+  const dependencyPath = path.resolve(dir, 'node_modules/', name);
+  try {
+    const stat = fs.statSync(dependencyPath);
+    if (stat && stat.isDirectory()) {
+      return dependencyPath;
+    }
+  } catch (ex) {}
+  return name;
+};
 
 /**
  * loads the given file and returns the result
@@ -21,32 +33,55 @@ export const loadFile = (entryPath: string, file: string) => {
 
 export const getBabelPlugins = (
   extraPlugins: Array<any> = [],
+  internalNodeModulesDir: string,
   useESModules: boolean
 ) => {
   return [
     [
-      '@babel/plugin-transform-runtime',
+      resolveDependency(
+        internalNodeModulesDir,
+        '@babel/plugin-transform-runtime'
+      ),
       {
         useESModules
       }
     ],
-    '@babel/proposal-class-properties',
-    '@babel/proposal-object-rest-spread',
-    ['@babel/plugin-proposal-nullish-coalescing-operator'],
-    ['@babel/plugin-proposal-optional-chaining'],
+    resolveDependency(
+      internalNodeModulesDir,
+      '@babel/proposal-class-properties'
+    ),
+    resolveDependency(
+      internalNodeModulesDir,
+      '@babel/proposal-object-rest-spread'
+    ),
+    [
+      resolveDependency(
+        internalNodeModulesDir,
+        '@babel/plugin-proposal-nullish-coalescing-operator'
+      )
+    ],
+    [
+      resolveDependency(
+        internalNodeModulesDir,
+        '@babel/plugin-proposal-optional-chaining'
+      )
+    ],
     ...extraPlugins
   ];
 };
 
-export const getBabelPresets = (extraPresets: Array<any> = []) => {
+export const getBabelPresets = (
+  extraPresets: Array<any> = [],
+  internalNodeModulesDir: string
+) => {
   return [
     [
-      '@babel/env',
+      resolveDependency(internalNodeModulesDir, '@babel/env'),
       {
         modules: false
       }
     ],
-    '@babel/preset-typescript',
+    resolveDependency(internalNodeModulesDir, '@babel/preset-typescript'),
     ...extraPresets
   ];
 };
@@ -54,6 +89,7 @@ export const getBabelPresets = (extraPresets: Array<any> = []) => {
 export const getRollupPlugins = (
   config: Config,
   generalConfig: GeneralConfig,
+  internalNodeModulesDir: string,
   useESModules: boolean = false
 ) => {
   return [
@@ -68,10 +104,14 @@ export const getRollupPlugins = (
     babel({
       babelrc: false,
 
-      presets: getBabelPresets(generalConfig?.babelConfig?.presets),
+      presets: getBabelPresets(
+        generalConfig?.babelConfig?.presets,
+        internalNodeModulesDir
+      ),
 
       plugins: getBabelPlugins(
         generalConfig?.babelConfig?.plugins,
+        internalNodeModulesDir,
         useESModules
       ),
 
