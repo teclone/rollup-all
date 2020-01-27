@@ -71,7 +71,7 @@
     "@babel/preset-env": "7.7.6",
     "@babel/preset-typescript": "7.7.4",
     "@babel/runtime": "7.7.6",
-    "@forensic-js/node-utils": "1.0.1",
+    "@forensic-js/node-utils": "1.0.2",
     "@forensic-js/utils": "2.9.0",
     "@rollup/plugin-commonjs": "11.0.1",
     "@rollup/plugin-json": "4.0.0",
