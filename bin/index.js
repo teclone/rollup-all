@@ -18,7 +18,6 @@ args.options([
 const flags = args.parse(process.argv);
 const getEntryPath = require('@forensic-js/node-utils').getEntryPath;
 
-const internalNodeModulesDir = path.resolve(__dirname, '../');
 const loadFile = require(`${flags.dir}/modules/utils`).loadFile;
 const Bundler = require(`${flags.dir}/modules/Bundler`).Bundler;
 
@@ -26,7 +25,6 @@ const entryPath = getEntryPath();
 const options = loadFile(entryPath, 'rollup.config.js');
 
 const bunder = new Bundler(options, {
-  internalNodeModulesDir,
   generateOutputLogs: flags.silent
 });
 bunder.process();

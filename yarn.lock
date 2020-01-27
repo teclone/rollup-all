@@ -811,10 +811,10 @@
     resolve-from "^5.0.0"
     resolve-global "^1.0.0"
 
-"@forensic-js/node-utils@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@forensic-js/node-utils/-/node-utils-1.0.0.tgz#1534b19b9becd699a1cd9d46702b6660f7f35744"
-  integrity sha512-W1e+dS8J7+IuKlQb3wS3OYIvkRonXg0FKa2oXj3uSU3A82XiXHkQk8PUAYfEtPwp0K3SbTNko5wX1qk4tmf19g==
+"@forensic-js/node-utils@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@forensic-js/node-utils/-/node-utils-1.0.1.tgz#8084e174d526ddab88c6cd9420c0271d3c5405f3"
+  integrity sha512-p0R5lK9QZFtH7RDgIO07Kt274bO6m4bn/CSpuiogp9njgQc8kqW3CWd4YfTTddJbXm8zVDbtqDl5WTrZ4ldJ/w==
   dependencies:
     "@babel/plugin-transform-runtime" "7.4.3"
     "@babel/runtime" "7.4.3"

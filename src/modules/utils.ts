@@ -4,7 +4,7 @@ import babel from 'rollup-plugin-babel';
 import json from '@rollup/plugin-json';
 import { terser } from 'rollup-plugin-terser';
 import { Config, GeneralConfig } from '../@types';
-import { isProdEnv } from '@forensic-js/node-utils';
+import { isProdEnv, getEntryPath } from '@forensic-js/node-utils';
 import path from 'path';
 import fs from 'fs';
 
@@ -89,9 +89,9 @@ export const getBabelPresets = (
 export const getRollupPlugins = (
   config: Config,
   generalConfig: GeneralConfig,
-  internalNodeModulesDir: string,
   useESModules: boolean = false
 ) => {
+  const internalNodeModulesDir = getEntryPath(__dirname);
   return [
     resolve({
       extensions: config.extensions

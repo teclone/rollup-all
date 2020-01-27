@@ -274,7 +274,6 @@ class Bundler {
       const plugins = getRollupPlugins(
         this.config,
         this.generalConfig,
-        this.bundlerOptions.internalNodeModulesDir,
         config.format === 'esm'
       );
       const external =

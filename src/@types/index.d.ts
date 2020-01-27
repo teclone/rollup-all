@@ -295,5 +295,4 @@ export interface GeneralConfig {
 
 export interface BundlerOptions {
   generateOutputLogs: boolean;
-  internalNodeModulesDir: string;
 }
