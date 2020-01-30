@@ -26,7 +26,7 @@ export const config: Config = {
   /**
    * list of asset files to copy over
    */
-  assets: ['assets/*'],
+  assets: ['assets/**'],
 
   /**
    * boolean indicating if the interop rollup setting should be enabled

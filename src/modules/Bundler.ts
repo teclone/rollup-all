@@ -60,14 +60,25 @@ class Bundler {
    */
   private resolveRegex(pattern: string | RegExp) {
     if (isString(pattern)) {
+      // match everything
       if (pattern === '*') {
-        return new RegExp('^.*$', 'i');
+        return new RegExp('^.*', 'i');
       } else {
         pattern = pattern
-          .replace(/\./g, '\\.')
-          .replace(/\*{2}/g, '.*')
-          .replace(/\*/g, '[^/]+');
-        return new RegExp('^' + pattern + '$', 'i');
+          .split('/')
+          .map(current => {
+            if (current === '*') {
+              return '[^/]+';
+            } else if (current === '**') {
+              return '.*';
+            } else {
+              return current;
+            }
+          })
+          .join('/');
+
+        pattern = pattern.replace(/^\/+/, '^');
+        return new RegExp(pattern, 'i');
       }
     } else {
       return pattern;
@@ -238,6 +249,9 @@ class Bundler {
       const isTypeDefinitionFile = ext === '.d.ts';
       const isAssetFile = !isTypeDefinitionFile && !isBuildFile;
 
+      if (isAssetFile) {
+        console.log(config.assets);
+      }
       src = oldRelativePath;
       if (isTypeDefinitionFile && config.cjsConfig.enabled) {
         result.typeDefinitionFiles.push(current);
