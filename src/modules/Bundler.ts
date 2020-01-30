@@ -249,9 +249,6 @@ class Bundler {
       const isTypeDefinitionFile = ext === '.d.ts';
       const isAssetFile = !isTypeDefinitionFile && !isBuildFile;
 
-      if (isAssetFile) {
-        console.log(config.assets);
-      }
       src = oldRelativePath;
       if (isTypeDefinitionFile && config.cjsConfig.enabled) {
         result.typeDefinitionFiles.push(current);
