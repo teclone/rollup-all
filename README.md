@@ -25,7 +25,7 @@ Next, add the build script to your package.json file
 ```json
 {
   "scripts": {
-    "build": "@teclone/rollup-all"
+    "build": "rollup-all"
   }
 }
 ```
