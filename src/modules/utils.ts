@@ -4,7 +4,7 @@ import babel from 'rollup-plugin-babel';
 import json from '@rollup/plugin-json';
 import { terser } from 'rollup-plugin-terser';
 import { Config, GeneralConfig } from '../@types';
-import { isProdEnv, getEntryPath } from '@forensic-js/node-utils';
+import { isProdEnv, getEntryPath } from '@teclone/node-utils';
 import path from 'path';
 import fs from 'fs';
 
@@ -34,71 +34,65 @@ export const loadFile = (entryPath: string, file: string) => {
 export const getBabelPlugins = (
   extraPlugins: Array<any> = [],
   internalNodeModulesDir: string,
-  useESModules: boolean
+  useESModules: boolean,
 ) => {
   return [
     [
-      resolveDependency(
-        internalNodeModulesDir,
-        '@babel/plugin-transform-runtime'
-      ),
+      resolveDependency(internalNodeModulesDir, '@babel/plugin-transform-runtime'),
       {
-        useESModules
-      }
+        useESModules,
+      },
     ],
+    resolveDependency(internalNodeModulesDir, '@babel/plugin-proposal-class-properties'),
     resolveDependency(
       internalNodeModulesDir,
-      '@babel/plugin-proposal-class-properties'
-    ),
-    resolveDependency(
-      internalNodeModulesDir,
-      '@babel/plugin-proposal-object-rest-spread'
+      '@babel/plugin-proposal-object-rest-spread',
     ),
     [
       resolveDependency(
         internalNodeModulesDir,
-        '@babel/plugin-proposal-nullish-coalescing-operator'
-      )
+        '@babel/plugin-proposal-nullish-coalescing-operator',
+      ),
     ],
     [
       resolveDependency(
         internalNodeModulesDir,
-        '@babel/plugin-proposal-optional-chaining'
-      )
+        '@babel/plugin-proposal-optional-chaining',
+      ),
     ],
-    ...extraPlugins
+    ...extraPlugins,
   ];
 };
 
 export const getBabelPresets = (
   extraPresets: Array<any> = [],
-  internalNodeModulesDir: string
+  internalNodeModulesDir: string,
 ) => {
   return [
     [
       resolveDependency(internalNodeModulesDir, '@babel/preset-env'),
       {
-        modules: false
-      }
+        modules: false,
+      },
     ],
     resolveDependency(internalNodeModulesDir, '@babel/preset-typescript'),
-    ...extraPresets
+    ...extraPresets,
   ];
 };
 
 export const getRollupPlugins = (
   config: Config,
   generalConfig: GeneralConfig,
-  useESModules: boolean = false
+  useESModules: boolean = false,
 ) => {
   const internalNodeModulesDir = getEntryPath(__dirname);
   return [
     resolve({
-      extensions: config.extensions
+      extensions: config.extensions,
     }),
 
     commonjs({
-      include: 'node_modules/**'
+      include: 'node_modules/**',
     }),
 
     babel({
@@ -106,26 +100,26 @@ export const getRollupPlugins = (
 
       presets: getBabelPresets(
         generalConfig?.babelConfig?.presets,
-        internalNodeModulesDir
+        internalNodeModulesDir,
       ),
 
       plugins: getBabelPlugins(
         generalConfig?.babelConfig?.plugins,
         internalNodeModulesDir,
-        useESModules
+        useESModules,
       ),
 
       exclude: 'node_modules/**',
 
       extensions: config.extensions,
 
-      runtimeHelpers: true
+      runtimeHelpers: true,
     }),
 
     json(),
 
     config.uglify && isProdEnv() && terser(),
 
-    ...config.plugins
+    ...config.plugins,
   ];
 };

@@ -1,7 +1,10 @@
 {
-  "name": "rollup-all",
+  "name": "@teclone/rollup-all",
   "version": "0.0.0-development",
   "description": "A lightweight, extensive and configurable npm package for building all your ES6 source codes in one parse using rollup",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "build/index",
   "module": "build/esm/index",
   "typings": "build/index",
@@ -22,7 +25,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/harrison-ifeanyichukwu/rollup-all.git"
+    "url": "https://github.com/teclone/rollup-all.git"
   },
   "keywords": [
     "rollup",
@@ -38,9 +41,9 @@
   "author": "Harrison Ifeanyichukwu <Harrisonifeanyichukwu@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/harrison-ifeanyichukwu/rollup-all/issues"
+    "url": "https://github.com/teclone/rollup-all/issues"
   },
-  "homepage": "https://github.com/harrison-ifeanyichukwu/rollup-all#readme",
+  "homepage": "https://github.com/teclone/rollup-all#readme",
   "devDependencies": {
     "@babel/cli": "7.7.5",
     "@types/jest": "24.0.23",
@@ -52,7 +55,7 @@
     "cz-conventional-changelog": "3.0.2",
     "jest": "24.9.0",
     "rimraf": "3.0.0",
-    "semantic-release": "^15.13.24",
+    "semantic-release": "^17.0.4",
     "semantic-release-cli": "5.2.3",
     "typescript": "3.7.3"
   },
@@ -71,11 +74,11 @@
     "@babel/preset-env": "7.7.6",
     "@babel/preset-typescript": "7.7.4",
     "@babel/runtime": "7.7.6",
-    "@forensic-js/node-utils": "1.0.2",
-    "@forensic-js/utils": "2.9.0",
     "@rollup/plugin-commonjs": "11.0.1",
     "@rollup/plugin-json": "4.0.0",
     "@rollup/plugin-node-resolve": "7.0.0",
+    "@teclone/node-utils": "1.0.4",
+    "@teclone/utils": "2.14.3",
     "args": "5.0.1",
     "chalk": "3.0.0",
     "rollup": "1.27.9",

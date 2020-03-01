@@ -1,14 +1,14 @@
-# Rollup-all
+# @teclone/rollup-all
 
-[![Build Status](https://travis-ci.org/harrison-ifeanyichukwu/rollup-all.svg?branch=master)](https://travis-ci.org/harrison-ifeanyichukwu/rollup-all)
-[![Coverage Status](https://coveralls.io/repos/github/harrison-ifeanyichukwu/rollup-all/badge.svg?branch=master)](https://coveralls.io/github/harrison-ifeanyichukwu/rollup-all?branch=master)
+[![Build Status](https://travis-ci.org/teclone/rollup-all.svg?branch=master)](https://travis-ci.org/teclone/rollup-all)
+[![Coverage Status](https://coveralls.io/repos/github/teclone/rollup-all/badge.svg?branch=master)](https://coveralls.io/github/teclone/rollup-all?branch=master)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
-[![npm version](https://badge.fury.io/js/rollup-all.svg)](https://badge.fury.io/js/rollup-all)
-![npm](https://img.shields.io/npm/dt/rollup-all.svg)
+[![npm version](https://badge.fury.io/js/%40teclone%2Frollup-all.svg)](https://badge.fury.io/js/%40teclone%2Frollup-all)
+![npm](https://img.shields.io/npm/dt/%40teclone%2Frollup-all.svg)
 
 ## Overview
 
-Rollup-all is an out of the box package for building all your shiny Javascript/Typescript library source codes in one parsing, allowing you to generate commonjs, es module, and browser builds at once. It is very configurable and runs asynchronously.
+**@teclone/rollup-all** is an out of the box package for building all your shiny Javascript/Typescript library source codes in one parsing, allowing you to generate commonjs, es module, and browser builds at once. It is very configurable and runs asynchronously.
 
 It allows you to configure the build process, letting you define what should be included and excluded in the build, if sourcemap should be generated, if minified versions of the build should be generated, if **asset and type definition files** should be copied over, and lots more...
 
@@ -17,7 +17,7 @@ It comes with all needed configurations already done for you, including support 
 ## Getting Started
 
 ```bash
-npm install --save-dev rollup-all
+npm install --save-dev @teclone/rollup-all
 ```
 
 Next, add the build script to your package.json file
@@ -25,7 +25,7 @@ Next, add the build script to your package.json file
 ```json
 {
   "scripts": {
-    "build": "rollup-all"
+    "build": "@teclone/rollup-all"
   }
 }
 ```
@@ -36,7 +36,7 @@ In case you need to do some other configurations, such as passing extra babel pr
 a `rollup.config.js` file at the root of your project. Like shown below:
 
 ```typescript
-const { config } = require('rollup-all');
+const { config } = require('@teclone/rollup-all');
 module.exports = config(options);
 ```
 

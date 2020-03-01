@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import { copy, isString, camelCase } from '@forensic-js/utils';
+import { copy, isString, camelCase } from '@teclone/utils';
 import {
   Config,
   UserConfig,
@@ -11,17 +11,16 @@ import {
   ESMConfig,
   ModuleFiles,
   GeneralConfig,
-  BundlerOptions
+  BundlerOptions,
 } from '../@types';
 import { config as defualtConfig } from '../config';
 import { COMMON_CONFIGS, REGEX_FIELDS } from '../constants';
-import { mkDirSync, getEntryPath } from '@forensic-js/node-utils';
+import { mkDirSync, getEntryPath } from '@teclone/node-utils';
 import { rollup } from 'rollup';
 import { getRollupPlugins } from './utils';
 import chalk from 'chalk';
 
 const allExternal = () => true;
-const returnNull = () => null;
 
 const log = console.log;
 
@@ -38,17 +37,11 @@ class Bundler {
    * @param plugins array of extra plugins to be applied
    * @param config path to user defined build config or the user defined config object
    */
-  constructor(
-    generalConfig: GeneralConfig = {},
-    bundlerOptions: BundlerOptions
-  ) {
+  constructor(generalConfig: GeneralConfig = {}, bundlerOptions: BundlerOptions) {
     this.entryPath = getEntryPath();
     this.generalConfig = generalConfig;
 
-    this.config = this.resolveConfig(
-      this.entryPath,
-      generalConfig.config ?? {}
-    );
+    this.config = this.resolveConfig(this.entryPath, generalConfig.config ?? {});
 
     this.bundlerOptions = bundlerOptions;
   }
@@ -88,7 +81,7 @@ class Bundler {
   private mergeConfig(
     prop: keyof CommonConfig,
     config: Config,
-    target: CJSConfig | ESMConfig | DistConfig
+    target: CJSConfig | ESMConfig | DistConfig,
   ) {
     const configValue = config[prop];
     const targetValue = target[prop];
@@ -171,7 +164,7 @@ class Bundler {
     entryFile: string,
     moduleName: string,
     currentRelativeDir: string,
-    extensions: string[]
+    extensions: string[],
   ): Promise<Module[]> {
     return new Promise((resolve, reject) => {
       fs.readdir(resolvedPath, (err, files) => {
@@ -190,21 +183,17 @@ class Bundler {
                 entryFile,
                 moduleName,
                 path.join(currentRelativeDir, file),
-                extensions
-              )
+                extensions,
+              ),
             );
           } else {
             const firstDotPos =
               file.charAt(0) === '.' ? file.indexOf('.', 1) : file.indexOf('.');
-            const baseName =
-              firstDotPos > -1 ? file.substring(0, firstDotPos) : file;
+            const baseName = firstDotPos > -1 ? file.substring(0, firstDotPos) : file;
             const extname = firstDotPos > -1 ? file.substring(firstDotPos) : '';
 
             const oldRelativePath = path.join(currentRelativeDir, file);
-            const newRelativePath = path.join(
-              currentRelativeDir,
-              baseName + '.js'
-            );
+            const newRelativePath = path.join(currentRelativeDir, baseName + '.js');
 
             modules.push({
               id: modules.length + 1,
@@ -213,7 +202,7 @@ class Bundler {
               newRelativePath,
               filePath,
               name: oldRelativePath === entryFile ? moduleName : baseName,
-              isBuildFile: extensions.includes(extname)
+              isBuildFile: extensions.includes(extname),
             });
           }
         }
@@ -232,13 +221,13 @@ class Bundler {
       config.entryFile,
       config.moduleName,
       '',
-      config.extensions
+      config.extensions,
     );
 
     const result: ModuleFiles = {
       assetFiles: [],
       buildFiles: [],
-      typeDefinitionFiles: []
+      typeDefinitionFiles: [],
     };
 
     let src = '';
@@ -276,7 +265,7 @@ class Bundler {
   async runBuild(
     promises: Promise<any>[],
     moduleFiles: ModuleFiles,
-    config: DistConfig | CJSConfig | ESMConfig
+    config: DistConfig | CJSConfig | ESMConfig,
   ) {
     const { assetFiles, typeDefinitionFiles, buildFiles } = moduleFiles;
     if (config.enabled) {
@@ -285,7 +274,7 @@ class Bundler {
       const plugins = getRollupPlugins(
         this.config,
         this.generalConfig,
-        config.format === 'esm'
+        config.format === 'esm',
       );
       const external =
         config.format === 'iife' || config.format === 'umd'
@@ -297,28 +286,24 @@ class Bundler {
           const bundler = await rollup({
             input: filePath,
             plugins,
-            external
+            external,
           });
 
-          const out = path.resolve(
-            this.entryPath,
-            config.outDir,
-            newRelativePath
-          );
+          const out = path.resolve(this.entryPath, config.outDir, newRelativePath);
           promises.push(
             bundler
               .write({
                 file: out,
                 format: config.format,
                 interop: config.interop,
-                sourcemap: config.sourcemap
+                sourcemap: config.sourcemap,
               })
               .then(() => {
                 if (this.bundlerOptions.generateOutputLogs) {
                   log(chalk.green(`${oldRelativePath} ... ${out} \n`));
                 }
               })
-              .catch(this.handleErrors)
+              .catch(this.handleErrors),
           );
         } catch (ex) {
           console.log(ex.message);
@@ -329,12 +314,8 @@ class Bundler {
         promises.push(
           this.copyFile(
             assetFile.filePath,
-            path.resolve(
-              this.entryPath,
-              config.outDir,
-              assetFile.oldRelativePath
-            )
-          )
+            path.resolve(this.entryPath, config.outDir, assetFile.oldRelativePath),
+          ),
         );
       });
 
@@ -345,9 +326,9 @@ class Bundler {
             path.resolve(
               this.entryPath,
               config.outDir,
-              typeDefinitionFile.oldRelativePath
-            )
-          )
+              typeDefinitionFile.oldRelativePath,
+            ),
+          ),
         );
       });
     }
@@ -360,7 +341,7 @@ class Bundler {
    */
   async processModule(
     moduleFiles: ModuleFiles,
-    config: CJSConfig | ESMConfig | DistConfig
+    config: CJSConfig | ESMConfig | DistConfig,
   ) {
     let promises: Promise<any>[] = [];
     await this.runBuild(promises, moduleFiles, config);
