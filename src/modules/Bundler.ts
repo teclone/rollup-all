@@ -281,7 +281,7 @@ class Bundler {
           ? config.externals
           : allExternal;
 
-      for (const { filePath, newRelativePath, oldRelativePath } of buildFiles) {
+      for (const { filePath, newRelativePath, oldRelativePath, name } of buildFiles) {
         try {
           const bundler = await rollup({
             input: filePath,
@@ -297,6 +297,7 @@ class Bundler {
                 format: config.format,
                 interop: config.interop,
                 sourcemap: config.sourcemap,
+                name,
               })
               .then(() => {
                 if (this.bundlerOptions.generateOutputLogs) {
