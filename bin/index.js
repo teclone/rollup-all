@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const args = require('args');
+const path = require('path');
 
 args.options([
   {
@@ -10,7 +11,7 @@ args.options([
   {
     name: 'silent',
     description: 'defines if build output logs should be sent to the console',
-    defaultValue: true,
+    defaultValue: undefined,
   },
 ]);
 
@@ -24,6 +25,6 @@ const entryPath = getEntryPath();
 const options = loadFile(entryPath, 'rollup.config.js');
 
 const bunder = new Bundler(options, {
-  generateOutputLogs: flags.silent,
+  generateOutputLogs: flags.silent !== true,
 });
 bunder.process();

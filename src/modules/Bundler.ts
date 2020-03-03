@@ -273,39 +273,36 @@ class Bundler {
           ? config.externals
           : allExternal;
 
-      for (const { filePath, newRelativePath, oldRelativePath, name } of buildFiles) {
+      buildFiles.forEach(({ filePath, newRelativePath, oldRelativePath, name }) => {
         const onError = ex => {
           console.log(`Error occured while bundling ${oldRelativePath}`, ex.message);
         };
 
-        try {
-          const bundler = await rollup({
+        const out = path.resolve(this.entryPath, config.outDir, newRelativePath);
+        promises.push(
+          rollup({
             input: filePath,
             plugins,
             external,
-          });
-
-          const out = path.resolve(this.entryPath, config.outDir, newRelativePath);
-          promises.push(
-            bundler
-              .write({
-                file: out,
-                format: config.format,
-                interop: config.interop,
-                sourcemap: config.sourcemap,
-                name,
-              })
-              .then(() => {
-                if (this.bundlerOptions.generateOutputLogs) {
-                  log(chalk.green(`${oldRelativePath} ... ${out} \n`));
-                }
-              })
-              .catch(onError),
-          );
-        } catch (ex) {
-          onError(ex);
-        }
-      }
+          })
+            .then(bundler => {
+              return bundler
+                .write({
+                  file: out,
+                  format: config.format,
+                  interop: config.interop,
+                  sourcemap: config.sourcemap,
+                  name,
+                })
+                .then(() => {
+                  if (this.bundlerOptions.generateOutputLogs) {
+                    log(chalk.green(`${oldRelativePath} ... ${out} \n`));
+                  }
+                });
+            })
+            .catch(onError),
+        );
+      });
 
       assetFiles.forEach(assetFile => {
         promises.push(
