@@ -16,10 +16,10 @@
     "lint": "eslint ./src --fix",
     "prebuild": "rimraf build",
     "postbuild": "rimraf temp",
-    "build-typings": "tsc",
-    "babel-build": "BABEL_ENV=build babel src --out-dir temp --extensions .ts",
+    "typings": "tsc --p ./tsconfig.build.json",
     "rollup-all": "node bin/index --dir ../temp",
-    "build": "yarn build-typings && yarn babel-build && yarn rollup-all",
+    "babel-build": "BABEL_ENV=build babel src --out-dir temp --extensions .ts",
+    "build": "rimraf build && yarn typings --declarationDir ./build && yarn typings --declarationDir ./build/esm && yarn babel-build && yarn rollup-all",
     "report-coverage": "jest --coverage --coverageReporters=text-lcov | coveralls",
     "semantic-release": "semantic-release"
   },

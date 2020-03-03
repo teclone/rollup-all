@@ -13,7 +13,7 @@ import {
   GeneralConfig,
   BundlerOptions,
 } from '../@types';
-import { config as defualtConfig } from '../config';
+import { config as defaultConfig } from '../config';
 import { COMMON_CONFIGS, REGEX_FIELDS } from '../constants';
 import { mkDirSync, getEntryPath } from '@teclone/node-utils';
 import { rollup } from 'rollup';
@@ -27,7 +27,7 @@ const log = console.log;
 class Bundler {
   private entryPath: string = '';
 
-  private config: Config = defualtConfig;
+  private config: Config = defaultConfig;
 
   private generalConfig: GeneralConfig = {};
 
@@ -108,7 +108,7 @@ class Bundler {
    */
   private resolveConfig(entryPath: string, config: UserConfig): Config {
     const packageFile = this.loadFile(entryPath, 'package.json');
-    const resolvedConfig: Config = copy({}, defualtConfig, config as Config);
+    const resolvedConfig: Config = copy({}, defaultConfig, config as Config);
 
     //resolve module name
     resolvedConfig.moduleName =
@@ -231,7 +231,7 @@ class Bundler {
     };
 
     let src = '';
-    const regexMatches = regex => regex.test(src);
+    const regexMatches = regex => regex.test(path.join(config.srcDir, src));
 
     for (const current of modules) {
       const { ext, isBuildFile, oldRelativePath } = current;
@@ -254,14 +254,6 @@ class Bundler {
     return result;
   }
 
-  handleWarnings(warning) {
-    console.log(warning.message);
-  }
-
-  handleErrors(ex) {
-    console.log(ex);
-  }
-
   async runBuild(
     promises: Promise<any>[],
     moduleFiles: ModuleFiles,
@@ -282,6 +274,10 @@ class Bundler {
           : allExternal;
 
       for (const { filePath, newRelativePath, oldRelativePath, name } of buildFiles) {
+        const onError = ex => {
+          console.log(`Error occured while bundling ${oldRelativePath}`, ex.message);
+        };
+
         try {
           const bundler = await rollup({
             input: filePath,
@@ -304,10 +300,10 @@ class Bundler {
                   log(chalk.green(`${oldRelativePath} ... ${out} \n`));
                 }
               })
-              .catch(this.handleErrors),
+              .catch(onError),
           );
         } catch (ex) {
-          console.log(ex.message);
+          onError(ex);
         }
       }
 
