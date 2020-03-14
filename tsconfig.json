@@ -12,6 +12,7 @@
     "skipLibCheck": true,
     "noUnusedLocals": true,
     "noUnusedParameters": false,
+    "esModuleInterop": true,
     "module": "esnext",
     "jsx": "react",
     "lib": ["dom", "es5", "es2015.collection", "es2015.iterable"],

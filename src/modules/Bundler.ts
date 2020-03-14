@@ -254,11 +254,8 @@ class Bundler {
     return result;
   }
 
-  async runBuild(
-    promises: Promise<any>[],
-    moduleFiles: ModuleFiles,
-    config: DistConfig | CJSConfig | ESMConfig,
-  ) {
+  runBuild(moduleFiles: ModuleFiles, config: DistConfig | CJSConfig | ESMConfig) {
+    const promises: Array<Promise<any>> = [];
     const { assetFiles, typeDefinitionFiles, buildFiles } = moduleFiles;
     if (config.enabled) {
       log(chalk.yellow(`generating ${config.format} builds...\n`));
@@ -298,6 +295,7 @@ class Bundler {
                   if (this.bundlerOptions.generateOutputLogs) {
                     log(chalk.green(`${oldRelativePath} ... ${out} \n`));
                   }
+                  return null;
                 });
             })
             .catch(onError),
@@ -326,22 +324,8 @@ class Bundler {
         );
       });
     }
-  }
 
-  /**
-   * runs build process for a specific module
-   * @param moduleFiles
-   * @param config
-   */
-  async processModule(
-    moduleFiles: ModuleFiles,
-    config: CJSConfig | ESMConfig | DistConfig,
-  ) {
-    let promises: Promise<any>[] = [];
-    await this.runBuild(promises, moduleFiles, config);
-    return Promise.all(promises).then(() => {
-      return (promises = null);
-    });
+    return Promise.all(promises);
   }
 
   /**
@@ -351,9 +335,9 @@ class Bundler {
     // assemble module files
     const moduleFiles = await this.getModulesFiles();
 
-    await this.processModule(moduleFiles, this.config.cjsConfig);
-    await this.processModule(moduleFiles, this.config.esmConfig);
-    await this.processModule(moduleFiles, this.config.distConfig);
+    await this.runBuild(moduleFiles, this.config.cjsConfig);
+    await this.runBuild(moduleFiles, this.config.esmConfig);
+    await this.runBuild(moduleFiles, this.config.distConfig);
   }
 }
 
