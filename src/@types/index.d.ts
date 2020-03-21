@@ -12,6 +12,21 @@ export interface CommonConfig {
   outDir?: string;
 
   /**
+   * defines specific string of file patterns to process for the build
+   */
+  include?: (string | RegExp)[];
+
+  /**
+   * defines specific string of file patterns to ignore for the build.
+   */
+  exclude?: (string | RegExp)[];
+
+  /**
+   * defines specific string of file patterns to copy over for the builds.
+   */
+  assets?: (string | RegExp)[];
+
+  /**
    * boolean indicating if the interop rollup setting should be enabled for the build
    */
   interop?: boolean;
@@ -26,113 +41,17 @@ export interface CJSConfig extends CommonConfig {
   /**
    * build format to use. must be 'cjs'
    */
-  format: 'cjs';
+  format?: 'cjs';
 }
 
 export interface ESMConfig extends CommonConfig {
   /**
    * build format to use. must be 'esm'
    */
-  format: 'esm';
+  format?: 'esm';
 }
 
 export interface DistConfig extends CommonConfig {
-  /**
-   * build format to use. defaults to 'iife'
-   */
-  format: 'iife' | 'umd';
-
-  /**
-   * list of modules to regard as external, defaults to empty array
-   */
-  externals: string[];
-}
-
-export interface Config {
-  /**
-   * plugins to apply
-   */
-  plugins: Plugin[];
-
-  /**
-   * defines code src directory, defaults to 'src'
-   */
-  srcDir: string;
-
-  /**
-   * defaults to index.js
-   */
-  entryFile: string;
-
-  /**
-   * defaults to project package name camel-cased
-   */
-  moduleName: string;
-
-  /**
-   * allowed file extensions. defaults to .js, .ts
-   */
-  extensions: string[];
-
-  /**
-   * defines specific string of file patterns to process for all builds
-   */
-  include: (string | RegExp)[];
-
-  /**
-   * defines specific string of file patterns to ignore for all builds.
-   */
-  exclude: (string | RegExp)[];
-
-  /**
-   * defines specific string of file patterns to copy over for all builds.
-   */
-  assets: (string | RegExp)[];
-
-  /**
-   * boolean indicating if the interop rollup setting should be enabled for all builds
-   */
-  interop: boolean;
-
-  /**
-   * boolean indicating if sourcemap should be generated for all builds,
-   * can be true, false, or 'inline'
-   */
-  sourcemap: true | false | 'inline';
-
-  /**
-   * boolean indicating if rollup plugin terser should be applied to the build, when in production mode
-   * default to false
-   */
-  uglify: boolean;
-
-  /**
-   * rollup watch config
-   */
-  watch: object;
-
-  /**
-   * rollup globals config
-   */
-  globals: object;
-
-  /**
-   * defines config settings for generating distributed codes
-   */
-  distConfig: DistConfig;
-
-  /**
-   * defines config settings for generating cjs files
-   */
-  cjsConfig: CJSConfig;
-
-  /**
-   * defines config settings for generating esm files
-   */
-  esmConfig: ESMConfig;
-}
-
-interface UserDistConfig extends CommonConfig {
   /**
    * build format to use. defaults to 'iife'
    */
@@ -141,24 +60,10 @@ interface UserDistConfig extends CommonConfig {
   /**
    * list of modules to regard as external, defaults to empty array
    */
-  externals?: string[];
+  externals: string[];
 }
 
-interface UserCJSConfig extends CommonConfig {
-  /**
-   * build format to use. must be 'cjs'
-   */
-  format?: 'cjs';
-}
-
-interface UserESMConfig extends CommonConfig {
-  /**
-   * build format to use. must be 'esm'
-   */
-  format?: 'esm';
-}
-
-export interface UserConfig {
+export interface Config {
   /**
    * plugins to apply
    */
@@ -175,23 +80,22 @@ export interface UserConfig {
   entryFile?: string;
 
   /**
-   * defaults to project package.json name camel-cased
+   * defaults to project package name camel-cased
    */
   moduleName?: string;
 
   /**
-   * allowed file extensions. defaults to .js, .ts, .jsx, .tsx
+   * allowed file extensions. defaults to .js, .ts
    */
   extensions?: string[];
 
   /**
-   * defines specific string of file patterns to process for all builds. defaults to everything matching the file extensions within
-   * the src directory
+   * defines specific string of file patterns to process for all builds
    */
   include?: (string | RegExp)[];
 
   /**
-   * defines specific string of file patterns to ignore for all builds. defaults to nothing
+   * defines specific string of file patterns to ignore for all builds.
    */
   exclude?: (string | RegExp)[];
 
@@ -218,8 +122,7 @@ export interface UserConfig {
   uglify?: boolean;
 
   /**
-   * rollup watch config, you must pass in the --watch command line argument for this to
-   * work
+   * rollup watch config
    */
   watch?: object;
 
@@ -229,19 +132,19 @@ export interface UserConfig {
   globals?: object;
 
   /**
-   * defines config settings for generating distributed codes.
+   * defines config settings for generating distributed codes
    */
-  distConfig?: UserDistConfig;
+  distConfig?: DistConfig;
 
   /**
-   * defines config settings for generating cjs codes.
+   * defines config settings for generating cjs files
    */
-  cjsConfig?: UserCJSConfig;
+  cjsConfig?: CJSConfig;
 
   /**
-   * defines config settings for generating esm codes.
+   * defines config settings for generating esm files
    */
-  esmConfig?: UserESMConfig;
+  esmConfig?: ESMConfig;
 }
 
 export interface Module {
@@ -286,7 +189,7 @@ export interface ModuleFiles {
 }
 
 export interface GeneralConfig {
-  config?: UserConfig;
+  config?: Config;
   babelConfig?: {
     presets?: any[];
     plugins?: any[];

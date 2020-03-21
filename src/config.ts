@@ -64,12 +64,16 @@ export const config: Config = {
      */
     enabled: true,
 
+    exclude: [],
+
+    include: [],
+
     /**
      * defines output directory
      */
     outDir: 'build',
 
-    format: 'cjs'
+    format: 'cjs',
   },
 
   /**
@@ -81,12 +85,16 @@ export const config: Config = {
      */
     enabled: true,
 
+    exclude: [],
+
+    include: [],
+
     /**
      * defines output directory
      */
     outDir: 'build/esm',
 
-    format: 'esm'
+    format: 'esm',
   },
 
   /**
@@ -98,6 +106,10 @@ export const config: Config = {
      */
     enabled: false,
 
+    exclude: [],
+
+    include: [],
+
     /**
      * defines output directory
      */
@@ -108,6 +120,6 @@ export const config: Config = {
      */
     format: 'iife',
 
-    externals: []
-  }
+    externals: [],
+  },
 };

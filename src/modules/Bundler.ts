@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import { copy, isString, camelCase } from '@teclone/utils';
 import {
   Config,
-  UserConfig,
   CommonConfig,
   DistConfig,
   Module,
@@ -106,7 +105,7 @@ class Bundler {
   /**
    * resolves the config object
    */
-  private resolveConfig(entryPath: string, config: UserConfig): Config {
+  private resolveConfig(entryPath: string, config: Config): Config {
     const packageFile = this.loadFile(entryPath, 'package.json');
     const resolvedConfig: Config = copy({}, defaultConfig, config as Config);
 
@@ -121,12 +120,23 @@ class Bundler {
       this.mergeConfig(prop, resolvedConfig, resolvedConfig.esmConfig);
     });
 
+    const { esmConfig, distConfig, cjsConfig } = resolvedConfig;
+
     /**
      * resolve regex fields
      */
     REGEX_FIELDS.forEach(field => {
-      const values = resolvedConfig[field] as Array<string | RegExp>;
-      resolvedConfig[field] = values.map(this.resolveRegex);
+      esmConfig[field] = (resolvedConfig[field] as Array<string | RegExp>)
+        .concat(esmConfig[field] as Array<string | RegExp>)
+        .map(this.resolveRegex);
+
+      distConfig[field] = (resolvedConfig[field] as Array<string | RegExp>)
+        .concat(distConfig[field] as Array<string | RegExp>)
+        .map(this.resolveRegex);
+
+      cjsConfig[field] = (resolvedConfig[field] as Array<string | RegExp>)
+        .concat(cjsConfig[field] as Array<string | RegExp>)
+        .map(this.resolveRegex);
     });
 
     return resolvedConfig;
@@ -211,19 +221,16 @@ class Bundler {
     });
   }
 
-  private async getModulesFiles(): Promise<ModuleFiles> {
-    const startAt = path.resolve(this.entryPath, this.config.srcDir);
-    const config = this.config;
-
-    const modules = await this.getModules(
-      [],
-      startAt,
-      config.entryFile,
-      config.moduleName,
-      '',
-      config.extensions,
-    );
-
+  /**
+   * assembles files for the current build
+   * @param config
+   * @param buildConfig
+   */
+  private getModulesFiles(
+    modules: Module[],
+    config: Config,
+    buildConfig: CJSConfig | ESMConfig | DistConfig,
+  ): ModuleFiles {
     const result: ModuleFiles = {
       assetFiles: [],
       buildFiles: [],
@@ -241,12 +248,12 @@ class Bundler {
       src = oldRelativePath;
       if (isTypeDefinitionFile && config.cjsConfig.enabled) {
         result.typeDefinitionFiles.push(current);
-      } else if (isAssetFile && config.assets.some(regexMatches)) {
+      } else if (isAssetFile && buildConfig.assets.some(regexMatches)) {
         result.assetFiles.push(current);
       } else if (
         isBuildFile &&
-        (config.include.length === 0 || config.include.some(regexMatches)) &&
-        (config.exclude.length === 0 || !config.exclude.some(regexMatches))
+        (buildConfig.include.length === 0 || buildConfig.include.some(regexMatches)) &&
+        (buildConfig.exclude.length === 0 || !buildConfig.exclude.some(regexMatches))
       ) {
         result.buildFiles.push(current);
       }
@@ -254,76 +261,82 @@ class Bundler {
     return result;
   }
 
-  runBuild(moduleFiles: ModuleFiles, config: DistConfig | CJSConfig | ESMConfig) {
+  /**
+   * runs a specific build
+   * @param modules
+   * @param mainConfig
+   * @param config
+   */
+  runBuild(
+    modules: Module[],
+    mainConfig: Config,
+    config: DistConfig | CJSConfig | ESMConfig,
+  ) {
+    const moduleFiles = this.getModulesFiles(modules, mainConfig, config);
     const promises: Array<Promise<any>> = [];
     const { assetFiles, typeDefinitionFiles, buildFiles } = moduleFiles;
-    if (config.enabled) {
-      log(chalk.yellow(`generating ${config.format} builds...\n`));
 
-      const plugins = getRollupPlugins(
-        this.config,
-        this.generalConfig,
-        config.format === 'esm',
-      );
-      const external =
-        config.format === 'iife' || config.format === 'umd'
-          ? config.externals
-          : allExternal;
+    log(chalk.yellow(`generating ${config.format} builds...\n`));
 
-      buildFiles.forEach(({ filePath, newRelativePath, oldRelativePath, name }) => {
-        const onError = ex => {
-          console.log(`Error occured while bundling ${oldRelativePath}`, ex.message);
-        };
+    const plugins = getRollupPlugins(
+      this.config,
+      this.generalConfig,
+      config.format === 'esm',
+    );
+    const external =
+      config.format === 'iife' || config.format === 'umd'
+        ? config.externals
+        : allExternal;
 
-        const out = path.resolve(this.entryPath, config.outDir, newRelativePath);
-        promises.push(
-          rollup({
-            input: filePath,
-            plugins,
-            external,
+    buildFiles.forEach(({ filePath, newRelativePath, oldRelativePath, name }) => {
+      const onError = ex => {
+        console.log(`Error occured while bundling ${oldRelativePath}`, ex.message);
+      };
+
+      const out = path.resolve(this.entryPath, config.outDir, newRelativePath);
+      promises.push(
+        rollup({
+          input: filePath,
+          plugins,
+          external,
+        })
+          .then(bundler => {
+            return bundler
+              .write({
+                file: out,
+                format: config.format,
+                interop: config.interop,
+                sourcemap: config.sourcemap,
+                name,
+              })
+              .then(() => {
+                if (this.bundlerOptions.generateOutputLogs) {
+                  log(chalk.green(`${oldRelativePath} ... ${out} \n`));
+                }
+                return null;
+              });
           })
-            .then(bundler => {
-              return bundler
-                .write({
-                  file: out,
-                  format: config.format,
-                  interop: config.interop,
-                  sourcemap: config.sourcemap,
-                  name,
-                })
-                .then(() => {
-                  if (this.bundlerOptions.generateOutputLogs) {
-                    log(chalk.green(`${oldRelativePath} ... ${out} \n`));
-                  }
-                  return null;
-                });
-            })
-            .catch(onError),
-        );
-      });
+          .catch(onError),
+      );
+    });
 
-      assetFiles.forEach(assetFile => {
-        promises.push(
-          this.copyFile(
-            assetFile.filePath,
-            path.resolve(this.entryPath, config.outDir, assetFile.oldRelativePath),
-          ),
-        );
-      });
+    assetFiles.forEach(assetFile => {
+      promises.push(
+        this.copyFile(
+          assetFile.filePath,
+          path.resolve(this.entryPath, config.outDir, assetFile.oldRelativePath),
+        ),
+      );
+    });
 
-      typeDefinitionFiles.forEach(typeDefinitionFile => {
-        promises.push(
-          this.copyFile(
-            typeDefinitionFile.filePath,
-            path.resolve(
-              this.entryPath,
-              config.outDir,
-              typeDefinitionFile.oldRelativePath,
-            ),
-          ),
-        );
-      });
-    }
+    typeDefinitionFiles.forEach(typeDefinitionFile => {
+      promises.push(
+        this.copyFile(
+          typeDefinitionFile.filePath,
+          path.resolve(this.entryPath, config.outDir, typeDefinitionFile.oldRelativePath),
+        ),
+      );
+    });
 
     return Promise.all(promises);
   }
@@ -332,12 +345,32 @@ class Bundler {
    * runs the process
    */
   async process() {
-    // assemble module files
-    const moduleFiles = await this.getModulesFiles();
+    const config = this.config;
+    const startAt = path.resolve(this.entryPath, config.srcDir);
 
-    await this.runBuild(moduleFiles, this.config.cjsConfig);
-    await this.runBuild(moduleFiles, this.config.esmConfig);
-    await this.runBuild(moduleFiles, this.config.distConfig);
+    const modules = await this.getModules(
+      [],
+      startAt,
+      config.entryFile,
+      config.moduleName,
+      '',
+      config.extensions,
+    );
+
+    //run cjs build
+    if (config.cjsConfig.enabled) {
+      await this.runBuild(modules, config, config.cjsConfig);
+    }
+
+    // run esm build
+    if (config.esmConfig.enabled) {
+      await this.runBuild(modules, config, config.esmConfig);
+    }
+
+    // run dist build
+    if (config.distConfig.enabled) {
+      await this.runBuild(modules, config, config.distConfig);
+    }
   }
 }
 

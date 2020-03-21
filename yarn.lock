@@ -1207,10 +1207,10 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
-"@teclone/global@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@teclone/global/-/global-1.0.0.tgz#3c25b75514d555ec6d3f1dba03f85d942b3939e2"
-  integrity sha512-U20DRE3Hn7euijxlBfwUwGS7uSA7Bqi86atyK2oLpzdRkXZgldH4skFq0wtKBurBIyMwB5Rg7tohLjwyosUIEw==
+"@teclone/global@1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@teclone/global/-/global-1.1.0.tgz#a7792fcf57dee54bbd59e8251c01f03697e74b34"
+  integrity sha512-r7qqDd1hBp4hE6mO9hWSHn+3JyUOOQiUO12GhKBowYq2w8fGWY90d/N62FpFXtBDMh/kLGwqho3Qn4bR1gJl/w==
 
 "@teclone/node-utils@1.0.4":
   version "1.0.4"
@@ -1220,12 +1220,12 @@
     "@babel/plugin-transform-runtime" "7.4.3"
     "@babel/runtime" "7.4.3"
 
-"@teclone/utils@2.14.3":
-  version "2.14.3"
-  resolved "https://registry.yarnpkg.com/@teclone/utils/-/utils-2.14.3.tgz#06e6999a0719e1769243836b688fef291b94e072"
-  integrity sha512-8FMfVUjhwypQwDfnwUkYABXLPK0WDBzkYqUQow4axK0BJp9mlVfqvEWMve6vO2Ertk9mV+Tvv+hxiV2vYhFogA==
+"@teclone/utils@2.16.1":
+  version "2.16.1"
+  resolved "https://registry.yarnpkg.com/@teclone/utils/-/utils-2.16.1.tgz#df42af0c9598f1c3c10669051e7af6475243602a"
+  integrity sha512-rVULXc0KXpMBH3grNGntzcAlHygH1RsXykWcISnXcxyILKdvWrNO7oPhgrufYgYE+Ll/r9ipq6WXX1z8FJV09w==
   dependencies:
-    "@teclone/global" "1.0.0"
+    "@teclone/global" "1.1.0"
 
 "@tootallnate/once@1":
   version "1.0.0"
