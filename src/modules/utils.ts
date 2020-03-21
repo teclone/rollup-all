@@ -3,8 +3,9 @@ import commonjs from '@rollup/plugin-commonjs';
 import babel from 'rollup-plugin-babel';
 import json from '@rollup/plugin-json';
 import { terser } from 'rollup-plugin-terser';
-import { Config, GeneralConfig } from '../@types';
-import { isProdEnv, getEntryPath } from '@teclone/node-utils';
+import { Config, GeneralConfig, DistConfig, ESMConfig, CJSConfig } from '../@types';
+import { getEntryPath } from '@teclone/node-utils';
+
 import path from 'path';
 import fs from 'fs';
 
@@ -81,14 +82,14 @@ export const getBabelPresets = (
 };
 
 export const getRollupPlugins = (
-  config: Config,
+  mainConfig: Config,
+  buildConfig: DistConfig | ESMConfig | CJSConfig,
   generalConfig: GeneralConfig,
-  useESModules: boolean = false,
 ) => {
   const internalNodeModulesDir = getEntryPath(__dirname);
   return [
     resolve({
-      extensions: config.extensions,
+      extensions: mainConfig.extensions,
     }),
 
     commonjs({
@@ -106,20 +107,20 @@ export const getRollupPlugins = (
       plugins: getBabelPlugins(
         generalConfig?.babelConfig?.plugins,
         internalNodeModulesDir,
-        useESModules,
+        buildConfig.format === 'esm',
       ),
 
       exclude: 'node_modules/**',
 
-      extensions: config.extensions,
+      extensions: mainConfig.extensions,
 
       runtimeHelpers: true,
     }),
 
     json(),
 
-    config.uglify && isProdEnv() && terser(),
+    buildConfig.uglify && terser(),
 
-    ...config.plugins,
+    ...mainConfig.plugins,
   ];
 };

@@ -27,6 +27,12 @@ export interface CommonConfig {
   assets?: (string | RegExp)[];
 
   /**
+   * boolean indicating if rollup plugin terser should be applied to the build, when in production mode
+   * default to false
+   */
+  uglify?: boolean;
+
+  /**
    * boolean indicating if the interop rollup setting should be enabled for the build
    */
   interop?: boolean;

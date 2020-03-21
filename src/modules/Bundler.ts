@@ -278,11 +278,7 @@ class Bundler {
 
     log(chalk.yellow(`generating ${config.format} builds...\n`));
 
-    const plugins = getRollupPlugins(
-      this.config,
-      this.generalConfig,
-      config.format === 'esm',
-    );
+    const plugins = getRollupPlugins(mainConfig, config, this.generalConfig);
     const external =
       config.format === 'iife' || config.format === 'umd'
         ? config.externals
