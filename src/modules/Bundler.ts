@@ -211,7 +211,7 @@ class Bundler {
               oldRelativePath,
               newRelativePath,
               filePath,
-              name: oldRelativePath === entryFile ? moduleName : baseName,
+              name: oldRelativePath === entryFile ? moduleName : camelCase(baseName),
               isBuildFile: extensions.includes(extname),
             });
           }
