@@ -127,15 +127,15 @@ class Bundler {
      */
     REGEX_FIELDS.forEach((field) => {
       esmConfig[field] = (resolvedConfig[field] as Array<string | RegExp>)
-        .concat(esmConfig[field] as Array<string | RegExp>)
+        .concat(esmConfig[field] || [])
         .map(this.resolveRegex);
 
       distConfig[field] = (resolvedConfig[field] as Array<string | RegExp>)
-        .concat(distConfig[field] as Array<string | RegExp>)
+        .concat(distConfig[field] || [])
         .map(this.resolveRegex);
 
       cjsConfig[field] = (resolvedConfig[field] as Array<string | RegExp>)
-        .concat(cjsConfig[field] as Array<string | RegExp>)
+        .concat(cjsConfig[field] || [])
         .map(this.resolveRegex);
     });
 
