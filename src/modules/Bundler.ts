@@ -58,7 +58,7 @@ class Bundler {
       } else {
         pattern = pattern
           .split('/')
-          .map(current => {
+          .map((current) => {
             if (current === '*') {
               return '[^/]+';
             } else if (current === '**') {
@@ -114,7 +114,7 @@ class Bundler {
       resolvedConfig.moduleName || camelCase(packageFile.name ?? 'Unknown');
 
     //resolve configs config
-    COMMON_CONFIGS.forEach(prop => {
+    COMMON_CONFIGS.forEach((prop) => {
       this.mergeConfig(prop, resolvedConfig, resolvedConfig.cjsConfig);
       this.mergeConfig(prop, resolvedConfig, resolvedConfig.distConfig);
       this.mergeConfig(prop, resolvedConfig, resolvedConfig.esmConfig);
@@ -125,7 +125,7 @@ class Bundler {
     /**
      * resolve regex fields
      */
-    REGEX_FIELDS.forEach(field => {
+    REGEX_FIELDS.forEach((field) => {
       esmConfig[field] = (resolvedConfig[field] as Array<string | RegExp>)
         .concat(esmConfig[field] as Array<string | RegExp>)
         .map(this.resolveRegex);
@@ -149,7 +149,7 @@ class Bundler {
     return new Promise((resolve, reject) => {
       const dest = path.resolve(this.entryPath, filePath);
       mkDirSync(dest);
-      fs.copyFile(src, dest, err => {
+      fs.copyFile(src, dest, (err) => {
         if (err) {
           reject(err);
         } else {
@@ -238,7 +238,7 @@ class Bundler {
     };
 
     let src = '';
-    const regexMatches = regex => regex.test(path.join(config.srcDir, src));
+    const regexMatches = (regex) => regex.test(path.join(config.srcDir, src));
 
     for (const current of modules) {
       const { ext, isBuildFile, oldRelativePath } = current;
@@ -284,19 +284,24 @@ class Bundler {
         ? config.externals
         : allExternal;
 
-    buildFiles.forEach(({ filePath, newRelativePath, oldRelativePath, name }) => {
-      const onError = ex => {
-        console.log(`Error occured while bundling ${oldRelativePath}`, ex.message);
-      };
+    const onWarn = (warning, warn) => {
+      warn(warning);
+    };
 
+    const onError = (ex) => {
+      console.error(ex?.message || ex);
+    };
+
+    buildFiles.forEach(({ filePath, newRelativePath, oldRelativePath, name }) => {
       const out = path.resolve(this.entryPath, config.outDir, newRelativePath);
       promises.push(
         rollup({
           input: filePath,
           plugins,
           external,
+          onwarn: onWarn,
         })
-          .then(bundler => {
+          .then((bundler) => {
             return bundler
               .write({
                 file: out,
@@ -316,7 +321,7 @@ class Bundler {
       );
     });
 
-    assetFiles.forEach(assetFile => {
+    assetFiles.forEach((assetFile) => {
       promises.push(
         this.copyFile(
           assetFile.filePath,
@@ -325,7 +330,7 @@ class Bundler {
       );
     });
 
-    typeDefinitionFiles.forEach(typeDefinitionFile => {
+    typeDefinitionFiles.forEach((typeDefinitionFile) => {
       promises.push(
         this.copyFile(
           typeDefinitionFile.filePath,
