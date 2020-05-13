@@ -285,6 +285,7 @@ class Bundler {
         : allExternal;
 
     const onWarn = (warning, warn) => {
+      console.log(warning.message);
       warn(warning);
     };
 
@@ -301,21 +302,20 @@ class Bundler {
           external,
           onwarn: onWarn,
         })
-          .then((bundler) => {
-            return bundler
-              .write({
-                file: out,
-                format: config.format,
-                interop: config.interop,
-                sourcemap: config.sourcemap,
-                name,
-              })
-              .then(() => {
-                if (this.bundlerOptions.generateOutputLogs) {
-                  log(chalk.green(`${oldRelativePath} ... ${out} \n`));
-                }
-                return null;
-              });
+          .then((bundler) =>
+            bundler.write({
+              file: out,
+              format: config.format,
+              interop: config.interop,
+              sourcemap: config.sourcemap,
+              name,
+            }),
+          )
+          .then(() => {
+            if (this.bundlerOptions.generateOutputLogs) {
+              log(chalk.green(`${oldRelativePath} ... ${out} \n`));
+            }
+            return null;
           })
           .catch(onError),
       );

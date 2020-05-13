@@ -100,12 +100,12 @@ export const getRollupPlugins = (
       babelrc: false,
 
       presets: getBabelPresets(
-        generalConfig?.babelConfig?.presets,
+        generalConfig?.babelConfig?.presets || [],
         internalNodeModulesDir,
       ),
 
       plugins: getBabelPlugins(
-        generalConfig?.babelConfig?.plugins,
+        generalConfig?.babelConfig?.plugins || [],
         internalNodeModulesDir,
         buildConfig.format === 'esm',
       ),
