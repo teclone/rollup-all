@@ -284,10 +284,10 @@ class Bundler {
         ? config.externals
         : allExternal;
 
-    const onWarn = (warning, warn) => {
-      console.log(warning.message);
-      warn(warning);
-    };
+    // const onWarn = (warning, warn) => {
+    //   console.log(warning.message);
+    //   warn(warning);
+    // };
 
     const onError = (ex) => {
       console.error(ex?.message || ex);
@@ -300,7 +300,7 @@ class Bundler {
           input: filePath,
           plugins,
           external,
-          onwarn: onWarn,
+          onwarn: (warning, warn) => console.log(warning.message, filePath),
         })
           .then((bundler) =>
             bundler.write({
