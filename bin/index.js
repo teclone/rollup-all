@@ -15,16 +15,22 @@ args.options([
   },
 ]);
 
-const flags = args.parse(process.argv);
-const getEntryPath = require('@teclone/node-utils').getEntryPath;
+const run = () => {
+  const flags = args.parse(process.argv);
+  const getEntryPath = require('@teclone/node-utils').getEntryPath;
 
-const loadFile = require(`${flags.dir}/modules/utils`).loadFile;
-const Bundler = require(`${flags.dir}/modules/Bundler`).Bundler;
+  const loadFile = require(`${flags.dir}/modules/utils`).loadFile;
+  const Bundler = require(`${flags.dir}/modules/Bundler`).Bundler;
 
-const entryPath = getEntryPath();
-const options = loadFile(entryPath, 'rollup.config.js');
+  const entryPath = getEntryPath();
+  const options = loadFile(entryPath, 'rollup.config.js');
 
-const bunder = new Bundler(options, {
-  generateOutputLogs: flags.silent !== true,
+  const bunder = new Bundler(options, {
+    generateOutputLogs: flags.silent !== true,
+  });
+  return bunder.process();
+};
+
+run().then(() => {
+  return process.exit(0);
 });
-bunder.process();
