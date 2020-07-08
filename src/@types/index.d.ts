@@ -91,7 +91,7 @@ export interface Config {
   moduleName?: string;
 
   /**
-   * allowed file extensions. defaults to .js, .ts
+   * allowed file extensions. defaults to .js, .ts, .jsx, .tsx
    */
   extensions?: string[];
 
@@ -117,7 +117,7 @@ export interface Config {
 
   /**
    * boolean indicating if sourcemap should be generated for all builds,
-   * can be true, false, or 'inline'
+   * can be true, false, or 'inline', defaults to true
    */
   sourcemap?: true | false | 'inline';
 
@@ -138,17 +138,17 @@ export interface Config {
   globals?: object;
 
   /**
-   * defines config settings for generating distributed codes
+   * defines config settings for generating distributed browser codes
    */
   distConfig?: DistConfig;
 
   /**
-   * defines config settings for generating cjs files
+   * defines config settings for generating cjs files, for node js or comonjs modules
    */
   cjsConfig?: CJSConfig;
 
   /**
-   * defines config settings for generating esm files
+   * defines config settings for generating esm files, es modules
    */
   esmConfig?: ESMConfig;
 }
@@ -194,10 +194,21 @@ export interface ModuleFiles {
   typeDefinitionFiles: Module[];
 }
 
+export interface BabelPresetsConfig {
+  presets?: any[];
+  exclude?: Array<string | RegExp>;
+  include?: Array<string | RegExp>;
+}
+
+export interface BabelPluginsConfig {
+  plugins?: any[];
+}
+
 export interface GeneralConfig {
   config?: Config;
   babelConfig?: {
-    presets?: any[];
+    presetsConfig?: BabelPresetsConfig;
+    pluginsConfig?: BabelPluginsConfig;
     plugins?: any[];
   };
 }

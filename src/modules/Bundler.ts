@@ -18,6 +18,7 @@ import { mkDirSync, getEntryPath } from '@teclone/node-utils';
 import { rollup } from 'rollup';
 import { getRollupPlugins } from './utils';
 import chalk from 'chalk';
+import globToRegex from 'glob-to-regexp';
 
 const allExternal = () => true;
 
@@ -32,10 +33,6 @@ class Bundler {
 
   private bundlerOptions: BundlerOptions;
 
-  /**
-   * @param plugins array of extra plugins to be applied
-   * @param config path to user defined build config or the user defined config object
-   */
   constructor(generalConfig: GeneralConfig = {}, bundlerOptions: BundlerOptions) {
     this.entryPath = getEntryPath();
     this.generalConfig = generalConfig;
@@ -52,26 +49,7 @@ class Bundler {
    */
   private resolveRegex(pattern: string | RegExp) {
     if (isString(pattern)) {
-      // match everything
-      if (pattern === '*') {
-        return new RegExp('^.*', 'i');
-      } else {
-        pattern = pattern
-          .split('/')
-          .map((current) => {
-            if (current === '*') {
-              return '[^/]+';
-            } else if (current === '**') {
-              return '.*';
-            } else {
-              return current;
-            }
-          })
-          .join('/');
-
-        pattern = pattern.replace(/^\/+/, '^');
-        return new RegExp(pattern, 'i');
-      }
+      return globToRegex(pattern, { extended: true, globstar: true, flags: 'i' });
     } else {
       return pattern;
     }
@@ -238,7 +216,9 @@ class Bundler {
     };
 
     let src = '';
-    const regexMatches = (regex) => regex.test(path.join(config.srcDir, src));
+    const regexMatches = (regex) => {
+      return regex.test(path.join(src));
+    };
 
     for (const current of modules) {
       const { ext, isBuildFile, oldRelativePath } = current;
