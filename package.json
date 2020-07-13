@@ -79,7 +79,7 @@
     "@rollup/plugin-json": "4.0.3",
     "@rollup/plugin-node-resolve": "8.0.0",
     "@teclone/node-utils": "1.0.5",
-    "@teclone/utils": "2.17.2",
+    "@teclone/utils": "2.18.1",
     "args": "5.0.1",
     "chalk": "4.0.0",
     "glob-to-regexp": "0.4.1",
