@@ -209,7 +209,6 @@ export interface GeneralConfig {
   babelConfig?: {
     presetsConfig?: BabelPresetsConfig;
     pluginsConfig?: BabelPluginsConfig;
-    plugins?: any[];
   };
 }
 

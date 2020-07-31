@@ -3,6 +3,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import babel from '@rollup/plugin-babel';
 import json from '@rollup/plugin-json';
 import { terser } from 'rollup-plugin-terser';
+import shebang from 'rollup-plugin-preserve-shebang';
 import {
   Config,
   GeneralConfig,
@@ -145,6 +146,8 @@ export const getRollupPlugins = (
     }),
 
     json(),
+
+    shebang(),
 
     buildConfig.uglify && terser(),
 
