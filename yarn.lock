@@ -1447,10 +1447,10 @@
     "@babel/plugin-transform-runtime" "7.4.3"
     "@babel/runtime" "7.4.3"
 
-"@teclone/utils@2.18.1":
-  version "2.18.1"
-  resolved "https://registry.yarnpkg.com/@teclone/utils/-/utils-2.18.1.tgz#810ed05b21933b5fc2c0d43084e1129ceff3a2b6"
-  integrity sha512-J7osq+25vstVicStuhLiQVItdpdPEbG1buz3TbrBchIceu4ctIe6GhrsJURdrkox+7U0raJqlR63DXPDme8NVw==
+"@teclone/utils@^2.20.1":
+  version "2.20.1"
+  resolved "https://registry.yarnpkg.com/@teclone/utils/-/utils-2.20.1.tgz#c77de30cbe44d76f3b4626611df406884dccde30"
+  integrity sha512-g4xbW7fslfiVcFuz0zfjqRuZrvhJs0C9kpbB4KniqeyaZMTC8XysHPlydhIhXBr+bauOUk1i35HpOQRnfBTCaA==
   dependencies:
     "@teclone/global" "1.1.0"
 

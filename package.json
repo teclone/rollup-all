@@ -46,6 +46,7 @@
   "homepage": "https://github.com/teclone/rollup-all#readme",
   "devDependencies": {
     "@babel/cli": "7.8.4",
+    "@teclone/utils": "^2.20.1",
     "@types/jest": "25.2.3",
     "@typescript-eslint/eslint-plugin": "2.34.0",
     "@typescript-eslint/parser": "2.34.0",
@@ -79,12 +80,14 @@
     "@rollup/plugin-json": "4.0.3",
     "@rollup/plugin-node-resolve": "8.0.0",
     "@teclone/node-utils": "1.0.5",
-    "@teclone/utils": "2.18.1",
     "args": "5.0.1",
     "chalk": "4.0.0",
     "glob-to-regexp": "0.4.1",
     "rollup": "2.10.5",
     "rollup-plugin-preserve-shebang": "1.0.1",
     "rollup-plugin-terser": "5.3.0"
+  },
+  "peerDependencies": {
+    "@teclone/utils": "^2.20.1"
   }
 }
