@@ -44,32 +44,38 @@ export const loadFile = (entryPath: string, file: string) => {
 export const getBabelPlugins = (
   pluginsConfig: BabelPluginsConfig,
   internalNodeModulesDir: string,
-  useESModules: boolean,
+  useESModules: boolean
 ) => {
   return [
     /**
      * all these are now available by default in babel preset env
      */
-    resolveDependency(internalNodeModulesDir, '@babel/plugin-proposal-class-properties'),
     resolveDependency(
       internalNodeModulesDir,
-      '@babel/plugin-proposal-object-rest-spread',
+      '@babel/plugin-proposal-class-properties'
+    ),
+    resolveDependency(
+      internalNodeModulesDir,
+      '@babel/plugin-proposal-object-rest-spread'
     ),
     [
       resolveDependency(
         internalNodeModulesDir,
-        '@babel/plugin-proposal-nullish-coalescing-operator',
+        '@babel/plugin-proposal-nullish-coalescing-operator'
       ),
     ],
     [
       resolveDependency(
         internalNodeModulesDir,
-        '@babel/plugin-proposal-optional-chaining',
+        '@babel/plugin-proposal-optional-chaining'
       ),
     ],
     ...(pluginsConfig?.plugins || []),
     [
-      resolveDependency(internalNodeModulesDir, '@babel/plugin-transform-runtime'),
+      resolveDependency(
+        internalNodeModulesDir,
+        '@babel/plugin-transform-runtime'
+      ),
       {
         useESModules,
       },
@@ -79,7 +85,7 @@ export const getBabelPlugins = (
 
 export const getBabelPresets = (
   presetsConfig: BabelPresetsConfig,
-  internalNodeModulesDir: string,
+  internalNodeModulesDir: string
 ) => {
   return [
     // here we are including babel preset env
@@ -100,6 +106,14 @@ export const getBabelPresets = (
     // support for typescript
     resolveDependency(internalNodeModulesDir, '@babel/preset-typescript'),
 
+    // support for react
+    [
+      resolveDependency(internalNodeModulesDir, '@babel/preset-react'),
+      {
+        development: process.env.BABEL_ENV === 'development',
+      },
+    ],
+
     // user defined preset.
     ...(presetsConfig?.presets || []),
   ];
@@ -108,7 +122,7 @@ export const getBabelPresets = (
 export const getRollupPlugins = (
   mainConfig: Config,
   buildConfig: DistConfig | ESMConfig | CJSConfig,
-  generalConfig: GeneralConfig,
+  generalConfig: GeneralConfig
 ) => {
   const internalNodeModulesDir = getEntryPath(__dirname);
   return [
@@ -127,12 +141,12 @@ export const getRollupPlugins = (
       plugins: getBabelPlugins(
         generalConfig?.babelConfig?.pluginsConfig || {},
         internalNodeModulesDir,
-        buildConfig.format === 'esm',
+        buildConfig.format === 'esm'
       ),
 
       presets: getBabelPresets(
         generalConfig?.babelConfig?.presetsConfig || {},
-        internalNodeModulesDir,
+        internalNodeModulesDir
       ),
 
       // we are using runtime because it is assumed you are building a library
