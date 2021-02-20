@@ -16,16 +16,16 @@ import {
 import { getEntryPath } from '@teclone/node-utils';
 
 import path from 'path';
-import fs from 'fs';
+// import fs from 'fs';
 
 const resolveDependency = (dir: string, name: string) => {
-  const dependencyPath = path.resolve(dir, 'node_modules/', name);
-  try {
-    const stat = fs.statSync(dependencyPath);
-    if (stat && stat.isDirectory()) {
-      return dependencyPath;
-    }
-  } catch (ex) {}
+  // const dependencyPath = path.resolve(dir, 'node_modules/', name);
+  // try {
+  //   const stat = fs.statSync(dependencyPath);
+  //   if (stat && stat.isDirectory()) {
+  //     return dependencyPath;
+  //   }
+  // } catch (ex) {}
   return name;
 };
 
