@@ -33,11 +33,17 @@ class Bundler {
 
   private bundlerOptions: BundlerOptions;
 
-  constructor(generalConfig: GeneralConfig = {}, bundlerOptions: BundlerOptions) {
+  constructor(
+    generalConfig: GeneralConfig = {},
+    bundlerOptions: BundlerOptions
+  ) {
     this.entryPath = getEntryPath();
     this.generalConfig = generalConfig;
 
-    this.config = this.resolveConfig(this.entryPath, generalConfig.config ?? {});
+    this.config = this.resolveConfig(
+      this.entryPath,
+      generalConfig.config ?? {}
+    );
 
     this.bundlerOptions = bundlerOptions;
   }
@@ -49,7 +55,11 @@ class Bundler {
    */
   private resolveRegex(pattern: string | RegExp) {
     if (isString(pattern)) {
-      return globToRegex(pattern, { extended: true, globstar: true, flags: 'i' });
+      return globToRegex(pattern, {
+        extended: true,
+        globstar: true,
+        flags: 'i',
+      });
     } else {
       return pattern;
     }
@@ -58,7 +68,7 @@ class Bundler {
   private mergeConfig(
     prop: keyof CommonConfig,
     config: Config,
-    target: CJSConfig | ESMConfig | DistConfig,
+    target: CJSConfig | ESMConfig | DistConfig
   ) {
     const configValue = config[prop];
     const targetValue = target[prop];
@@ -131,7 +141,7 @@ class Bundler {
         if (err) {
           reject(err);
         } else {
-          resolve();
+          resolve(null);
         }
       });
     });
@@ -152,7 +162,7 @@ class Bundler {
     entryFile: string,
     moduleName: string,
     currentRelativeDir: string,
-    extensions: string[],
+    extensions: string[]
   ): Promise<Module[]> {
     return new Promise((resolve, reject) => {
       fs.readdir(resolvedPath, (err, files) => {
@@ -171,17 +181,21 @@ class Bundler {
                 entryFile,
                 moduleName,
                 path.join(currentRelativeDir, file),
-                extensions,
-              ),
+                extensions
+              )
             );
           } else {
             const firstDotPos =
               file.charAt(0) === '.' ? file.indexOf('.', 1) : file.indexOf('.');
-            const baseName = firstDotPos > -1 ? file.substring(0, firstDotPos) : file;
+            const baseName =
+              firstDotPos > -1 ? file.substring(0, firstDotPos) : file;
             const extname = firstDotPos > -1 ? file.substring(firstDotPos) : '';
 
             const oldRelativePath = path.join(currentRelativeDir, file);
-            const newRelativePath = path.join(currentRelativeDir, baseName + '.js');
+            const newRelativePath = path.join(
+              currentRelativeDir,
+              baseName + '.js'
+            );
 
             modules.push({
               id: modules.length + 1,
@@ -189,7 +203,10 @@ class Bundler {
               oldRelativePath,
               newRelativePath,
               filePath,
-              name: oldRelativePath === entryFile ? moduleName : camelCase(baseName),
+              name:
+                oldRelativePath === entryFile
+                  ? moduleName
+                  : camelCase(baseName),
               isBuildFile: extensions.includes(extname),
             });
           }
@@ -207,7 +224,7 @@ class Bundler {
   private getModulesFiles(
     modules: Module[],
     config: Config,
-    buildConfig: CJSConfig | ESMConfig | DistConfig,
+    buildConfig: CJSConfig | ESMConfig | DistConfig
   ): ModuleFiles {
     const result: ModuleFiles = {
       assetFiles: [],
@@ -232,8 +249,10 @@ class Bundler {
         result.assetFiles.push(current);
       } else if (
         isBuildFile &&
-        (buildConfig.include.length === 0 || buildConfig.include.some(regexMatches)) &&
-        (buildConfig.exclude.length === 0 || !buildConfig.exclude.some(regexMatches))
+        (buildConfig.include.length === 0 ||
+          buildConfig.include.some(regexMatches)) &&
+        (buildConfig.exclude.length === 0 ||
+          !buildConfig.exclude.some(regexMatches))
       ) {
         result.buildFiles.push(current);
       }
@@ -250,7 +269,7 @@ class Bundler {
   runBuild(
     modules: Module[],
     mainConfig: Config,
-    config: DistConfig | CJSConfig | ESMConfig,
+    config: DistConfig | CJSConfig | ESMConfig
   ) {
     const moduleFiles = this.getModulesFiles(modules, mainConfig, config);
     const promises: Array<Promise<any>> = [];
@@ -264,49 +283,50 @@ class Bundler {
         ? config.externals
         : allExternal;
 
-    // const onWarn = (warning, warn) => {
-    //   console.log(warning.message);
-    //   warn(warning);
-    // };
-
     const onError = (ex) => {
       console.error(ex?.message || ex);
     };
 
-    buildFiles.forEach(({ filePath, newRelativePath, oldRelativePath, name }) => {
-      const out = path.resolve(this.entryPath, config.outDir, newRelativePath);
-      promises.push(
-        rollup({
-          input: filePath,
-          plugins,
-          external,
-          onwarn: (warning, warn) => console.log(warning.message, filePath),
-        })
-          .then((bundler) =>
-            bundler.write({
-              file: out,
-              format: config.format,
-              interop: config.interop,
-              sourcemap: config.sourcemap,
-              name,
-            }),
-          )
-          .then(() => {
-            if (this.bundlerOptions.generateOutputLogs) {
-              log(chalk.green(`${oldRelativePath} ... ${out} \n`));
-            }
-            return null;
+    buildFiles.forEach(
+      ({ filePath, newRelativePath, oldRelativePath, name }) => {
+        const out = path.resolve(
+          this.entryPath,
+          config.outDir,
+          newRelativePath
+        );
+        promises.push(
+          rollup({
+            input: filePath,
+            plugins,
+            external,
+            onwarn: (warning, warn) => console.log(warning.message, filePath),
           })
-          .catch(onError),
-      );
-    });
+            .then((bundler) =>
+              bundler.write({
+                file: out,
+                format: config.format,
+                interop: config.interop,
+                sourcemap: config.sourcemap,
+                name,
+              })
+            )
+            .then(() => {
+              if (this.bundlerOptions.generateOutputLogs) {
+                log(chalk.green(`${oldRelativePath} ... ${out} \n`));
+              }
+              return null;
+            })
+            .catch(onError)
+        );
+      }
+    );
 
     assetFiles.forEach((assetFile) => {
       promises.push(
         this.copyFile(
           assetFile.filePath,
-          path.resolve(this.entryPath, config.outDir, assetFile.oldRelativePath),
-        ),
+          path.resolve(this.entryPath, config.outDir, assetFile.oldRelativePath)
+        )
       );
     });
 
@@ -314,8 +334,12 @@ class Bundler {
       promises.push(
         this.copyFile(
           typeDefinitionFile.filePath,
-          path.resolve(this.entryPath, config.outDir, typeDefinitionFile.oldRelativePath),
-        ),
+          path.resolve(
+            this.entryPath,
+            config.outDir,
+            typeDefinitionFile.oldRelativePath
+          )
+        )
       );
     });
 
@@ -335,7 +359,7 @@ class Bundler {
       config.entryFile,
       config.moduleName,
       '',
-      config.extensions,
+      config.extensions
     );
 
     //run cjs build

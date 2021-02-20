@@ -111,6 +111,7 @@ export const getBabelPresets = (
       resolveDependency(internalNodeModulesDir, '@babel/preset-react'),
       {
         development: process.env.BABEL_ENV === 'development',
+        runtime: 'automatic',
       },
     ],
 
