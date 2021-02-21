@@ -23,10 +23,10 @@ const resolveDependency = (dir: string, name: string) => {
   try {
     const stat = fs.statSync(dependencyPath);
     if (stat && stat.isDirectory()) {
-      return require(dependencyPath);
+      return dependencyPath;
     }
   } catch (ex) {}
-  return require(name);
+  return name;
 };
 
 /**
