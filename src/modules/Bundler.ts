@@ -350,6 +350,7 @@ class Bundler {
    * runs the process
    */
   async process() {
+    console.log(process.env.NODE_ENV);
     const config = this.config;
     const startAt = path.resolve(this.entryPath, config.srcDir);
 
