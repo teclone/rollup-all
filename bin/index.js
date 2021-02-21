@@ -45,6 +45,8 @@ const run = () => {
   const entryPath = getEntryPath();
   const options = loadFile(entryPath, 'rollup.config.js');
 
+  console.info(`generating ${process.env.NODE_ENV} builds....`);
+
   const bunder = new Bundler(options, {
     generateOutputLogs: flags.silent !== true,
   });
