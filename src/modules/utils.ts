@@ -50,6 +50,8 @@ export const getBabelPlugins = (
     /**
      * all these are now available by default in babel preset env
      */
+
+    /** takes care of typescript declare inside classes */
     [
       resolveDependency(
         internalNodeModulesDir,
@@ -59,10 +61,14 @@ export const getBabelPlugins = (
         allowDeclareFields: true,
       },
     ],
+
+    // handles class properties
     resolveDependency(
       internalNodeModulesDir,
       '@babel/plugin-proposal-class-properties'
     ),
+
+    // handles object rest spread
     resolveDependency(
       internalNodeModulesDir,
       '@babel/plugin-proposal-object-rest-spread'
