@@ -50,6 +50,15 @@ export const getBabelPlugins = (
     /**
      * all these are now available by default in babel preset env
      */
+    [
+      resolveDependency(
+        internalNodeModulesDir,
+        '@babel/plugin-transform-typescript'
+      ),
+      {
+        allowDeclareFields: true,
+      },
+    ],
     resolveDependency(
       internalNodeModulesDir,
       '@babel/plugin-proposal-class-properties'
