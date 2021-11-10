@@ -1,6 +1,6 @@
-import * as path from 'path';
-import * as fs from 'fs';
-import { copy, isString, camelCase } from '@teclone/utils';
+import * as path from "path";
+import * as fs from "fs";
+import { copy, isString, camelCase } from "@teclone/utils";
 import {
   Config,
   CommonConfig,
@@ -11,21 +11,21 @@ import {
   ModuleFiles,
   GeneralConfig,
   BundlerOptions,
-} from '../@types';
-import { config as defaultConfig } from '../config';
-import { COMMON_CONFIGS, REGEX_FIELDS } from '../constants';
-import { mkDirSync, getEntryPath } from '@teclone/node-utils';
-import { rollup } from 'rollup';
-import { getRollupPlugins } from './utils';
-import chalk from 'chalk';
-import globToRegex from 'glob-to-regexp';
+} from "../@types";
+import { config as defaultConfig } from "../config";
+import { COMMON_CONFIGS, REGEX_FIELDS } from "../constants";
+import { mkDirSync, getEntryPath } from "@teclone/node-utils";
+import { rollup } from "rollup";
+import { getRollupPlugins } from "./utils";
+import chalk from "chalk";
+import globToRegex from "glob-to-regexp";
 
 const allExternal = () => true;
 
 const log = console.log;
 
 class Bundler {
-  private entryPath: string = '';
+  private entryPath: string = "";
 
   private config: Config = defaultConfig;
 
@@ -58,7 +58,7 @@ class Bundler {
       return globToRegex(pattern, {
         extended: true,
         globstar: true,
-        flags: 'i',
+        flags: "i",
       });
     } else {
       return pattern;
@@ -94,12 +94,12 @@ class Bundler {
    * resolves the config object
    */
   private resolveConfig(entryPath: string, config: Config): Config {
-    const packageFile = this.loadFile(entryPath, 'package.json');
+    const packageFile = this.loadFile(entryPath, "package.json");
     const resolvedConfig: Config = copy({}, defaultConfig, config as Config);
 
     //resolve module name
     resolvedConfig.moduleName =
-      resolvedConfig.moduleName || camelCase(packageFile.name ?? 'Unknown');
+      resolvedConfig.moduleName || camelCase(packageFile.name ?? "Unknown");
 
     //resolve configs config
     COMMON_CONFIGS.forEach((prop) => {
@@ -171,6 +171,7 @@ class Bundler {
         }
 
         const promises: Promise<any>[] = [];
+
         for (const file of files) {
           const filePath = path.join(resolvedPath, file);
           if (fs.statSync(filePath).isDirectory()) {
@@ -185,16 +186,17 @@ class Bundler {
               )
             );
           } else {
-            const firstDotPos =
-              file.charAt(0) === '.' ? file.indexOf('.', 1) : file.indexOf('.');
+            const firstDotPos = file.startsWith(".")
+              ? file.indexOf(".", 1)
+              : file.indexOf(".");
             const baseName =
               firstDotPos > -1 ? file.substring(0, firstDotPos) : file;
-            const extname = firstDotPos > -1 ? file.substring(firstDotPos) : '';
+            const extname = firstDotPos > -1 ? file.substring(firstDotPos) : "";
 
             const oldRelativePath = path.join(currentRelativeDir, file);
             const newRelativePath = path.join(
               currentRelativeDir,
-              baseName + '.js'
+              baseName + ".js"
             );
 
             modules.push({
@@ -221,9 +223,8 @@ class Bundler {
    * @param config
    * @param buildConfig
    */
-  private getModulesFiles(
+  private filterFiles(
     modules: Module[],
-    config: Config,
     buildConfig: CJSConfig | ESMConfig | DistConfig
   ): ModuleFiles {
     const result: ModuleFiles = {
@@ -232,18 +233,19 @@ class Bundler {
       typeDefinitionFiles: [],
     };
 
-    let src = '';
+    let src = "";
+
     const regexMatches = (regex) => {
       return regex.test(path.join(src));
     };
 
     for (const current of modules) {
       const { ext, isBuildFile, oldRelativePath } = current;
-      const isTypeDefinitionFile = ext === '.d.ts';
+      const isTypeDefinitionFile = ext === ".d.ts";
       const isAssetFile = !isTypeDefinitionFile && !isBuildFile;
 
       src = oldRelativePath;
-      if (isTypeDefinitionFile && config.cjsConfig.enabled) {
+      if (isTypeDefinitionFile) {
         result.typeDefinitionFiles.push(current);
       } else if (isAssetFile && buildConfig.assets.some(regexMatches)) {
         result.assetFiles.push(current);
@@ -261,6 +263,28 @@ class Bundler {
   }
 
   /**
+   * resolve output path, taking care of the base path
+   * @param outdir
+   * @param filePath
+   * @param basePath
+   * @returns
+   */
+  getOutputPath(outdir: string, filePath: string, basePath: string = "") {
+    const resolvedBasePath =
+      basePath.replace(/^\/+/, "").replace(/\/+$/, "") + "/";
+
+    if (filePath.startsWith(resolvedBasePath)) {
+      return path.resolve(
+        this.entryPath,
+        outdir,
+        filePath.split(resolvedBasePath).slice(0).join("")
+      );
+    } else {
+      return path.resolve(this.entryPath, outdir, filePath);
+    }
+  }
+
+  /**
    * runs a specific build
    * @param modules
    * @param mainConfig
@@ -271,15 +295,15 @@ class Bundler {
     mainConfig: Config,
     config: DistConfig | CJSConfig | ESMConfig
   ) {
-    const moduleFiles = this.getModulesFiles(modules, mainConfig, config);
+    const moduleFiles = this.filterFiles(modules, config);
     const promises: Array<Promise<any>> = [];
     const { assetFiles, typeDefinitionFiles, buildFiles } = moduleFiles;
 
     log(chalk.yellow(`generating ${config.format} builds...\n`));
 
     const plugins = getRollupPlugins(mainConfig, config, this.generalConfig);
-    const external =
-      config.format === 'iife' || config.format === 'umd'
+    const externals =
+      config.format === "iife" || config.format === "umd"
         ? config.externals
         : allExternal;
 
@@ -289,16 +313,16 @@ class Bundler {
 
     buildFiles.forEach(
       ({ filePath, newRelativePath, oldRelativePath, name }) => {
-        const out = path.resolve(
-          this.entryPath,
+        const out = this.getOutputPath(
           config.outDir,
-          newRelativePath
+          newRelativePath,
+          config.basePath
         );
         promises.push(
           rollup({
             input: filePath,
             plugins,
-            external,
+            external: externals,
             onwarn: (warning, warn) => console.log(warning.message, filePath),
           })
             .then((bundler) =>
@@ -322,25 +346,21 @@ class Bundler {
     );
 
     assetFiles.forEach((assetFile) => {
-      promises.push(
-        this.copyFile(
-          assetFile.filePath,
-          path.resolve(this.entryPath, config.outDir, assetFile.oldRelativePath)
-        )
+      const out = this.getOutputPath(
+        config.outDir,
+        assetFile.oldRelativePath,
+        config.basePath
       );
+      promises.push(this.copyFile(assetFile.filePath, out));
     });
 
-    typeDefinitionFiles.forEach((typeDefinitionFile) => {
-      promises.push(
-        this.copyFile(
-          typeDefinitionFile.filePath,
-          path.resolve(
-            this.entryPath,
-            config.outDir,
-            typeDefinitionFile.oldRelativePath
-          )
-        )
+    typeDefinitionFiles.forEach(({ oldRelativePath, filePath }) => {
+      const out = this.getOutputPath(
+        config.outDir,
+        oldRelativePath,
+        config.basePath
       );
+      promises.push(this.copyFile(filePath, out));
     });
 
     return Promise.all(promises);
@@ -358,7 +378,7 @@ class Bundler {
       startAt,
       config.entryFile,
       config.moduleName,
-      '',
+      "",
       config.extensions
     );
 

@@ -1,4 +1,4 @@
-import { Plugin } from 'rollup';
+import { Plugin } from "rollup";
 
 export interface CommonConfig {
   /**
@@ -10,6 +10,11 @@ export interface CommonConfig {
    * specifies build output directory. defaults to 'cjs', 'dist' and 'esm' for the specific builds
    */
   outDir?: string;
+
+  /**
+   * base path is used to specifies path that should be dropped from the output path
+   */
+  basePath?: string;
 
   /**
    * defines specific string of file patterns to process for the build
@@ -40,28 +45,28 @@ export interface CommonConfig {
   /**
    * boolean indicating if sourcemap files should be generated
    */
-  sourcemap?: true | false | 'inline';
+  sourcemap?: true | false | "inline";
 }
 
 export interface CJSConfig extends CommonConfig {
   /**
    * build format to use. must be 'cjs'
    */
-  format?: 'cjs';
+  format?: "cjs";
 }
 
 export interface ESMConfig extends CommonConfig {
   /**
    * build format to use. must be 'esm'
    */
-  format?: 'esm';
+  format?: "esm";
 }
 
 export interface DistConfig extends CommonConfig {
   /**
    * build format to use. defaults to 'iife'
    */
-  format?: 'iife' | 'umd';
+  format?: "iife" | "umd";
 
   /**
    * list of modules to regard as external, defaults to empty array
@@ -119,7 +124,7 @@ export interface Config {
    * boolean indicating if sourcemap should be generated for all builds,
    * can be true, false, or 'inline', defaults to true
    */
-  sourcemap?: true | false | 'inline';
+  sourcemap?: true | false | "inline";
 
   /**
    * boolean indicating if rollup plugin terser should be applied to the build, when in production mode
