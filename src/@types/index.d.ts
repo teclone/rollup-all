@@ -1,89 +1,33 @@
-import { Plugin } from "rollup";
+import { Plugin } from 'rollup';
 
-export interface CommonConfig {
-  /**
-   * boolean value indicating if build is enabled. default value is false
-   */
-  enabled?: boolean;
+export type BuildFormat = 'cjs' | 'esm' | 'iife' | 'umd';
 
-  /**
-   * specifies build output directory. defaults to 'cjs', 'dist' and 'esm' for the specific builds
-   */
-  outDir?: string;
+export type BuildEnvironment = 'development' | 'production' | '';
 
-  /**
-   * base path is used to specifies path that should be dropped from the output path
-   */
-  basePath?: string;
-
-  /**
-   * defines specific string of file patterns to process for the build
-   */
-  include?: (string | RegExp)[];
-
-  /**
-   * defines specific string of file patterns to ignore for the build.
-   */
-  exclude?: (string | RegExp)[];
-
-  /**
-   * defines specific string of file patterns to copy over for the builds.
-   */
-  assets?: (string | RegExp)[];
-
-  /**
-   * boolean indicating if rollup plugin terser should be applied to the build, when in production mode
-   * default to false
-   */
-  uglify?: boolean;
-
-  /**
-   * boolean indicating if the interop rollup setting should be enabled for the build
-   */
-  interop?: boolean;
-
-  /**
-   * boolean indicating if sourcemap files should be generated
-   */
-  sourcemap?: true | false | "inline";
-}
-
-export interface CJSConfig extends CommonConfig {
-  /**
-   * build format to use. must be 'cjs'
-   */
-  format?: "cjs";
-}
-
-export interface ESMConfig extends CommonConfig {
-  /**
-   * build format to use. must be 'esm'
-   */
-  format?: "esm";
-}
-
-export interface DistConfig extends CommonConfig {
-  /**
-   * build format to use. defaults to 'iife'
-   */
-  format?: "iife" | "umd";
-
-  /**
-   * list of modules to regard as external, defaults to empty array
-   */
-  externals: string[];
-}
+export type Sourcemap = true | false | 'inline';
 
 export interface Config {
+  formats: BuildFormat[];
+
+  /**
+   * if true, output logs are not logged
+   */
+  silent?: boolean;
+
+  /**
+   * the code src directory to be used, if not, it uses the globally defined src
+   */
+  src?: string;
+
+  /**
+   * out folder
+   */
+  out?: string;
+
   /**
    * plugins to apply
    */
   plugins?: Plugin[];
-
-  /**
-   * defines code src directory, defaults to 'src'
-   */
-  srcDir?: string;
 
   /**
    * defaults to index.js
@@ -91,7 +35,7 @@ export interface Config {
   entryFile?: string;
 
   /**
-   * defaults to project package name camel-cased
+   * defaults to project package name pascal-cased
    */
   moduleName?: string;
 
@@ -101,19 +45,15 @@ export interface Config {
   extensions?: string[];
 
   /**
-   * defines specific string of file patterns to process for all builds
+   * defines file patterns to process for all builds
    */
   include?: (string | RegExp)[];
 
   /**
-   * defines specific string of file patterns to ignore for all builds.
+   * defines specific string of file patterns to exclude for all builds.
+   * excluded files are treated as assets
    */
   exclude?: (string | RegExp)[];
-
-  /**
-   * defines specific string of file patterns to copy over for all builds.
-   */
-  assets?: (string | RegExp)[];
 
   /**
    * boolean indicating if the interop rollup setting should be enabled for all builds
@@ -124,13 +64,13 @@ export interface Config {
    * boolean indicating if sourcemap should be generated for all builds,
    * can be true, false, or 'inline', defaults to true
    */
-  sourcemap?: true | false | "inline";
+  sourcemap?: true | false | 'inline';
 
   /**
-   * boolean indicating if rollup plugin terser should be applied to the build, when in production mode
-   * default to false
+   * indicates if minified build should be generated,
+   * applies to dist builds only
    */
-  uglify?: boolean;
+  minify?: boolean;
 
   /**
    * rollup watch config
@@ -143,19 +83,19 @@ export interface Config {
   globals?: object;
 
   /**
-   * defines config settings for generating distributed browser codes
+   * applies to dist builds
    */
-  distConfig?: DistConfig;
+  envs?: BuildEnvironment[];
 
   /**
-   * defines config settings for generating cjs files, for node js or comonjs modules
+   * babel presets
    */
-  cjsConfig?: CJSConfig;
+  babelPresets?: any[];
 
   /**
-   * defines config settings for generating esm files, es modules
+   * babel plugins
    */
-  esmConfig?: ESMConfig;
+  babelPlugins?: any[];
 }
 
 export interface Module {
@@ -163,24 +103,27 @@ export interface Module {
   id: number;
 
   /**
-   * module old relative path, as it is relative to the src directory
+   * directory location of file relative to src
    */
-  oldRelativePath: string;
+  locationRelativeToSrc: string;
 
   /**
-   * module new relative path, the difference is that the module file extension is now .js
+   * file absolute location
    */
-  newRelativePath: string;
+  location: string;
 
   /**
-   * file absolute path
+   * file base name
    */
-  filePath: string;
+  baseName: string;
+
+  // file name
+  fileName: string;
 
   /**
    * file module name
    */
-  name: string;
+  moduleName: string;
 
   /**
    * file extension
@@ -194,29 +137,6 @@ export interface Module {
 }
 
 export interface ModuleFiles {
-  assetFiles: Module[];
   buildFiles: Module[];
-  typeDefinitionFiles: Module[];
-}
-
-export interface BabelPresetsConfig {
-  presets?: any[];
-  exclude?: Array<string | RegExp>;
-  include?: Array<string | RegExp>;
-}
-
-export interface BabelPluginsConfig {
-  plugins?: any[];
-}
-
-export interface GeneralConfig {
-  config?: Config;
-  babelConfig?: {
-    presetsConfig?: BabelPresetsConfig;
-    pluginsConfig?: BabelPluginsConfig;
-  };
-}
-
-export interface BundlerOptions {
-  generateOutputLogs: boolean;
+  copyFiles: Module[];
 }

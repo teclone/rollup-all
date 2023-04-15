@@ -6,21 +6,43 @@
 [![npm version](https://badge.fury.io/js/%40teclone%2Frollup-all.svg)](https://badge.fury.io/js/%40teclone%2Frollup-all)
 ![npm](https://img.shields.io/npm/dt/%40teclone%2Frollup-all.svg)
 
-## Overview
+**@teclone/rollup-all** is a package for generating javascript/typescript library builds with typescript definition file support.
 
-**@teclone/rollup-all** is an out of the box package for building all your shiny Javascript/Typescript library source codes in one parsing, allowing you to generate commonjs, es module, and browser builds at once. It is very configurable and runs asynchronously.
+This package does the heavy lifting and builds on top of [Rollupjs](https://rollupjs.org/) and [Babel](https://babeljs.io/) making it possible to generate `cjs`, `esm`, `umd` and `iife` builds at once.
 
-It allows you to configure the build process, letting you define what should be included and excluded in the build, if sourcemap should be generated, if minified versions of the build should be generated, if **asset and type definition files** should be copied over, and lots more...
+## Motivation for this package
 
-It comes with all needed configurations already done for you, including support for typescript projects. It uses Rollup's [JavaScript API](https://rollupjs.org/guide/en/#javascript-api) to automate the build process.
+The Javascript ecosystem is diverse, and every changing with new language proposals. There is big need to support older environments while writing in modern Javascript syntax.
 
-## Getting Started
+Library developers face the problem of shipping modern Javascript codes to formats that are compatible with NodeJs, browsers and bundle tools (webpack) in the leanest forms.
+
+Moreso, there is need to generate typescript definition files most projects (javascript and typescript projects alike), sourcemaps, minification, production build, development build, etc.
+
+library source codes in one parsing, allowing you to generate commonjs, es module, and browser builds at once. It is very configurable and runs asynchronously.
+
+This package automates the whole process with the right configurations and makes it easy to get all target build formats generated in one command with configurability in mind.
+
+### Installation with npm
 
 ```bash
 npm install --save-dev @teclone/rollup-all
 ```
 
-Next, add the build script to your package.json file
+### Installation with yarn
+
+```bash
+yarn add --dev @teclone/rollup-all
+```
+
+### Run via cli
+
+```bash
+npx rollup-all
+```
+
+### Run as npm/yarn script
+
+add a build script to package.json
 
 ```json
 {
@@ -30,54 +52,129 @@ Next, add the build script to your package.json file
 }
 ```
 
-## Advanced Configuration
+You can now run it as npm or yarn command
 
-In case you need to do some other configurations, such as passing extra babel presets, babel plugins, rollup plugins, and build config, then you can create
-a `rollup.config.js` file at the root of your project. Like shown below:
-
-```typescript
-const { config } = require('@teclone/rollup-all');
-module.exports = config(options);
+```bash
+yarn rollup-all
 ```
 
-The above code is the way to configure the build process. The good thing is that it is self documented, because it is a typescript project, and has typings generated.
+### Supported build Formats:
 
-Below is a brief documentation of the options object.
+The following build formats are supported:
 
-### The Options Object
+- `cjs`: Commonjs build, this output of this build is compatible with Nodejs.
+- `esm`: Es module build, the output of this build is compatibile with modern bundle tools such as webpack
+- `umd`: Browser bundle compatible with umd loaders,
+- `iife`: Browser bundle
 
-The options object takes two objects, `config` and `babelConfig`.
+**NB**: By default, output directory name matches the format name and are placed inside the project's root folder.
 
-1. **Babel Config**
+### Configurations
 
-Babel config object takes presets array and plugins array. These are added to the already existing presets and plugins used internally.
+It is possible to configure the build process via a config file or via cli options. To configure the build via a config file, create a `rollup.config.js` file in the project's root directory
 
-By default, The following presets are added automatically:
+```javascript
+const { createConfig } = require('./temp');
+module.exports = createConfig({
+  /**
+   * build formats to generate
+   */
+  formats: ['cjs', 'esm', 'iife', 'umd'],
 
-1. [@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env)
-2. [@babel/preset-typescript](https://babeljs.io/docs/en/babel-preset-typescript)
+  src: 'src',
 
-The following babel plugins are added automatically:
+  /**
+   * folder to put all builds, defaults to root folder
+   *
+   * for instance cjs builds will be put inside ${out}/cjs/
+   */
+  out: './',
 
-1. [@babel/plugin-proposal-class-properties](https://babeljs.io/docs/en/babel-plugin-proposal-class-properties)
-2. [@babel/plugin-proposal-nullish-coalescing-operator](https://babeljs.io/docs/en/babel-plugin-proposal-nullish-coalescing-operator)
-3. [@babel/plugin-proposal-object-rest-spread](https://babeljs.io/docs/en/babel-plugin-proposal-object-rest-spread)
-4. [@babel/plugin-transform-runtime](https://babeljs.io/docs/en/babel-plugin-transform-runtime)
-5. [@babel/runtime](https://babeljs.io/docs/en/babel-runtime)
+  /**
+   * extra rollup js plugins
+   */
+  plugins: [],
 
-6. **Config**
+  /**
+   * entry file for umd/iife build
+   */
+  entryFile: 'index.js',
 
-The config object is where you configure build specific options, and also where you extend the rollup plugins. it accepts a plugins array, that are added
-to the already used plugins. Below is a list of already added plugins
+  /**
+   * package export name for umd/iife,
+   *
+   * this is the name of the package as it will be accessed in browser windows (window.moduleName)
+   */
+  moduleName: '',
 
-1. `rollup-plugin-babel`
-2. `@rollup/plugin-commonjs`
-3. `@rollup/plugin-node-resolve`
-4. `rollup-plugin-terser`
-5. `@rollup/plugin-json`
+  /**
+   * allowed file extensions
+   */
+  extensions: ['.js', '.ts', '.jsx', '.tsx'],
 
-The config option takes other configuration options, such as `sourcemap` option, `interop`, `uglify`, `assets` array, `distConfig` options (where you can configure options specifically for browser builds, such as externals). etc. Note that `distConfig.enabled` options is set to false by default.
+  /**
+   * defines string of file patterns to process
+   */
+  include: [],
 
-## Contributing
+  /**
+   * defines string of file patterns to ignore. by default, type definition files are ignore
+   */
+  exclude: [],
 
-We welcome your own contributions, ranging from code refactoring, documentation improvements, new feature implementations, bugs/issues reporting, etc. **Thanks in advance!!!**
+  /**
+   * boolean indicating if the interop rollup setting should be enabled
+   */
+  interop: true,
+
+  /**
+   * boolean indicating if sourcemap should be generated, can be true, false, or 'inline'
+   */
+  sourcemap: true,
+
+  /**
+   * package imports that should not be bundled in a umd/iife, treated as externals
+   */
+  globals: {},
+
+  /**
+   * applies to dist builds (umd, iife), if true, a separate [filename].[env].min.js build will be
+   * generated for each file.
+   */
+  minify: true,
+
+  /**
+   * development and production builds can be genereted for umd/iife builds
+   *
+   * the advantage is that development specific codes (process.env.NODE_ENV === 'development') will be removed in production build
+   */
+  envs: ['development', 'production'],
+});
+```
+
+#### Cli options
+
+The following options can be parsed to the cli binary
+
+- **--sourcemap**: `boolean`: to generate sourcemaps, default is `true`
+- **--envs**: `development|production`: comma separated list of environment based builds. it only applies to distribution build formats, `umd` and `iife`. default is `development,production`
+- **--src**: `string`: your code's src folder: default value is `src`
+- **--out**: `string`: folder to place all builds, default is root directory `./`
+
+### Environment and minified builds
+
+When generating distribution builds, aka `umd` and `iife`, it is desirable to have separate development and production build with minified and non minified versions.
+
+The build filename format for dist builds is `[filename].[env].[min]?.js`;
+
+Production build will strip out all development related codes, and vice versa.
+
+for instance, the code sample below will be removed in production builds
+
+```javascript
+if (process.env.NODE_ENV === 'development') {
+  // code snippets here
+}
+```
+
+This is taken care of automatically with the help of [babel-plugin-transform-inline-environment-variables](https://babeljs.io/docs/babel-plugin-transform-inline-environment-variables)

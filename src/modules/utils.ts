@@ -2,21 +2,14 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import babel from '@rollup/plugin-babel';
 import json from '@rollup/plugin-json';
-import { terser } from 'rollup-plugin-terser';
+import terser from '@rollup/plugin-terser';
+import image from '@rollup/plugin-image';
 import shebang from 'rollup-plugin-preserve-shebang';
-import {
-  Config,
-  GeneralConfig,
-  DistConfig,
-  ESMConfig,
-  CJSConfig,
-  BabelPresetsConfig,
-  BabelPluginsConfig,
-} from '../@types';
-import { getEntryPath } from '@teclone/node-utils';
-
+import { BuildFormat, BuildEnvironment, Config } from '../@types';
 import path from 'path';
 import fs from 'fs';
+import { Plugin } from 'rollup';
+import { getClosestPackageDir } from '../utils/getClosestPackageDir';
 
 const resolveDependency = (dir: string, name: string) => {
   const dependencyPath = path.resolve(dir, 'node_modules', name);
@@ -29,122 +22,34 @@ const resolveDependency = (dir: string, name: string) => {
   return name;
 };
 
-/**
- * loads the given file and returns the result
- * @param file
- */
-export const loadFile = (entryPath: string, file: string) => {
-  try {
-    return require(path.resolve(entryPath, file));
-  } catch (ex) {
-    return {};
-  }
-};
+export const getRollupPlugins = (opts: {
+  minify: boolean;
+  env: BuildEnvironment;
+  format: BuildFormat;
 
-export const getBabelPlugins = (
-  pluginsConfig: BabelPluginsConfig,
-  internalNodeModulesDir: string,
-  useESModules: boolean
-) => {
-  return [
-    /**
-     * all these are now available by default in babel preset env
-     */
+  extensions: string[];
 
-    /** takes care of typescript declare inside classes */
-    [
-      resolveDependency(
-        internalNodeModulesDir,
-        '@babel/plugin-transform-typescript'
-      ),
-      {
-        allowDeclareFields: true,
-      },
-    ],
+  babelPresets: Config['babelPresets'];
+  babelPlugins: Config['babelPlugins'];
 
-    // handles class properties
-    resolveDependency(
-      internalNodeModulesDir,
-      '@babel/plugin-proposal-class-properties'
-    ),
+  plugins: Plugin[];
+}) => {
+  const {
+    extensions,
+    format,
+    env,
+    plugins,
+    minify,
+    babelPlugins,
+    babelPresets,
+  } = opts;
+  const internalNodeModulesDir = getClosestPackageDir(__dirname);
 
-    // handles object rest spread
-    resolveDependency(
-      internalNodeModulesDir,
-      '@babel/plugin-proposal-object-rest-spread'
-    ),
-    [
-      resolveDependency(
-        internalNodeModulesDir,
-        '@babel/plugin-proposal-nullish-coalescing-operator'
-      ),
-    ],
-    [
-      resolveDependency(
-        internalNodeModulesDir,
-        '@babel/plugin-proposal-optional-chaining'
-      ),
-    ],
-    ...(pluginsConfig?.plugins || []),
-    [
-      resolveDependency(
-        internalNodeModulesDir,
-        '@babel/plugin-transform-runtime'
-      ),
-      {
-        useESModules,
-      },
-    ],
-  ];
-};
-
-export const getBabelPresets = (
-  presetsConfig: BabelPresetsConfig,
-  internalNodeModulesDir: string
-) => {
-  return [
-    // here we are including babel preset env
-    [
-      resolveDependency(internalNodeModulesDir, '@babel/preset-env'),
-      {
-        // we do not want babel to change es modules to another module type
-        // so that rollup can be able to process it
-        modules: false,
-
-        // this defines babel preset shipped plugins to exclude, see
-        // https://github.com/babel/babel/blob/master/packages/babel-compat-data/scripts/data/plugin-features.js
-        //for all the included plugins
-        exclude: presetsConfig?.exclude || [],
-      },
-    ],
-
-    // support for typescript
-    resolveDependency(internalNodeModulesDir, '@babel/preset-typescript'),
-
-    // support for react
-    [
-      resolveDependency(internalNodeModulesDir, '@babel/preset-react'),
-      {
-        development: process.env.BABEL_ENV === 'development',
-        runtime: 'automatic',
-      },
-    ],
-
-    // user defined preset.
-    ...(presetsConfig?.presets || []),
-  ];
-};
-
-export const getRollupPlugins = (
-  mainConfig: Config,
-  buildConfig: DistConfig | ESMConfig | CJSConfig,
-  generalConfig: GeneralConfig
-) => {
-  const internalNodeModulesDir = getEntryPath(__dirname);
+  const isDistBuild = format === 'umd' || format === 'iife';
 
   return [
     resolve({
-      extensions: mainConfig.extensions,
+      extensions,
     }),
 
     commonjs({
@@ -155,33 +60,87 @@ export const getRollupPlugins = (
       // we do not want to use any local babelrc
       babelrc: false,
 
-      plugins: getBabelPlugins(
-        generalConfig?.babelConfig?.pluginsConfig || {},
-        internalNodeModulesDir,
-        buildConfig.format === 'esm'
-      ),
+      presets: [
+        // here we are including babel preset env,
+        [
+          resolveDependency(internalNodeModulesDir, '@babel/preset-env'),
+          {
+            // we do not want babel to change es modules to another module type
+            // so that rollup can be able to process it
+            modules: false,
 
-      presets: getBabelPresets(
-        generalConfig?.babelConfig?.presetsConfig || {},
-        internalNodeModulesDir
-      ),
+            // this defines babel preset shipped plugins to exclude, see
+            // https://github.com/babel/babel/blob/master/packages/babel-compat-data/scripts/data/plugin-features.js
+            //for all the included plugins
+            exclude: [],
 
-      // we are using runtime because it is assumed you are building a library
-      // this should be made configurable
-      babelHelpers: 'runtime',
+            /**
+             * this means that babel will not add corejs polyfills
+             * nor tranform entry file import of core-js into individual polyfills.
+             */
+            useBuiltIns: false,
+          },
+        ],
+
+        // support for typescript
+        [
+          resolveDependency(internalNodeModulesDir, '@babel/preset-typescript'),
+          {
+            allowDeclareFields: true,
+          },
+        ],
+
+        // support for react
+        [
+          resolveDependency(internalNodeModulesDir, '@babel/preset-react'),
+          {
+            runtime: 'automatic',
+          },
+        ],
+
+        ...babelPresets,
+      ],
+
+      // plugins
+      plugins: [
+        ...babelPlugins,
+
+        // transform runtime
+        [
+          resolveDependency(
+            internalNodeModulesDir,
+            '@babel/plugin-transform-runtime'
+          ),
+          {
+            useESModules: format === 'esm',
+            regenerator: true,
+          },
+        ],
+
+        env ? ['transform-inline-environment-variables'] : null,
+      ].filter(Boolean),
+
+      // runtime for library builds and bundled for bundled builds
+      babelHelpers: isDistBuild ? 'bundled' : 'runtime',
 
       // do not process node module files, it is believed that all files in the node modules directory has been properly worked on
       exclude: 'node_modules/**',
 
-      extensions: mainConfig.extensions,
+      extensions,
     }),
 
+    // handle json imports
     json(),
 
+    // handle image imports
+    image(),
+
+    // applies to esm and cjs builds
     shebang(),
 
-    buildConfig.uglify && terser(),
+    // minification
+    minify && terser(),
 
-    ...mainConfig.plugins,
+    ...plugins,
   ];
 };

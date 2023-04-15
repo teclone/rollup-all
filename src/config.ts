@@ -1,9 +1,13 @@
 import { Config } from './@types';
 
 export const config: Config = {
-  plugins: [],
+  formats: ['cjs', 'esm'],
 
-  srcDir: 'src',
+  src: 'src',
+
+  out: './',
+
+  plugins: [],
 
   entryFile: 'index.js',
 
@@ -25,11 +29,6 @@ export const config: Config = {
   exclude: [],
 
   /**
-   * list of asset files to copy over
-   */
-  assets: ['assets/**'],
-
-  /**
    * boolean indicating if the interop rollup setting should be enabled
    */
   interop: true,
@@ -40,10 +39,9 @@ export const config: Config = {
   sourcemap: true,
 
   /**
-   * boolean indicating if rollup plugin terser should be applied to the build, when in production mode
-   * default to false
+   * minify
    */
-  uglify: false,
+  minify: true,
 
   /**
    * rollup watch config, you must pass in the --watch command line argument for this to
@@ -52,75 +50,9 @@ export const config: Config = {
   watch: {},
 
   /**
-   * rollup globals config
+   * rollup globals config, applies to dist builds
    */
   globals: {},
 
-  /**
-   * defines config settings for generating lib codes. output format is cjs.
-   */
-  cjsConfig: {
-    /**
-     * defines if lib is enabled
-     */
-    enabled: true,
-
-    exclude: [],
-
-    include: [],
-
-    /**
-     * defines output directory
-     */
-    outDir: 'build',
-
-    format: 'cjs',
-  },
-
-  /**
-   * defines config settings for generating esm codes. output format is esm.
-   */
-  esmConfig: {
-    /**
-     * defines if esm module is enabled
-     */
-    enabled: true,
-
-    exclude: [],
-
-    include: [],
-
-    /**
-     * defines output directory
-     */
-    outDir: 'build/esm',
-
-    format: 'esm',
-  },
-
-  /**
-   * defines config settings for generating distributed codes. such as browser iife outputs
-   */
-  distConfig: {
-    /**
-     * defines if dist is enabled
-     */
-    enabled: false,
-
-    exclude: [],
-
-    include: [],
-
-    /**
-     * defines output directory
-     */
-    outDir: 'build/dist',
-
-    /**
-     * build format to use.
-     */
-    format: 'iife',
-
-    externals: [],
-  },
+  envs: ['development', 'production'],
 };

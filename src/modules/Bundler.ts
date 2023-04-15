@@ -1,51 +1,62 @@
-import * as path from "path";
-import * as fs from "fs";
-import { copy, isString, camelCase } from "@teclone/utils";
+import * as path from 'path';
+import * as fs from 'fs';
+import { ExternalOption } from 'rollup';
 import {
   Config,
-  CommonConfig,
-  DistConfig,
   Module,
-  CJSConfig,
-  ESMConfig,
   ModuleFiles,
-  GeneralConfig,
-  BundlerOptions,
-} from "../@types";
-import { config as defaultConfig } from "../config";
-import { COMMON_CONFIGS, REGEX_FIELDS } from "../constants";
-import { mkDirSync, getEntryPath } from "@teclone/node-utils";
-import { rollup } from "rollup";
-import { getRollupPlugins } from "./utils";
-import chalk from "chalk";
-import globToRegex from "glob-to-regexp";
+  BuildEnvironment,
+  BuildFormat,
+} from '../@types';
+import { config as defaultConfig } from '../config';
+import { rollup } from 'rollup';
+import { getRollupPlugins } from './utils';
+import chalk from 'chalk';
+import globToRegex from 'glob-to-regexp';
+import * as ts from 'typescript';
+import { copy } from '../utils/copy';
+import { camelCase } from '../utils/camelCase';
+import { rimrafSync } from 'rimraf';
+import { forEach } from '../utils/forEach';
 
 const allExternal = () => true;
 
 const log = console.log;
 
+if (process.env.NODE_ENV === 'production') {
+  console.log('hello man');
+}
+
 class Bundler {
-  private entryPath: string = "";
+  private entryPath: string = '';
 
   private config: Config = defaultConfig;
 
-  private generalConfig: GeneralConfig = {};
+  private src: string;
+  private out: string;
 
-  private bundlerOptions: BundlerOptions;
+  private entryFile: string;
 
-  constructor(
-    generalConfig: GeneralConfig = {},
-    bundlerOptions: BundlerOptions
-  ) {
-    this.entryPath = getEntryPath();
-    this.generalConfig = generalConfig;
+  constructor(givenConfig: Config = {} as Config) {
+    this.entryPath = process.cwd();
 
-    this.config = this.resolveConfig(
-      this.entryPath,
-      generalConfig.config ?? {}
-    );
+    const config = copy({}, defaultConfig, givenConfig);
 
-    this.bundlerOptions = bundlerOptions;
+    // resolve entry file
+    config.src = path.resolve(this.entryPath, config.src);
+    config.entryFile = path.resolve(config.src, config.entryFile);
+
+    // resolve includes and excludes
+    config.include = (config.include || []).map(this.resolveRegex);
+
+    config.exclude = (config.exclude || []).map(this.resolveRegex);
+
+    this.src = config.src;
+    this.out = path.resolve(this.entryPath, config.out);
+
+    this.entryFile = config.entryFile;
+
+    this.config = config;
   }
 
   /**
@@ -54,97 +65,15 @@ class Bundler {
    *@param {Array} regexStore - array to store regex objects
    */
   private resolveRegex(pattern: string | RegExp) {
-    if (isString(pattern)) {
+    if (typeof pattern === 'string') {
       return globToRegex(pattern, {
         extended: true,
         globstar: true,
-        flags: "i",
+        flags: 'i',
       });
     } else {
       return pattern;
     }
-  }
-
-  private mergeConfig(
-    prop: keyof CommonConfig,
-    config: Config,
-    target: CJSConfig | ESMConfig | DistConfig
-  ) {
-    const configValue = config[prop];
-    const targetValue = target[prop];
-
-    if (targetValue === undefined) {
-      target[prop as string] = configValue;
-    }
-  }
-
-  /**
-   * loads the given file and returns the result
-   * @param file
-   */
-  private loadFile(entryPath: string, file: string) {
-    try {
-      return require(path.resolve(entryPath, file));
-    } catch (ex) {
-      return {};
-    }
-  }
-
-  /**
-   * resolves the config object
-   */
-  private resolveConfig(entryPath: string, config: Config): Config {
-    const packageFile = this.loadFile(entryPath, "package.json");
-    const resolvedConfig: Config = copy({}, defaultConfig, config as Config);
-
-    //resolve module name
-    resolvedConfig.moduleName =
-      resolvedConfig.moduleName || camelCase(packageFile.name ?? "Unknown");
-
-    //resolve configs config
-    COMMON_CONFIGS.forEach((prop) => {
-      this.mergeConfig(prop, resolvedConfig, resolvedConfig.cjsConfig);
-      this.mergeConfig(prop, resolvedConfig, resolvedConfig.distConfig);
-      this.mergeConfig(prop, resolvedConfig, resolvedConfig.esmConfig);
-    });
-
-    const { esmConfig, distConfig, cjsConfig } = resolvedConfig;
-
-    /**
-     * resolve regex fields
-     */
-    REGEX_FIELDS.forEach((field) => {
-      esmConfig[field] = (resolvedConfig[field] as Array<string | RegExp>)
-        .concat(esmConfig[field] || [])
-        .map(this.resolveRegex);
-
-      distConfig[field] = (resolvedConfig[field] as Array<string | RegExp>)
-        .concat(distConfig[field] || [])
-        .map(this.resolveRegex);
-
-      cjsConfig[field] = (resolvedConfig[field] as Array<string | RegExp>)
-        .concat(cjsConfig[field] || [])
-        .map(this.resolveRegex);
-    });
-
-    return resolvedConfig;
-  }
-
-  /**
-   * copies the file from the src to the destination
-   */
-  private copyFile(src: string, filePath: string) {
-    return new Promise((resolve, reject) => {
-      const dest = path.resolve(this.entryPath, filePath);
-      mkDirSync(dest);
-      fs.copyFile(src, dest, (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(null);
-        }
-      });
-    });
   }
 
   /**
@@ -159,10 +88,7 @@ class Bundler {
   private getModules(
     modules: Module[],
     resolvedPath: string,
-    entryFile: string,
-    moduleName: string,
-    currentRelativeDir: string,
-    extensions: string[]
+    currentRelativeDir: string
   ): Promise<Module[]> {
     return new Promise((resolve, reject) => {
       fs.readdir(resolvedPath, (err, files) => {
@@ -172,44 +98,48 @@ class Bundler {
 
         const promises: Promise<any>[] = [];
 
-        for (const file of files) {
-          const filePath = path.join(resolvedPath, file);
+        for (let i = 0; i < files.length; i++) {
+          const fileName = files[i];
+          if (['.DS_Store', '.git', 'node_modules'].includes(fileName)) {
+            continue;
+          }
+          const filePath = path.join(resolvedPath, fileName);
           if (fs.statSync(filePath).isDirectory()) {
             promises.push(
               this.getModules(
                 modules,
                 filePath,
-                entryFile,
-                moduleName,
-                path.join(currentRelativeDir, file),
-                extensions
+                path.join(currentRelativeDir, fileName)
               )
             );
           } else {
-            const firstDotPos = file.startsWith(".")
-              ? file.indexOf(".", 1)
-              : file.indexOf(".");
-            const baseName =
-              firstDotPos > -1 ? file.substring(0, firstDotPos) : file;
-            const extname = firstDotPos > -1 ? file.substring(firstDotPos) : "";
+            let baseName = fileName;
+            let extName = '';
 
-            const oldRelativePath = path.join(currentRelativeDir, file);
-            const newRelativePath = path.join(
-              currentRelativeDir,
-              baseName + ".js"
-            );
+            if (fileName.startsWith('.')) {
+              extName = fileName;
+              baseName = '';
+            } else if (fileName.includes('.')) {
+              const nameSegements = fileName.split('.');
+              baseName = nameSegements[0];
+              extName = '.' + nameSegements.slice(1).join('.');
+            }
 
             modules.push({
               id: modules.length + 1,
-              ext: extname,
-              oldRelativePath,
-              newRelativePath,
-              filePath,
-              name:
-                oldRelativePath === entryFile
-                  ? moduleName
+              ext: extName,
+
+              locationRelativeToSrc: currentRelativeDir,
+
+              moduleName:
+                this.entryFile === filePath
+                  ? this.config.moduleName
                   : camelCase(baseName),
-              isBuildFile: extensions.includes(extname),
+
+              isBuildFile: this.config.extensions.includes(extName),
+              baseName,
+              fileName,
+              location: filePath,
             });
           }
         }
@@ -223,179 +153,285 @@ class Bundler {
    * @param config
    * @param buildConfig
    */
-  private filterFiles(
-    modules: Module[],
-    buildConfig: CJSConfig | ESMConfig | DistConfig
-  ): ModuleFiles {
+  private filterFiles(modules: Module[]): ModuleFiles {
     const result: ModuleFiles = {
-      assetFiles: [],
       buildFiles: [],
-      typeDefinitionFiles: [],
+      copyFiles: [],
     };
 
-    let src = "";
+    const { config } = this;
 
-    const regexMatches = (regex) => {
-      return regex.test(path.join(src));
-    };
-
-    for (const current of modules) {
-      const { ext, isBuildFile, oldRelativePath } = current;
-      const isTypeDefinitionFile = ext === ".d.ts";
-      const isAssetFile = !isTypeDefinitionFile && !isBuildFile;
-
-      src = oldRelativePath;
-      if (isTypeDefinitionFile) {
-        result.typeDefinitionFiles.push(current);
-      } else if (isAssetFile && buildConfig.assets.some(regexMatches)) {
-        result.assetFiles.push(current);
-      } else if (
-        isBuildFile &&
-        (buildConfig.include.length === 0 ||
-          buildConfig.include.some(regexMatches)) &&
-        (buildConfig.exclude.length === 0 ||
-          !buildConfig.exclude.some(regexMatches))
+    for (let i = 0; i < modules.length; i++) {
+      const current = modules[i];
+      // if file is excluded, return
+      const oldRelativePath = current.locationRelativeToSrc + current.fileName;
+      if (
+        config.exclude.length &&
+        config.exclude.some((regex: RegExp) => regex.test(oldRelativePath))
       ) {
+        continue;
+      }
+
+      // if file is not included in the list of included, return
+      if (
+        config.include.length &&
+        !config.include.some((regex: RegExp) => regex.test(oldRelativePath))
+      ) {
+        continue;
+      }
+
+      if (current.isBuildFile) {
         result.buildFiles.push(current);
+      } else {
+        result.copyFiles.push(current);
       }
     }
     return result;
   }
 
   /**
-   * resolve output path, taking care of the base path
-   * @param outdir
-   * @param filePath
-   * @param basePath
-   * @returns
+   * build files for a given format
    */
-  getOutputPath(outdir: string, filePath: string, basePath: string = "") {
-    const resolvedBasePath =
-      basePath.replace(/^\/+/, "").replace(/\/+$/, "") + "/";
+  private buildFiles(
+    outFolder: string,
+    fileModules: Module[],
+    opts: { format: BuildFormat; env: BuildEnvironment; minify?: boolean }
+  ) {
+    const {
+      interop,
+      sourcemap,
+      plugins: extraPlugins,
+      extensions,
+      silent,
 
-    if (filePath.startsWith(resolvedBasePath)) {
-      return path.resolve(
-        this.entryPath,
-        outdir,
-        filePath.split(resolvedBasePath).slice(0).join("")
-      );
-    } else {
-      return path.resolve(this.entryPath, outdir, filePath);
+      babelPlugins = [],
+      babelPresets = [],
+    } = this.config;
+
+    const { format, env, minify } = opts;
+
+    let externals: ExternalOption = [];
+
+    switch (format) {
+      case 'cjs':
+      case 'esm':
+        externals = allExternal;
+        break;
+
+      case 'iife':
+      case 'umd':
+        externals = Object.keys(this.config.globals);
+        break;
     }
+
+    const plugins = getRollupPlugins({
+      env,
+      extensions,
+      format,
+      minify,
+      plugins: extraPlugins,
+
+      babelPlugins,
+      babelPresets,
+    });
+
+    log(
+      chalk.gray(
+        ['Generating', format, minify ? 'minified' : '', env, 'build...\n']
+          .filter(Boolean)
+          .join(' ')
+      )
+    );
+
+    return Promise.all(
+      fileModules.map((fileModule) => {
+        const oldRelativePath = path.join(
+          fileModule.locationRelativeToSrc,
+          fileModule.fileName
+        );
+
+        const newRelativePath = path.join(
+          fileModule.locationRelativeToSrc,
+          [fileModule.baseName, env, minify ? 'min' : '', 'js']
+            .filter(Boolean)
+            .join('.')
+        );
+
+        const out = path.join(outFolder, newRelativePath);
+
+        return rollup({
+          input: fileModule.location,
+          plugins,
+          external: externals,
+          onwarn: (warning, warn) =>
+            console.warn(warning.message, fileModule.location),
+        })
+          .then((bundler) => {
+            bundler.write({
+              file: out,
+              format,
+              interop,
+              sourcemap,
+              name: fileModule.moduleName,
+            });
+          })
+          .then(() => {
+            if (!silent) {
+              log(chalk.green(`${oldRelativePath} >> ${out}} \n`));
+            }
+            return null;
+          });
+      })
+    );
   }
 
   /**
-   * runs a specific build
-   * @param modules
-   * @param mainConfig
-   * @param config
+   * builds typescript definition file
+   * @param outFolder
+   * @param fileModules
+   * @returns
    */
-  runBuild(
-    modules: Module[],
-    mainConfig: Config,
-    config: DistConfig | CJSConfig | ESMConfig
+  private buildTypeDifinitionFiles(
+    outFolder: string,
+    fileModules: Module[],
+    format: BuildFormat
   ) {
-    const moduleFiles = this.filterFiles(modules, config);
-    const promises: Array<Promise<any>> = [];
-    const { assetFiles, typeDefinitionFiles, buildFiles } = moduleFiles;
+    const processedTDFiles = new Set();
 
-    log(chalk.yellow(`generating ${config.format} builds...\n`));
+    log(chalk.gray(`Generating ${format} typescript definition files...\n`));
 
-    const plugins = getRollupPlugins(mainConfig, config, this.generalConfig);
-    const externals =
-      config.format === "iife" || config.format === "umd"
-        ? config.externals
-        : allExternal;
+    return new Promise((resolve, reject) => {
+      let rejected = false;
 
-    const onError = (ex) => {
-      console.error(ex?.message || ex);
-    };
+      // run with try catch block
+      const run = (callback) => {
+        try {
+          callback();
+        } catch (ex) {
+          rejected = true;
+          reject(ex);
+        }
+      };
 
-    buildFiles.forEach(
-      ({ filePath, newRelativePath, oldRelativePath, name }) => {
-        const out = this.getOutputPath(
-          config.outDir,
-          newRelativePath,
-          config.basePath
+      // write to filesytem and index
+      const onEmit = (filename, content) =>
+        run(() => {
+          const out = path.join(outFolder, filename.split(this.src)[1]);
+          processedTDFiles.add(out);
+          fs.mkdirSync(path.dirname(out), { recursive: true });
+          fs.writeFileSync(out, content);
+        });
+
+      for (let i = 0; i < fileModules.length; i++) {
+        const fileModule = fileModules[i];
+        if (rejected) {
+          break;
+        }
+
+        const tsdOut = path.join(
+          outFolder,
+          fileModule.locationRelativeToSrc,
+          fileModule.baseName + '.d.ts'
         );
-        promises.push(
-          rollup({
-            input: filePath,
-            plugins,
-            external: externals,
-            onwarn: (warning, warn) => console.log(warning.message, filePath),
-          })
-            .then((bundler) =>
-              bundler.write({
-                file: out,
-                format: config.format,
-                interop: config.interop,
-                sourcemap: config.sourcemap,
-                name,
-              })
-            )
-            .then(() => {
-              if (this.bundlerOptions.generateOutputLogs) {
-                log(chalk.green(`${oldRelativePath} ... ${out} \n`));
-              }
-              return null;
-            })
-            .catch(onError)
-        );
+
+        if (processedTDFiles.has(tsdOut)) {
+          continue;
+        }
+
+        run(() => {
+          const program = ts.createProgram([fileModule.location], {
+            declaration: true,
+            emitDeclarationOnly: true,
+          });
+
+          program.emit(undefined, onEmit, undefined, true);
+        });
       }
+
+      resolve(true);
+    });
+  }
+
+  /**
+   * copies the file from the src to the destination
+   */
+  private copyFiles(
+    outFolder: string,
+    fileModules: Module[],
+    format: BuildFormat
+  ) {
+    log(chalk.gray(`Copying ${format} asset files to ${outFolder}...\n`));
+    return Promise.all(
+      fileModules.map((fileModule) => {
+        const dest = path.resolve(
+          outFolder,
+          fileModule.locationRelativeToSrc,
+          fileModule.fileName
+        );
+
+        return new Promise((resolve, reject) => {
+          fs.mkdirSync(path.dirname(dest), { recursive: true });
+          fs.copyFile(fileModule.location, dest, (err) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(null);
+            }
+          });
+        });
+      })
     );
-
-    assetFiles.forEach((assetFile) => {
-      const out = this.getOutputPath(
-        config.outDir,
-        assetFile.oldRelativePath,
-        config.basePath
-      );
-      promises.push(this.copyFile(assetFile.filePath, out));
-    });
-
-    typeDefinitionFiles.forEach(({ oldRelativePath, filePath }) => {
-      const out = this.getOutputPath(
-        config.outDir,
-        oldRelativePath,
-        config.basePath
-      );
-      promises.push(this.copyFile(filePath, out));
-    });
-
-    return Promise.all(promises);
   }
 
   /**
    * runs the process
    */
   async process() {
-    const config = this.config;
-    const startAt = path.resolve(this.entryPath, config.srcDir);
+    const { formats, envs, minify } = this.config;
 
-    const modules = await this.getModules(
-      [],
-      startAt,
-      config.entryFile,
-      config.moduleName,
-      "",
-      config.extensions
-    );
+    const modules = await this.getModules([], this.src, '');
 
-    //run cjs build
-    if (config.cjsConfig.enabled) {
-      await this.runBuild(modules, config, config.cjsConfig);
-    }
+    const { buildFiles, copyFiles } = this.filterFiles(modules);
 
-    // run esm build
-    if (config.esmConfig.enabled) {
-      await this.runBuild(modules, config, config.esmConfig);
-    }
+    forEach(formats, async (format) => {
+      const outFolder = path.join(this.out, format);
 
-    // run dist build
-    if (config.distConfig.enabled) {
-      await this.runBuild(modules, config, config.distConfig);
-    }
+      log(chalk.blueBright(`Starting asynchronous ${format} build...\n`));
+
+      // remove build out folder
+      rimrafSync(outFolder);
+
+      if (format === 'cjs' || format === 'esm') {
+        process.env.NODE_ENV = 'development';
+        await Promise.all([
+          this.copyFiles(outFolder, copyFiles, format),
+          this.buildFiles(outFolder, buildFiles, {
+            format,
+            env: 'development',
+            minify: false,
+          }),
+          this.buildTypeDifinitionFiles(outFolder, buildFiles, format),
+        ]);
+        return;
+      }
+
+      await forEach(envs, async (env) => {
+        process.env.NODE_ENV = env;
+        await this.buildFiles(outFolder, buildFiles, {
+          format,
+          env,
+          minify: false,
+        });
+
+        if (minify) {
+          await this.buildFiles(outFolder, buildFiles, {
+            format,
+            env,
+            minify: true,
+          });
+        }
+      });
+    });
   }
 }
 

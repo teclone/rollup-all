@@ -1,5 +1,13 @@
-import { GeneralConfig } from './@types';
+import { Config } from './@types';
 
-export const config = (options: GeneralConfig) => {
-  return options || {};
+export const createConfig = (config: Config) => {
+  return config || {};
 };
+
+export { Bundler } from './modules/Bundler';
+export * from './utils/camelCase';
+export * from './utils/copy';
+export * from './utils/getClosestPackageDir';
+export * from './utils/isCallable';
+export * from './utils/isObject';
+export * from './utils/isRegex';
