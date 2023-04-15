@@ -23,14 +23,12 @@ args.options([
   {
     name: 'formats',
     description: 'defines desired build formats',
-    defaultValue: 'cjs, esm',
     init: (value) => value.split(/\s*,\s*/gim),
   },
 
   {
     name: 'envs',
     description: 'build envs',
-    defaultValue: 'production, development',
     init: (value) => value.split(/\s*,\s*/gim),
   },
 
@@ -49,13 +47,11 @@ args.options([
   {
     name: 'src',
     description: 'defines code src directory',
-    defaultValue: 'src',
   },
 
   {
     name: 'out',
     description: 'defines code build output directory',
-    defaultValue: './',
   },
 ]);
 
@@ -108,19 +104,14 @@ const run = () => {
   assignDefaultBooleanValue(flags, 'debug', false);
   assignDefaultBooleanValue(flags, 'sourcemap', true);
 
-  const { envs, formats, sourcemap, out, src } = flags;
   const pkgName = pkgFile.name;
 
   const resolvedConfig = {
     ...config,
-    envs,
-    formats,
-    sourcemap,
+    ...flags,
     moduleName:
       config.moduleName ||
       camelCase(pkgName.includes('/') ? pkgName.split('/').pop() : pkgName),
-    out,
-    src,
   };
 
   if (flags.debug) {

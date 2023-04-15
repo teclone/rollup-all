@@ -5,7 +5,7 @@ import json from '@rollup/plugin-json';
 import terser from '@rollup/plugin-terser';
 import image from '@rollup/plugin-image';
 import shebang from 'rollup-plugin-preserve-shebang';
-import { BuildFormat, BuildEnvironment, Config } from '../@types';
+import { BuildFormat, Config } from '../@types';
 import path from 'path';
 import fs from 'fs';
 import { Plugin } from 'rollup';
@@ -24,7 +24,6 @@ const resolveDependency = (dir: string, name: string) => {
 
 export const getRollupPlugins = (opts: {
   minify: boolean;
-  env: BuildEnvironment;
   format: BuildFormat;
 
   extensions: string[];
@@ -34,15 +33,8 @@ export const getRollupPlugins = (opts: {
 
   plugins: Plugin[];
 }) => {
-  const {
-    extensions,
-    format,
-    env,
-    plugins,
-    minify,
-    babelPlugins,
-    babelPresets,
-  } = opts;
+  const { extensions, format, plugins, minify, babelPlugins, babelPresets } =
+    opts;
   const internalNodeModulesDir = getClosestPackageDir(__dirname);
 
   const isDistBuild = format === 'umd' || format === 'iife';
@@ -105,26 +97,32 @@ export const getRollupPlugins = (opts: {
       plugins: [
         ...babelPlugins,
 
-        // transform runtime
-        [
-          resolveDependency(
-            internalNodeModulesDir,
-            '@babel/plugin-transform-runtime'
-          ),
-          {
-            useESModules: format === 'esm',
-            regenerator: true,
-          },
-        ],
+        // use babel runtime in non dist builds
+        !isDistBuild
+          ? [
+              resolveDependency(
+                internalNodeModulesDir,
+                '@babel/plugin-transform-runtime'
+              ),
+              {
+                useESModules: format === 'esm',
+                regenerator: true,
+              },
+            ]
+          : null,
 
-        env ? ['transform-inline-environment-variables'] : null,
+        // transform dynamic imports in cjs and dist build
+        isDistBuild || format === 'cjs' ? ['dynamic-import-node'] : null,
+
+        // replace environment variables in dist builds
+        isDistBuild ? ['transform-inline-environment-variables'] : null,
       ].filter(Boolean),
 
       // runtime for library builds and bundled for bundled builds
       babelHelpers: isDistBuild ? 'bundled' : 'runtime',
 
       // do not process node module files, it is believed that all files in the node modules directory has been properly worked on
-      exclude: 'node_modules/**',
+      exclude: '**/node_modules/**',
 
       extensions,
     }),

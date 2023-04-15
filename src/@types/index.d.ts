@@ -1,4 +1,4 @@
-import { Plugin } from 'rollup';
+import { GlobalsOption, Plugin } from 'rollup';
 
 export type BuildFormat = 'cjs' | 'esm' | 'iife' | 'umd';
 
@@ -80,7 +80,7 @@ export interface Config {
   /**
    * rollup globals config
    */
-  globals?: object;
+  globals?: GlobalsOption;
 
   /**
    * applies to dist builds

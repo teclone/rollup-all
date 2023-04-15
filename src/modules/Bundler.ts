@@ -221,7 +221,6 @@ class Bundler {
     }
 
     const plugins = getRollupPlugins({
-      env,
       extensions,
       format,
       minify,
@@ -268,6 +267,7 @@ class Bundler {
               format,
               interop,
               sourcemap,
+              globals: this.config.globals,
               name: fileModule.moduleName,
             });
           })

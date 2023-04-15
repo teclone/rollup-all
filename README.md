@@ -16,7 +16,7 @@ The Javascript ecosystem is diverse, and every changing with new language propos
 
 Library developers face the problem of shipping modern Javascript codes to formats that are compatible with NodeJs, browsers and bundle tools (webpack) in the leanest forms.
 
-Moreso, there is need to generate typescript definition files most projects (javascript and typescript projects alike), sourcemaps, minification, production build, development build, etc.
+Moreso, there is need to generate typescript definition files for most projects (javascript and typescript projects alike), sourcemaps, minification, production build, development build, resolution of dynamic imports, etc.
 
 library source codes in one parsing, allowing you to generate commonjs, es module, and browser builds at once. It is very configurable and runs asynchronously.
 
