@@ -23,10 +23,6 @@ const allExternal = () => true;
 
 const log = console.log;
 
-if (process.env.NODE_ENV === 'production') {
-  console.log('hello man');
-}
-
 class Bundler {
   private entryPath: string = '';
 
@@ -402,12 +398,11 @@ class Bundler {
       rimrafSync(outFolder);
 
       if (format === 'cjs' || format === 'esm') {
-        process.env.NODE_ENV = 'development';
         await Promise.all([
           this.copyFiles(outFolder, copyFiles, format),
           this.buildFiles(outFolder, buildFiles, {
             format,
-            env: 'development',
+            env: '',
             minify: false,
           }),
           this.buildTypeDifinitionFiles(outFolder, buildFiles, format),
