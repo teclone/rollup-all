@@ -4,6 +4,7 @@ import babel from '@rollup/plugin-babel';
 import json from '@rollup/plugin-json';
 import terser from '@rollup/plugin-terser';
 import image from '@rollup/plugin-image';
+import dynamicImportVars from '@rollup/plugin-dynamic-import-vars';
 import shebang from 'rollup-plugin-preserve-shebang';
 import { BuildEnvironment, BuildFormat, Config } from '../@types';
 import path from 'path';
@@ -120,9 +121,6 @@ export const getRollupPlugins = (opts: {
             ]
           : null,
 
-        // transform dynamic imports in cjs and dist build
-        isDistBuild || format === 'cjs' ? ['dynamic-import-node'] : null,
-
         // replace environment variables in dist builds
         env && env !== 'uni'
           ? ['transform-inline-environment-variables']
@@ -146,6 +144,9 @@ export const getRollupPlugins = (opts: {
 
     // applies to esm and cjs builds
     shebang(),
+
+    // handle dynamic import vars
+    dynamicImportVars(),
 
     // minification
     minify && terser(),

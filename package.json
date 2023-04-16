@@ -70,6 +70,7 @@
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^11.2.0",
     "@rollup/plugin-terser": "^0.4.0",
+    "@rollup/plugin-dynamic-import-vars": "^2.0.3",
     "@types/node": "^14.14.31",
     "args": "5.0.1",
     "babel-plugin-transform-inline-environment-variables": "^0.4.4",
@@ -78,7 +79,6 @@
     "rimraf": "^5.0.0",
     "rollup": "^2.39.0",
     "rollup-plugin-preserve-shebang": "^1.0.1",
-    "typescript": "^4.1.5",
-    "babel-plugin-dynamic-import-node": "^2.3.3"
+    "typescript": "^4.1.5"
   }
 }

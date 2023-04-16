@@ -275,6 +275,7 @@ class Bundler {
           input: fileModule.location,
           plugins,
           external: externals,
+
           onwarn: (warning, warn) =>
             console.warn(warning.message, fileModule.location),
         })
@@ -287,11 +288,12 @@ class Bundler {
               exports: 'auto',
               globals: this.config.globals,
               name: fileModule.moduleName,
+              inlineDynamicImports: format === 'iife' || format === 'umd',
             });
           })
           .then(() => {
             if (!silent) {
-              log(chalk.green(`${oldRelativePath} >> ${out}} \n`));
+              log(chalk.green(`${oldRelativePath} >> ${out}\n`));
             }
             return null;
           });
@@ -305,7 +307,7 @@ class Bundler {
    * @param fileModules
    * @returns
    */
-  private buildTypeDifinitionFiles(
+  private buildTypeDefinitionFiles(
     outFolder: string,
     fileModules: Module[],
     format: BuildFormat
@@ -423,7 +425,7 @@ class Bundler {
             env: 'uni',
             minify: false,
           }),
-          this.buildTypeDifinitionFiles(outFolder, buildFiles, format),
+          this.buildTypeDefinitionFiles(outFolder, buildFiles, format),
         ]);
         return;
       }
