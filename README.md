@@ -157,7 +157,7 @@ module.exports = createConfig({
 The following options can be parsed to the cli binary
 
 - **--sourcemap**: `boolean`: to generate sourcemaps, default is `true`
-- **--envs**: `development|production`: comma separated list of environment based builds. it only applies to distribution build formats, `umd` and `iife`. default is `development,production`
+- **--envs**: `development|production|uni`: comma separated list of environment based builds. `uni` value will generate build that runs for production and development. Environment based builds only applies to distribution build formats, `umd` and `iife`. default is `development,production`
 - **--src**: `string`: your code's src folder: default value is `src`
 - **--out**: `string`: folder to place all builds, default is root directory `./`
 

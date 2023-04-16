@@ -99,7 +99,9 @@ class Bundler {
           if (['.DS_Store', '.git', 'node_modules'].includes(fileName)) {
             continue;
           }
+
           const filePath = path.join(resolvedPath, fileName);
+
           if (fs.statSync(filePath).isDirectory()) {
             promises.push(
               this.getModules(
@@ -109,17 +111,21 @@ class Bundler {
               )
             );
           } else {
-            let baseName = fileName;
-            let extName = '';
+            const dirName = path.dirname(filePath);
+            const extName = path.extname(fileName);
+            const baseName = path.basename(fileName, extName);
 
-            if (fileName.startsWith('.')) {
-              extName = fileName;
-              baseName = '';
-            } else if (fileName.includes('.')) {
-              const nameSegements = fileName.split('.');
-              baseName = nameSegements[0];
-              extName = '.' + nameSegements.slice(1).join('.');
-            }
+            const isTypeDefinitionFile = baseName.endsWith('.d');
+
+            const filePathWithoutExtension = path.join(dirName, baseName);
+
+            const isBuildFile =
+              !isTypeDefinitionFile && this.config.extensions.includes(extName);
+
+            const isEntryFile =
+              isBuildFile &&
+              (this.entryFile === filePath ||
+                this.entryFile === filePathWithoutExtension);
 
             modules.push({
               id: modules.length + 1,
@@ -127,12 +133,11 @@ class Bundler {
 
               locationRelativeToSrc: currentRelativeDir,
 
-              moduleName:
-                this.entryFile === filePath
-                  ? this.config.moduleName
-                  : camelCase(baseName),
+              moduleName: isEntryFile
+                ? this.config.moduleName
+                : camelCase(baseName),
 
-              isBuildFile: this.config.extensions.includes(extName),
+              isBuildFile,
               baseName,
               fileName,
               location: filePath,
@@ -160,7 +165,11 @@ class Bundler {
     for (let i = 0; i < modules.length; i++) {
       const current = modules[i];
       // if file is excluded, return
-      const oldRelativePath = current.locationRelativeToSrc + current.fileName;
+      const oldRelativePath = path.join(
+        current.locationRelativeToSrc,
+        current.fileName
+      );
+
       if (
         config.exclude.length &&
         config.exclude.some((regex: RegExp) => regex.test(oldRelativePath))
@@ -224,15 +233,23 @@ class Bundler {
       extensions,
       format,
       minify,
+      env,
       plugins: extraPlugins,
 
       babelPlugins,
       babelPresets,
     });
 
+    const envPrefix = env !== 'uni' ? env : '';
     log(
       chalk.gray(
-        ['Generating', format, minify ? 'minified' : '', env, 'build...\n']
+        [
+          'Generating',
+          format,
+          minify ? 'minified' : '',
+          envPrefix,
+          'build...\n',
+        ]
           .filter(Boolean)
           .join(' ')
       )
@@ -247,7 +264,7 @@ class Bundler {
 
         const newRelativePath = path.join(
           fileModule.locationRelativeToSrc,
-          [fileModule.baseName, env, minify ? 'min' : '', 'js']
+          [fileModule.baseName, envPrefix, minify ? 'min' : '', 'js']
             .filter(Boolean)
             .join('.')
         );
@@ -267,6 +284,7 @@ class Bundler {
               format,
               interop,
               sourcemap,
+              exports: 'auto',
               globals: this.config.globals,
               name: fileModule.moduleName,
             });
@@ -402,7 +420,7 @@ class Bundler {
           this.copyFiles(outFolder, copyFiles, format),
           this.buildFiles(outFolder, buildFiles, {
             format,
-            env: '',
+            env: 'uni',
             minify: false,
           }),
           this.buildTypeDifinitionFiles(outFolder, buildFiles, format),

@@ -2,7 +2,7 @@ import { GlobalsOption, Plugin } from 'rollup';
 
 export type BuildFormat = 'cjs' | 'esm' | 'iife' | 'umd';
 
-export type BuildEnvironment = 'development' | 'production' | '';
+export type BuildEnvironment = 'development' | 'production' | 'uni';
 
 export type Sourcemap = true | false | 'inline';
 

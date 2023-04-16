@@ -5,7 +5,7 @@ import json from '@rollup/plugin-json';
 import terser from '@rollup/plugin-terser';
 import image from '@rollup/plugin-image';
 import shebang from 'rollup-plugin-preserve-shebang';
-import { BuildFormat, Config } from '../@types';
+import { BuildEnvironment, BuildFormat, Config } from '../@types';
 import path from 'path';
 import fs from 'fs';
 import { Plugin } from 'rollup';
@@ -28,13 +28,22 @@ export const getRollupPlugins = (opts: {
 
   extensions: string[];
 
+  env: BuildEnvironment;
+
   babelPresets: Config['babelPresets'];
   babelPlugins: Config['babelPlugins'];
 
   plugins: Plugin[];
 }) => {
-  const { extensions, format, plugins, minify, babelPlugins, babelPresets } =
-    opts;
+  const {
+    extensions,
+    format,
+    plugins,
+    env,
+    minify,
+    babelPlugins,
+    babelPresets,
+  } = opts;
   const internalNodeModulesDir = getClosestPackageDir(__dirname);
 
   const isDistBuild = format === 'umd' || format === 'iife';
@@ -115,7 +124,9 @@ export const getRollupPlugins = (opts: {
         isDistBuild || format === 'cjs' ? ['dynamic-import-node'] : null,
 
         // replace environment variables in dist builds
-        isDistBuild ? ['transform-inline-environment-variables'] : null,
+        env && env !== 'uni'
+          ? ['transform-inline-environment-variables']
+          : null,
       ].filter(Boolean),
 
       // runtime for library builds and bundled for bundled builds

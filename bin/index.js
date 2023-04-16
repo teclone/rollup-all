@@ -7,6 +7,11 @@ const parseBoolean = (value) => {
   return value === '' || value === true || value === 'true' || value === '1';
 };
 
+const parseList = (value) =>
+  value && typeof value === 'string'
+    ? value.split(/\s*,\*/gim).filter(Boolean)
+    : [];
+
 const assignDefaultBooleanValue = (flags, property, defaultValue) => {
   if (typeof flags[property] === 'undefined') {
     flags[property] = defaultValue;
@@ -23,13 +28,13 @@ args.options([
   {
     name: 'formats',
     description: 'defines desired build formats',
-    init: (value) => value.split(/\s*,\s*/gim),
+    init: parseList,
   },
 
   {
     name: 'envs',
     description: 'build envs',
-    init: (value) => value.split(/\s*,\s*/gim),
+    init: parseList,
   },
 
   {
