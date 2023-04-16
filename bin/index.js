@@ -9,7 +9,7 @@ const parseBoolean = (value) => {
 
 const parseList = (value) =>
   value && typeof value === 'string'
-    ? value.split(/\s*,\*/gim).filter(Boolean)
+    ? value.split(/\s*,\s*/gim).filter(Boolean)
     : [];
 
 const assignDefaultBooleanValue = (flags, property, defaultValue) => {
