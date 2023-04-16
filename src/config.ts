@@ -9,7 +9,7 @@ export const config: Config = {
 
   plugins: [],
 
-  entryFile: 'index.js',
+  entryFile: 'index',
 
   moduleName: '',
 

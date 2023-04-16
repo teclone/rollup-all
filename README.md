@@ -96,9 +96,9 @@ module.exports = createConfig({
   plugins: [],
 
   /**
-   * entry file for umd/iife build
+   * entry file for umd/iife build, index here matches any of the extensions
    */
-  entryFile: 'index.js',
+  entryFile: 'index',
 
   /**
    * package export name for umd/iife,
