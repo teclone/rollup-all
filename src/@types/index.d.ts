@@ -1,6 +1,6 @@
 import { GlobalsOption, Plugin } from 'rollup';
 
-export type BuildFormat = 'cjs' | 'esm' | 'iife' | 'umd';
+export type BuildFormat = 'cjs' | 'es' | 'iife' | 'umd';
 
 export type BuildEnvironment = 'development' | 'production' | 'uni';
 

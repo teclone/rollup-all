@@ -1,11 +1,11 @@
 import { Config } from './@types';
 
 export const config: Config = {
-  formats: ['cjs', 'esm'],
+  formats: ['cjs', 'es'],
 
   src: 'src',
 
-  out: './',
+  out: './build',
 
   plugins: [],
 

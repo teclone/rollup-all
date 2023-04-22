@@ -219,7 +219,7 @@ class Bundler {
 
     switch (format) {
       case 'cjs':
-      case 'esm':
+      case 'es':
         externals = allExternal;
         break;
 
@@ -417,7 +417,7 @@ class Bundler {
       // remove build out folder
       rimrafSync(outFolder);
 
-      if (format === 'cjs' || format === 'esm') {
+      if (format === 'cjs' || format === 'es') {
         await Promise.all([
           this.copyFiles(outFolder, copyFiles, format),
           this.buildFiles(outFolder, buildFiles, {

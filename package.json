@@ -5,10 +5,14 @@
   "publishConfig": {
     "access": "public"
   },
-  "main": "cjs/index",
-  "module": "esm/index",
-  "typings": "cjs/index",
+  "main": "build/cjs/index",
+  "module": "build/es/index",
+  "typings": "build/cjs/index",
   "bin": "./bin/index.js",
+  "files": [
+    "build",
+    "bin"
+  ],
   "scripts": {
     "compile": "tsc --noEmit",
     "commit": "git-cz",

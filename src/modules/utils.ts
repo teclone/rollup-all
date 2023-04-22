@@ -115,7 +115,7 @@ export const getRollupPlugins = (opts: {
                 '@babel/plugin-transform-runtime'
               ),
               {
-                useESModules: format === 'esm',
+                useESModules: format === 'es',
                 regenerator: true,
               },
             ]

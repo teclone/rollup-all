@@ -8,7 +8,7 @@
 
 **@teclone/rollup-all** is a package for generating javascript/typescript library builds with typescript definition file support.
 
-This package does the heavy lifting and builds on top of [Rollupjs](https://rollupjs.org/) and [Babel](https://babeljs.io/) making it possible to generate `cjs`, `esm`, `umd` and `iife` builds at once.
+This package does the heavy lifting and builds on top of [Rollupjs](https://rollupjs.org/) and [Babel](https://babeljs.io/) making it possible to generate `cjs`, `es`, `umd` and `iife` builds at once.
 
 ## Motivation for this package
 
@@ -63,7 +63,7 @@ yarn rollup-all
 The following build formats are supported:
 
 - `cjs`: Commonjs build, this output of this build is compatible with Nodejs.
-- `esm`: Es module build, the output of this build is compatibile with modern bundle tools such as webpack
+- `es`: Es module build, the output of this build is compatibile with modern bundle tools such as webpack
 - `umd`: Browser bundle compatible with umd loaders,
 - `iife`: Browser bundle
 
@@ -79,7 +79,7 @@ module.exports = createConfig({
   /**
    * build formats to generate
    */
-  formats: ['cjs', 'esm', 'iife', 'umd'],
+  formats: ['cjs', 'es', 'iife', 'umd'],
 
   src: 'src',
 
@@ -88,7 +88,7 @@ module.exports = createConfig({
    *
    * for instance cjs builds will be put inside ${out}/cjs/
    */
-  out: './',
+  out: './build',
 
   /**
    * extra rollup js plugins

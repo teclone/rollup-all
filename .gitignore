@@ -2,7 +2,4 @@
 /coverage
 /build
 /temp
-/cjs
-/esm
-/iife
-/umd
+/package
