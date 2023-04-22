@@ -84,7 +84,7 @@ const run = () => {
       __dirname,
       pkgFile.name === '@teclone/rollup-all'
         ? '../temp/index.js'
-        : '../cjs/index.js'
+        : '../build/cjs/index.js'
     ));
 
     camelCase = moduleExports.camelCase;
