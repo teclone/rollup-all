@@ -45,6 +45,11 @@ export interface Config {
   extensions?: string[];
 
   /**
+   * extensions of files to copy over as assets
+   */
+  assetExtensions?: string[];
+
+  /**
    * defines file patterns to process for all builds
    */
   include?: (string | RegExp)[];
@@ -134,6 +139,16 @@ export interface Module {
    * boolean indicating if file is a build file
    */
   isBuildFile: boolean;
+
+  /**
+   * boolean indicating if file is an asset file
+   */
+  isAssetFile: boolean;
+
+  /**
+   * boolean indicating if file is a type definition file
+   */
+  isTypeDefinitionFile?: boolean;
 }
 
 export interface ModuleFiles {

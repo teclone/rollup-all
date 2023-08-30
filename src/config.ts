@@ -18,6 +18,8 @@ export const config: Config = {
    */
   extensions: ['.js', '.ts', '.jsx', '.tsx'],
 
+  assetExtensions: ['.stories.ts'],
+
   /**
    * defines string of file patterns to process
    */

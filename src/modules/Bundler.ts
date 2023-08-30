@@ -74,12 +74,6 @@ class Bundler {
 
   /**
    * parses all files into module targets
-   * @param modules
-   * @param resolvedPath
-   * @param entryFile
-   * @param moduleName
-   * @param currentRelativeDir
-   * @param extensions
    */
   private getModules(
     modules: Module[],
@@ -96,7 +90,7 @@ class Bundler {
 
         for (let i = 0; i < files.length; i++) {
           const fileName = files[i];
-          if (['.DS_Store', '.git', 'node_modules'].includes(fileName)) {
+          if (fileName.startsWith('.') || ['node_modules'].includes(fileName)) {
             continue;
           }
 
@@ -111,11 +105,19 @@ class Bundler {
               )
             );
           } else {
-            const dirName = path.dirname(filePath);
-            const extName = path.extname(fileName);
-            const baseName = path.basename(fileName, extName);
+            let baseName = '';
+            let extName = '';
 
-            const isTypeDefinitionFile = baseName.endsWith('.d');
+            const fileNameSegments = fileName.split('.');
+            baseName = fileNameSegments[0];
+
+            if (fileNameSegments.length > 1) {
+              extName = '.' + fileNameSegments.slice(1).join('.');
+            }
+
+            const dirName = resolvedPath;
+
+            const isTypeDefinitionFile = extName === '.d.ts';
 
             const filePathWithoutExtension = path.join(dirName, baseName);
 
@@ -126,6 +128,11 @@ class Bundler {
               isBuildFile &&
               (this.entryFile === filePath ||
                 this.entryFile === filePathWithoutExtension);
+
+            const isAssetFile =
+              !isTypeDefinitionFile &&
+              !isBuildFile &&
+              this.config.assetExtensions.includes(extName);
 
             modules.push({
               id: modules.length + 1,
@@ -138,6 +145,8 @@ class Bundler {
                 : camelCase(baseName),
 
               isBuildFile,
+              isAssetFile,
+              isTypeDefinitionFile,
               baseName,
               fileName,
               location: filePath,
@@ -164,6 +173,7 @@ class Bundler {
 
     for (let i = 0; i < modules.length; i++) {
       const current = modules[i];
+
       // if file is excluded, return
       const oldRelativePath = path.join(
         current.locationRelativeToSrc,
@@ -187,7 +197,7 @@ class Bundler {
 
       if (current.isBuildFile) {
         result.buildFiles.push(current);
-      } else {
+      } else if (current.isAssetFile || current.isTypeDefinitionFile) {
         result.copyFiles.push(current);
       }
     }
