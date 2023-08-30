@@ -113,6 +113,14 @@ module.exports = createConfig({
   extensions: ['.js', '.ts', '.jsx', '.tsx'],
 
   /**
+   * define list of file extensions to be considered as asset files.
+   * Asset files are copied over to the build directories.
+   *
+   * example, .json, .png, .jpg, .jpeg, etc
+   */
+  assetExtensions: []
+
+  /**
    * defines string of file patterns to process
    */
   include: [],
