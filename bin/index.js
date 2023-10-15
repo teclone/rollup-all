@@ -7,10 +7,36 @@ const parseBoolean = (value) => {
   return value === '' || value === true || value === 'true' || value === '1';
 };
 
-const parseList = (value) =>
-  value && typeof value === 'string'
-    ? value.split(/\s*,\s*/gim).filter(Boolean)
-    : [];
+/**
+ *
+ * @param {string} fieldName the field name
+ * @param {string[]} allowedValues - array of allowed values
+ * @returns
+ */
+const createListParser = (fieldName, allowedValues = []) => {
+  return (value) => {
+    const values =
+      value && typeof value === 'string'
+        ? value.split(/\s*,\s*/gim).filter(Boolean)
+        : [];
+
+    if (!allowedValues.length) {
+      return values;
+    }
+
+    const allowed = new Set(allowedValues);
+
+    values.forEach((value) => {
+      if (!allowed.has(value)) {
+        throw new Error(
+          `Value for ${fieldName} must be one of ${allowedValues}. ${value} is not an acceptable value`
+        );
+      }
+    });
+
+    return values;
+  };
+};
 
 const assignDefaultBooleanValue = (flags, property, defaultValue) => {
   if (typeof flags[property] === 'undefined') {
@@ -28,13 +54,13 @@ args.options([
   {
     name: 'formats',
     description: 'defines desired build formats',
-    init: parseList,
+    init: createListParser('formats', ['cjs', 'es', 'iife', 'umd']),
   },
 
   {
     name: 'envs',
     description: 'build envs',
-    init: parseList,
+    init: createListParser('envs'),
   },
 
   {

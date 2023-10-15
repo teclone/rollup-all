@@ -46,7 +46,6 @@ export const getRollupPlugins = (opts: {
     babelPresets,
   } = opts;
   const internalNodeModulesDir = getClosestPackageDir(__dirname);
-
   const isDistBuild = format === 'umd' || format === 'iife';
 
   return [
@@ -57,7 +56,6 @@ export const getRollupPlugins = (opts: {
     commonjs({
       include: 'node_modules/**',
     }),
-
     babel({
       // we do not want to use any local babelrc
       babelrc: false,
@@ -127,7 +125,7 @@ export const getRollupPlugins = (opts: {
           : null,
       ].filter(Boolean),
 
-      // runtime for library builds and bundled for bundled builds
+      // runtime for library builds are bundled for bundled builds
       babelHelpers: isDistBuild ? 'bundled' : 'runtime',
 
       // do not process node module files, it is believed that all files in the node modules directory has been properly worked on

@@ -116,7 +116,7 @@ module.exports = createConfig({
    * define list of file extensions to be considered as asset files.
    * Asset files are copied over to the build directories.
    *
-   * example, .json, .png, .jpg, .jpeg, etc
+   * default values are .json, .png, .jpg, .jpeg, .gif, .svg, etc
    */
   assetExtensions: []
 

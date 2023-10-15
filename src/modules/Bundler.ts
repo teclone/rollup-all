@@ -18,6 +18,7 @@ import { copy } from '../utils/copy';
 import { camelCase } from '../utils/camelCase';
 import { rimrafSync } from 'rimraf';
 import { forEach } from '../utils/forEach';
+import { BASE_ASSET_EXTENSIONS } from '../constants';
 
 const allExternal = () => true;
 
@@ -37,6 +38,9 @@ class Bundler {
     this.entryPath = process.cwd();
 
     const config = copy({}, defaultConfig, givenConfig);
+    config.assetExtensions = BASE_ASSET_EXTENSIONS.concat(
+      config.assetExtensions || []
+    ).map((ext) => ext.toLowerCase());
 
     // resolve entry file
     config.src = path.resolve(this.entryPath, config.src);
@@ -112,7 +116,7 @@ class Bundler {
             baseName = fileNameSegments[0];
 
             if (fileNameSegments.length > 1) {
-              extName = '.' + fileNameSegments.slice(1).join('.');
+              extName = '.' + fileNameSegments.slice(1).join('.').toLowerCase();
             }
 
             const dirName = resolvedPath;

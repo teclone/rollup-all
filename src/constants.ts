@@ -1,3 +1,8 @@
-export const REGEX_FIELDS = ['include', 'exclude'];
-
-export const PACKAGE_NAME = '@teclone/rollup-all';
+export const BASE_ASSET_EXTENSIONS = [
+  '.json',
+  '.png',
+  '.jpeg',
+  '.jpg',
+  '.gif',
+  '.svg',
+];
