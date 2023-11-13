@@ -328,56 +328,30 @@ class Bundler {
   ) {
     const processedTDFiles = new Set();
 
+    const options = {
+      declaration: true,
+      emitDeclarationOnly: true,
+    };
+
     log(chalk.gray(`Generating ${format} typescript definition files...\n`));
 
+    // write to filesytem and index
     return new Promise((resolve, reject) => {
-      let rejected = false;
+      const host = ts.createCompilerHost(options);
 
-      // run with try catch block
-      const run = (callback) => {
-        try {
-          callback();
-        } catch (ex) {
-          rejected = true;
-          reject(ex);
-        }
+      host.writeFile = (filename: string, contents: string) => {
+        const out = path.join(outFolder, filename.split(this.src)[1]);
+        processedTDFiles.add(out);
+        fs.mkdirSync(path.dirname(out), { recursive: true });
+        fs.writeFileSync(out, contents);
       };
 
-      // write to filesytem and index
-      const onEmit = (filename, content) =>
-        run(() => {
-          const out = path.join(outFolder, filename.split(this.src)[1]);
-          processedTDFiles.add(out);
-          fs.mkdirSync(path.dirname(out), { recursive: true });
-          fs.writeFileSync(out, content);
-        });
-
-      for (let i = 0; i < fileModules.length; i++) {
-        const fileModule = fileModules[i];
-        if (rejected) {
-          break;
-        }
-
-        const tsdOut = path.join(
-          outFolder,
-          fileModule.locationRelativeToSrc,
-          fileModule.baseName + '.d.ts'
-        );
-
-        if (processedTDFiles.has(tsdOut)) {
-          continue;
-        }
-
-        run(() => {
-          const program = ts.createProgram([fileModule.location], {
-            declaration: true,
-            emitDeclarationOnly: true,
-          });
-
-          program.emit(undefined, onEmit, undefined, true);
-        });
-      }
-
+      const program = ts.createProgram(
+        fileModules.map((current) => current.location),
+        options,
+        host
+      );
+      program.emit();
       resolve(true);
     });
   }
