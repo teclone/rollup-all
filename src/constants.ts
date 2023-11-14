@@ -5,4 +5,7 @@ export const BASE_ASSET_EXTENSIONS = [
   '.jpg',
   '.gif',
   '.svg',
+  '.css',
+  '.scss',
+  '.sass',
 ];
