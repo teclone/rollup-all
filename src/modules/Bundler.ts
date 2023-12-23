@@ -84,6 +84,8 @@ class Bundler {
     resolvedPath: string,
     currentRelativeDir: string
   ): Promise<Module[]> {
+    const ignore = new Set(['node_modules', '..', '.']);
+
     return new Promise((resolve, reject) => {
       fs.readdir(resolvedPath, (err, files) => {
         if (err) {
@@ -94,7 +96,8 @@ class Bundler {
 
         for (let i = 0; i < files.length; i++) {
           const fileName = files[i];
-          if (fileName.startsWith('.') || ['node_modules'].includes(fileName)) {
+
+          if (ignore.has(fileName)) {
             continue;
           }
 
@@ -113,20 +116,24 @@ class Bundler {
             let extName = '';
 
             const fileNameSegments = fileName.split('.');
-            baseName = fileNameSegments[0];
+
+            const isTestFile =
+              /\.(spec|test|stories|tests|specs|cy)\.[\w-_]+$/i.test(fileName);
+            const isTypeDefinitionFile = fileName.endsWith('.d.ts');
 
             if (fileNameSegments.length > 1) {
-              extName = '.' + fileNameSegments.slice(1).join('.').toLowerCase();
+              extName = '.' + fileNameSegments.pop();
             }
+            baseName = fileNameSegments.join('.');
 
             const dirName = resolvedPath;
-
-            const isTypeDefinitionFile = extName === '.d.ts';
 
             const filePathWithoutExtension = path.join(dirName, baseName);
 
             const isBuildFile =
-              !isTypeDefinitionFile && this.config.extensions.includes(extName);
+              !isTypeDefinitionFile &&
+              !isTestFile &&
+              this.config.extensions.includes(extName);
 
             const isEntryFile =
               isBuildFile &&
@@ -136,6 +143,7 @@ class Bundler {
             const isAssetFile =
               !isTypeDefinitionFile &&
               !isBuildFile &&
+              !isTestFile &&
               this.config.assetExtensions.includes(extName);
 
             modules.push({
@@ -157,6 +165,7 @@ class Bundler {
             });
           }
         }
+
         Promise.all(promises).then(() => resolve(modules));
       });
     });
