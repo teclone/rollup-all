@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const args = require('args');
-const { resolve } = require('path');
+const { existsSync } = require('fs');
+const { join } = require('path');
 const process = require('process');
 
 const parseBoolean = (value) => {
@@ -88,12 +89,12 @@ args.options([
 
 const run = () => {
   const entryPath = process.cwd();
-  const configFilePath = resolve(entryPath, 'rollup.config.js');
+  const configFilePath = join(entryPath, 'rollup.config.js');
 
   // inspect package.json file
   let pkgFile;
   try {
-    pkgFile = require(resolve(entryPath, 'package.json'));
+    pkgFile = require(join(entryPath, 'package.json'));
   } catch (ex) {
     console.error(
       'Build failed. cannot locate a package.json file in entry directory'
@@ -106,7 +107,7 @@ const run = () => {
   let camelCase;
 
   try {
-    moduleExports = require(resolve(
+    moduleExports = require(join(
       __dirname,
       pkgFile.name === '@teclone/rollup-all'
         ? '../temp/index.js'
@@ -122,9 +123,9 @@ const run = () => {
 
   // resolve config
   let config = {};
-  try {
+  if (existsSync(configFilePath)) {
     config = require(configFilePath);
-  } catch (ex) {
+  } else {
     console.log(
       'Proceeding with no custom defined build config file (rollup.config.js)'
     );
