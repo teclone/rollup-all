@@ -122,22 +122,34 @@ module.exports = createConfig({
     envs: ['production', 'development'],
   },
 
+  /**
+   * cjs build config
+   */
   cjs: {
     enabled: true,
     out: './build/cjs',
   },
 
+  /**
+   * es build config
+   */
   es: {
     enabled: true,
     out: './build/es',
   },
 
+  /**
+   * iife build config, disabled by default
+   */
   iife: {
     enabled: false,
     out: './build/iife',
     src: 'src/ex',
   },
 
+  /**
+   * umd build config, disabled by default
+   */
   umd: {
     enabled: false,
     out: './build/umd',
