@@ -14,6 +14,7 @@
     "bin"
   ],
   "scripts": {
+    "prepare": "husky install",
     "compile": "tsc --noEmit",
     "commit": "git-cz",
     "test": "BABEL_ENV=test jest --runInBand",
@@ -43,22 +44,25 @@
   "homepage": "https://github.com/teclone/rollup-all#readme",
   "devDependencies": {
     "@babel/cli": "7.12.17",
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.2.2",
     "@types/jest": "25.2.3",
     "@types/react": "^17.0.2",
     "@types/react-dom": "^17.0.1",
     "@typescript-eslint/eslint-plugin": "2.34.0",
     "@typescript-eslint/parser": "2.34.0",
     "babel-jest": "^26.6.3",
-    "commitizen": "4.1.2",
+    "commitizen": "^4.3.0",
     "coveralls": "3.1.0",
-    "cz-conventional-changelog": "3.2.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "husky": "^9.0.11",
     "jest": "26.0.1",
     "semantic-release": "^17.3.9",
     "semantic-release-cli": "^5.4.3"
   },
   "config": {
     "commitizen": {
-      "path": "cz-conventional-changelog"
+      "path": "./node_modules/cz-conventional-changelog"
     }
   },
   "dependencies": {
