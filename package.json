@@ -21,7 +21,7 @@
     "lint": "eslint ./src --fix",
     "typings": "tsc --p ./tsconfig.build.json",
     "babel": "BABEL_ENV=build babel src --out-dir temp --extensions .ts",
-    "build": "node bin/index",
+    "build": "yarn babel && rimraf ./build && node bin/index",
     "release": "semantic-release"
   },
   "repository": {

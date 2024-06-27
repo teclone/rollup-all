@@ -67,8 +67,6 @@ The following build formats are supported:
 - `umd`: Browser bundle compatible with umd loaders,
 - `iife`: Browser bundle
 
-**NB**: By default, output directory name matches the format name and are placed inside the project's root folder.
-
 ### Configurations
 
 It is possible to configure the build process via a config file or via cli options. To configure the build via a config file, create a `rollup.config.js` file in the project's root directory
@@ -76,87 +74,74 @@ It is possible to configure the build process via a config file or via cli optio
 ```javascript
 const { createConfig } = require('./temp');
 module.exports = createConfig({
-  /**
-   * build formats to generate
-   */
-  formats: ['cjs', 'es', 'iife', 'umd'],
+  defaults: {
+    src: './src',
 
-  src: 'src',
+    out: './build',
 
-  /**
-   * folder to put all builds, defaults to root folder
-   *
-   * for instance cjs builds will be put inside ${out}/cjs/
-   */
-  out: './build',
+    entryFile: './index',
 
-  /**
-   * extra rollup js plugins
-   */
-  plugins: [],
+    /**
+     * allowed file extensions
+     */
+    extensions: ['.js', '.ts', '.jsx', '.tsx'],
 
-  /**
-   * entry file for umd/iife build, index here matches any of the extensions
-   */
-  entryFile: 'index',
+    /**
+     * boolean indicating if the interop rollup setting should be enabled
+     */
+    interop: true,
 
-  /**
-   * package export name for umd/iife,
-   *
-   * this is the name of the package as it will be accessed in browser windows (window.moduleName)
-   */
-  moduleName: '',
+    /**
+     * boolean indicating if sourcemap should be generated, can be true, false, or 'inline'
+     */
+    sourcemap: true,
 
-  /**
-   * allowed file extensions
-   */
-  extensions: ['.js', '.ts', '.jsx', '.tsx'],
+    /**
+     * minify, only applies to iife and umd builds
+     */
+    minify: true,
 
-  /**
-   * define list of file extensions to be considered as asset files.
-   * Asset files are copied over to the build directories.
-   *
-   * default values are .json, .png, .jpg, .jpeg, .gif, .svg, etc
-   */
-  assetExtensions: []
+    /**
+     * applies to umd and iife builds
+     */
+    globals: {},
 
-  /**
-   * defines string of file patterns to process
-   */
-  include: [],
+    babelPlugins: [],
 
-  /**
-   * defines string of file patterns to ignore. by default, type definition files are ignore
-   */
-  exclude: [],
+    babelPresets: [],
 
-  /**
-   * boolean indicating if the interop rollup setting should be enabled
-   */
-  interop: true,
+    exclude: [],
 
-  /**
-   * boolean indicating if sourcemap should be generated, can be true, false, or 'inline'
-   */
-  sourcemap: true,
+    include: [],
 
-  /**
-   * package imports that should not be bundled in a umd/iife, treated as externals
-   */
-  globals: {},
+    plugins: [],
 
-  /**
-   * applies to dist builds (umd, iife), if true, a separate [filename].[env].min.js build will be
-   * generated for each file.
-   */
-  minify: true,
+    /**
+     * build envs, only applies to iife and umd builds
+     */
+    envs: ['production', 'development'],
+  },
 
-  /**
-   * development and production builds can be genereted for umd/iife builds
-   *
-   * the advantage is that development specific codes (process.env.NODE_ENV === 'development') will be removed in production build
-   */
-  envs: ['development', 'production'],
+  cjs: {
+    enabled: true,
+    out: './build/cjs',
+  },
+
+  es: {
+    enabled: true,
+    out: './build/es',
+  },
+
+  iife: {
+    enabled: false,
+    out: './build/iife',
+    src: 'src/ex',
+  },
+
+  umd: {
+    enabled: false,
+    out: './build/umd',
+  },
 });
 ```
 
@@ -165,9 +150,7 @@ module.exports = createConfig({
 The following options can be parsed to the cli binary
 
 - **--sourcemap**: `boolean`: to generate sourcemaps, default is `true`
-- **--envs**: `development|production|uni`: comma separated list of environment based builds. `uni` value will generate build that runs for production and development. Environment based builds only applies to distribution build formats, `umd` and `iife`. default is `development,production`
 - **--src**: `string`: your code's src folder: default value is `src`
-- **--out**: `string`: folder to place all builds, default is root directory `./`
 
 ### Environment and minified builds
 
@@ -175,7 +158,7 @@ When generating distribution builds, aka `umd` and `iife`, it is desirable to ha
 
 The build filename format for dist builds is `[filename].[env].[min]?.js`;
 
-Production build will strip out all development related codes, and vice versa.
+Production build will strip out all development related codes based on evaluation of `process.env.NODE.ENV`.
 
 for instance, the code sample below will be removed in production builds
 

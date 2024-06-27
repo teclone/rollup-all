@@ -2,8 +2,6 @@ import { Config } from './@types';
 
 export const config: Config = {
   defaults: {
-    enabled: true,
-
     src: './src',
 
     out: './build',
@@ -26,10 +24,13 @@ export const config: Config = {
     sourcemap: true,
 
     /**
-     * minify
+     * minify, only applies to iife and umd builds
      */
     minify: true,
 
+    /**
+     * applies to umd and iife builds
+     */
     globals: {},
 
     babelPlugins: [],
@@ -41,23 +42,41 @@ export const config: Config = {
     include: [],
 
     plugins: [],
+
+    /**
+     * build envs, only applies to iife and umd builds
+     */
+    envs: ['production', 'development'],
   },
 
+  /**
+   * cjs build config
+   */
   cjs: {
     enabled: true,
     out: './build/cjs',
   },
 
+  /**
+   * es build config
+   */
   es: {
     enabled: true,
     out: './build/es',
   },
 
+  /**
+   * iife build config, disabled by default
+   */
   iife: {
     enabled: false,
     out: './build/iife',
+    src: 'src/ex',
   },
 
+  /**
+   * umd build config, disabled by default
+   */
   umd: {
     enabled: false,
     out: './build/umd',

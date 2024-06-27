@@ -420,13 +420,21 @@ class Bundler {
         return;
       }
 
-      await forEach(['production', 'development'] as const, async (env) => {
+      await forEach(formatConfig.envs || [], async (env) => {
         process.env.NODE_ENV = env;
         await this.buildFiles(buildFiles, formatConfig, {
           format,
           env,
-          minify: env === 'production',
+          minify: false,
         });
+
+        if (formatConfig.minify) {
+          await this.buildFiles(buildFiles, formatConfig, {
+            format,
+            env,
+            minify: true,
+          });
+        }
       });
     });
   }

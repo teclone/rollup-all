@@ -31,8 +31,8 @@ export const getRollupPlugins = (opts: {
 
   env: BuildEnvironment;
 
-  babelPresets: Config['babelPresets'];
-  babelPlugins: Config['babelPlugins'];
+  babelPresets: Config['defaults']['babelPresets'];
+  babelPlugins: Config['defaults']['babelPlugins'];
 
   plugins: Plugin[];
 }) => {

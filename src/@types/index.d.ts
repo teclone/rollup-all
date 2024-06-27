@@ -44,7 +44,7 @@ export interface FormatConfig {
 
   /**
    * indicates if minified build should be generated,
-   * applies to dist builds only
+   * applies only to the iife and umd builds
    */
   minify?: boolean;
 
@@ -69,6 +69,11 @@ export interface FormatConfig {
   globals?: GlobalsOption;
 
   plugins?: Plugin[];
+
+  /**
+   * applies to iife and umd builds
+   */
+  envs?: BuildEnvironment[];
 }
 
 export type Config = Partial<{

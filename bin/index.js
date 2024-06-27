@@ -53,18 +53,6 @@ args.options([
   },
 
   {
-    name: 'formats',
-    description: 'defines desired build formats',
-    init: createListParser('formats', ['cjs', 'es', 'iife', 'umd']),
-  },
-
-  {
-    name: 'envs',
-    description: 'build envs',
-    init: createListParser('envs'),
-  },
-
-  {
     name: 'debug',
     description: 'run in debug mode',
     init: parseBoolean,
@@ -79,11 +67,6 @@ args.options([
   {
     name: 'src',
     description: 'defines code src directory',
-  },
-
-  {
-    name: 'out',
-    description: 'defines code build output directory',
   },
 ]);
 
@@ -136,19 +119,23 @@ const run = () => {
   assignDefaultBooleanValue(flags, 'debug', false);
   assignDefaultBooleanValue(flags, 'sourcemap', true);
 
+  const { silent, debug, ...rest } = flags;
+
   const pkgName = pkgFile.name;
 
   const resolvedConfig = {
+    silent,
     ...config,
     defaults: {
       moduleName: camelCase(
         pkgName.includes('/') ? pkgName.split('/').pop() : pkgName
       ),
+      ...rest,
       ...config.defaults,
     },
   };
 
-  if (flags.debug) {
+  if (debug) {
     console.log('running in debug mode', 'parsed flags: ', flags);
   }
 
