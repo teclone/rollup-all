@@ -1,60 +1,65 @@
 import { Config } from './@types';
 
 export const config: Config = {
-  formats: ['cjs', 'es'],
+  defaults: {
+    enabled: true,
 
-  src: 'src',
+    src: './src',
 
-  out: './build',
+    out: './build',
 
-  plugins: [],
+    entryFile: './index',
 
-  entryFile: 'index',
+    /**
+     * allowed file extensions
+     */
+    extensions: ['.js', '.ts', '.jsx', '.tsx'],
 
-  moduleName: '',
+    /**
+     * boolean indicating if the interop rollup setting should be enabled
+     */
+    interop: true,
 
-  /**
-   * allowed file extensions
-   */
-  extensions: ['.js', '.ts', '.jsx', '.tsx'],
+    /**
+     * boolean indicating if sourcemap should be generated, can be true, false, or 'inline'
+     */
+    sourcemap: true,
 
-  assetExtensions: [],
+    /**
+     * minify
+     */
+    minify: true,
 
-  /**
-   * defines string of file patterns to process
-   */
-  include: [],
+    globals: {},
 
-  /**
-   * defines string of file patterns to ignore. by default, type definition files are ignore
-   */
-  exclude: [],
+    babelPlugins: [],
 
-  /**
-   * boolean indicating if the interop rollup setting should be enabled
-   */
-  interop: true,
+    babelPresets: [],
 
-  /**
-   * boolean indicating if sourcemap should be generated, can be true, false, or 'inline'
-   */
-  sourcemap: true,
+    exclude: [],
 
-  /**
-   * minify
-   */
-  minify: true,
+    include: [],
 
-  /**
-   * rollup watch config, you must pass in the --watch command line argument for this to
-   * work
-   */
-  watch: {},
+    plugins: [],
+  },
 
-  /**
-   * rollup globals config, applies to dist builds
-   */
-  globals: {},
+  cjs: {
+    enabled: true,
+    out: './build/cjs',
+  },
 
-  envs: ['development', 'production'],
+  es: {
+    enabled: true,
+    out: './build/es',
+  },
+
+  iife: {
+    enabled: false,
+    out: './build/iife',
+  },
+
+  umd: {
+    enabled: false,
+    out: './build/umd',
+  },
 };

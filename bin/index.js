@@ -140,10 +140,12 @@ const run = () => {
 
   const resolvedConfig = {
     ...config,
-    ...flags,
-    moduleName:
-      config.moduleName ||
-      camelCase(pkgName.includes('/') ? pkgName.split('/').pop() : pkgName),
+    defaults: {
+      moduleName: camelCase(
+        pkgName.includes('/') ? pkgName.split('/').pop() : pkgName
+      ),
+      ...config.defaults,
+    },
   };
 
   if (flags.debug) {

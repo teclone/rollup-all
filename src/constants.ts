@@ -1,3 +1,5 @@
+import { BuildFormat } from './@types';
+
 export const BASE_ASSET_EXTENSIONS = [
   '.json',
   '.png',
@@ -9,3 +11,5 @@ export const BASE_ASSET_EXTENSIONS = [
   '.scss',
   '.sass',
 ];
+
+export const formats: BuildFormat[] = ['cjs', 'es', 'iife', 'umd'];

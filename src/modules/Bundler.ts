@@ -7,6 +7,7 @@ import {
   ModuleFiles,
   BuildEnvironment,
   BuildFormat,
+  FormatConfig,
 } from '../@types';
 import { config as defaultConfig } from '../config';
 import { rollup } from 'rollup';
@@ -16,55 +17,15 @@ import globToRegex from 'glob-to-regexp';
 import * as ts from 'typescript';
 import { copy } from '../utils/copy';
 import { camelCase } from '../utils/camelCase';
-import { rimrafSync } from 'rimraf';
 import { forEach } from '../utils/forEach';
-import { BASE_ASSET_EXTENSIONS } from '../constants';
+import { formats } from '../constants';
 
 const allExternal = () => true;
 
 const log = console.log;
 
-class Bundler {
-  private entryPath: string = '';
-
-  private config: Config = defaultConfig;
-
-  private src: string;
-  private out: string;
-
-  private entryFile: string;
-
-  constructor(givenConfig: Config = {} as Config) {
-    this.entryPath = process.cwd();
-
-    const config = copy({}, defaultConfig, givenConfig);
-    config.assetExtensions = BASE_ASSET_EXTENSIONS.concat(
-      config.assetExtensions || []
-    ).map((ext) => ext.toLowerCase());
-
-    // resolve entry file
-    config.src = path.resolve(this.entryPath, config.src);
-    config.entryFile = path.resolve(config.src, config.entryFile);
-
-    // resolve includes and excludes
-    config.include = (config.include || []).map(this.resolveRegex);
-
-    config.exclude = (config.exclude || []).map(this.resolveRegex);
-
-    this.src = config.src;
-    this.out = path.resolve(this.entryPath, config.out);
-
-    this.entryFile = config.entryFile;
-
-    this.config = config;
-  }
-
-  /**
-   * resolves the pattern into a regex object
-   *@param {Array|string|RegExp} patterns - array of patterns or string pattern
-   *@param {Array} regexStore - array to store regex objects
-   */
-  private resolveRegex(pattern: string | RegExp) {
+const resolveFormatConfig = (config: FormatConfig, entryPath: string) => {
+  const resolveRegex = (pattern: string | RegExp) => {
     if (typeof pattern === 'string') {
       return globToRegex(pattern, {
         extended: true,
@@ -74,6 +35,36 @@ class Bundler {
     } else {
       return pattern;
     }
+  };
+
+  config.src = path.resolve(entryPath, config.src);
+  config.out = path.resolve(entryPath, config.out);
+  config.entryFile = path.resolve(config.src, config.entryFile);
+
+  config.include = (config.include || []).map(resolveRegex);
+  config.exclude = (config.exclude || []).map(resolveRegex);
+
+  return config;
+};
+
+class Bundler {
+  private entryPath: string = '';
+
+  private config: Config = defaultConfig;
+
+  constructor(givenConfig: Config = {} as Config) {
+    this.entryPath = process.cwd();
+
+    const config = copy({}, defaultConfig, givenConfig) as Config;
+
+    formats.forEach((format) => {
+      config[format] = resolveFormatConfig(
+        { ...config.defaults, ...config[format] },
+        this.entryPath
+      );
+    });
+
+    this.config = config;
   }
 
   /**
@@ -81,13 +72,14 @@ class Bundler {
    */
   private getModules(
     modules: Module[],
-    resolvedPath: string,
+    config: FormatConfig,
+    src: string,
     currentRelativeDir: string
   ): Promise<Module[]> {
     const ignore = new Set(['node_modules', '..', '.']);
 
     return new Promise((resolve, reject) => {
-      fs.readdir(resolvedPath, (err, files) => {
+      fs.readdir(src, (err, files) => {
         if (err) {
           return reject(err);
         }
@@ -101,12 +93,13 @@ class Bundler {
             continue;
           }
 
-          const filePath = path.join(resolvedPath, fileName);
+          const filePath = path.join(src, fileName);
 
           if (fs.statSync(filePath).isDirectory()) {
             promises.push(
               this.getModules(
                 modules,
+                config,
                 filePath,
                 path.join(currentRelativeDir, fileName)
               )
@@ -126,25 +119,22 @@ class Bundler {
             }
             baseName = fileNameSegments.join('.');
 
-            const dirName = resolvedPath;
+            const dirName = src;
 
             const filePathWithoutExtension = path.join(dirName, baseName);
 
             const isBuildFile =
               !isTypeDefinitionFile &&
               !isTestFile &&
-              this.config.extensions.includes(extName);
+              config.extensions.includes(extName);
 
             const isEntryFile =
               isBuildFile &&
-              (this.entryFile === filePath ||
-                this.entryFile === filePathWithoutExtension);
+              (config.entryFile === filePath ||
+                config.entryFile === filePathWithoutExtension);
 
             const isAssetFile =
-              !isTypeDefinitionFile &&
-              !isBuildFile &&
-              !isTestFile &&
-              this.config.assetExtensions.includes(extName);
+              !isTypeDefinitionFile && !isBuildFile && !isTestFile;
 
             modules.push({
               id: modules.length + 1,
@@ -152,9 +142,7 @@ class Bundler {
 
               locationRelativeToSrc: currentRelativeDir,
 
-              moduleName: isEntryFile
-                ? this.config.moduleName
-                : camelCase(baseName),
+              moduleName: isEntryFile ? config.moduleName : camelCase(baseName),
 
               isBuildFile,
               isAssetFile,
@@ -176,13 +164,11 @@ class Bundler {
    * @param config
    * @param buildConfig
    */
-  private filterFiles(modules: Module[]): ModuleFiles {
+  private filterFiles(modules: Module[], config: FormatConfig): ModuleFiles {
     const result: ModuleFiles = {
       buildFiles: [],
       copyFiles: [],
     };
-
-    const { config } = this;
 
     for (let i = 0; i < modules.length; i++) {
       const current = modules[i];
@@ -221,20 +207,21 @@ class Bundler {
    * build files for a given format
    */
   private buildFiles(
-    outFolder: string,
     fileModules: Module[],
+    config: FormatConfig,
     opts: { format: BuildFormat; env: BuildEnvironment; minify?: boolean }
   ) {
+    const { silent } = this.config;
     const {
       interop,
       sourcemap,
       plugins: extraPlugins,
       extensions,
-      silent,
-
       babelPlugins = [],
       babelPresets = [],
-    } = this.config;
+      globals,
+      out: outFolder,
+    } = config;
 
     const { format, env, minify } = opts;
 
@@ -248,7 +235,7 @@ class Bundler {
 
       case 'iife':
       case 'umd':
-        externals = Object.keys(this.config.globals);
+        externals = Object.keys(globals || {});
         break;
     }
 
@@ -309,7 +296,7 @@ class Bundler {
               interop,
               sourcemap,
               exports: 'auto',
-              globals: this.config.globals,
+              globals: globals || {},
               name: fileModule.moduleName,
               inlineDynamicImports: format === 'iife' || format === 'umd',
             });
@@ -331,8 +318,8 @@ class Bundler {
    * @returns
    */
   private buildTypeDefinitionFiles(
-    outFolder: string,
     fileModules: Module[],
+    config: FormatConfig,
     format: BuildFormat
   ) {
     const processedTDFiles = new Set();
@@ -349,7 +336,7 @@ class Bundler {
       const host = ts.createCompilerHost(options);
 
       host.writeFile = (filename: string, contents: string) => {
-        const out = path.join(outFolder, filename.split(this.src)[1]);
+        const out = path.join(config.out, filename.split(config.src)[1]);
         processedTDFiles.add(out);
         fs.mkdirSync(path.dirname(out), { recursive: true });
         fs.writeFileSync(out, contents);
@@ -400,48 +387,46 @@ class Bundler {
    * runs the process
    */
   async process() {
-    const { formats, envs, minify } = this.config;
-
-    const modules = await this.getModules([], this.src, '');
-
-    const { buildFiles, copyFiles } = this.filterFiles(modules);
+    const config = this.config;
 
     forEach(formats, async (format) => {
-      const outFolder = path.join(this.out, format);
+      const formatConfig = config[format];
+      if (!formatConfig.enabled) {
+        return;
+      }
+
+      const modules = await this.getModules(
+        [],
+        formatConfig,
+        formatConfig.src,
+        ''
+      );
+      const { buildFiles, copyFiles } = this.filterFiles(modules, formatConfig);
+
+      const outFolder = formatConfig.out;
 
       log(chalk.blueBright(`Starting asynchronous ${format} build...\n`));
-
-      // remove build out folder
-      rimrafSync(outFolder);
 
       if (format === 'cjs' || format === 'es') {
         await Promise.all([
           this.copyFiles(outFolder, copyFiles, format),
-          this.buildFiles(outFolder, buildFiles, {
+          this.buildFiles(buildFiles, formatConfig, {
             format,
             env: 'uni',
             minify: false,
           }),
-          this.buildTypeDefinitionFiles(outFolder, buildFiles, format),
+          this.buildTypeDefinitionFiles(buildFiles, formatConfig, format),
         ]);
         return;
       }
 
-      await forEach(envs, async (env) => {
+      await forEach(['production', 'development'] as const, async (env) => {
         process.env.NODE_ENV = env;
-        await this.buildFiles(outFolder, buildFiles, {
+        await this.buildFiles(buildFiles, formatConfig, {
           format,
           env,
-          minify: false,
+          minify: env === 'production',
         });
-
-        if (minify) {
-          await this.buildFiles(outFolder, buildFiles, {
-            format,
-            env,
-            minify: true,
-          });
-        }
       });
     });
   }

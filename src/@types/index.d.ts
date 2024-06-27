@@ -6,33 +6,85 @@ export type BuildEnvironment = 'development' | 'production' | 'uni';
 
 export type Sourcemap = true | false | 'inline';
 
-export interface Config {
-  formats: BuildFormat[];
+export interface FormatConfig {
+  moduleName?: string;
 
+  enabled?: boolean;
+
+  src?: string;
+
+  out?: string;
+
+  /**
+   * allowed file extensions. defaults to .js, .ts, .jsx, .tsx
+   */
+  extensions?: string[];
+
+  /**
+   * defines file patterns to process for all builds
+   */
+  include?: (string | RegExp)[];
+
+  /**
+   * defines specific string of file patterns to exclude for all builds.
+   * excluded files are treated as assets
+   */
+  exclude?: (string | RegExp)[];
+
+  /**
+   * boolean indicating if the interop rollup setting should be enabled for all builds
+   */
+  interop?: boolean;
+
+  /**
+   * boolean indicating if sourcemap should be generated for all builds,
+   * can be true, false, or 'inline', defaults to true
+   */
+  sourcemap?: true | false | 'inline';
+
+  /**
+   * indicates if minified build should be generated,
+   * applies to dist builds only
+   */
+  minify?: boolean;
+
+  /**
+   * babel presets
+   */
+  babelPresets?: any[];
+
+  /**
+   * babel plugins
+   */
+  babelPlugins?: any[];
+
+  /**
+   * defaults to index.ts
+   */
+  entryFile?: string;
+
+  /**
+   * rollup globals config
+   */
+  globals?: GlobalsOption;
+
+  plugins?: Plugin[];
+}
+
+export type Config = Partial<{
+  [p in BuildFormat | 'defaults']: FormatConfig;
+}> & {
   /**
    * if true, output logs are not logged
    */
   silent?: boolean;
+};
 
+type old = {
   /**
-   * the code src directory to be used, if not, it uses the globally defined src
+   * if true, output logs are not logged
    */
-  src?: string;
-
-  /**
-   * out folder
-   */
-  out?: string;
-
-  /**
-   * plugins to apply
-   */
-  plugins?: Plugin[];
-
-  /**
-   * defaults to index.js
-   */
-  entryFile?: string;
+  silent?: boolean;
 
   /**
    * defaults to project package name pascal-cased
@@ -83,11 +135,6 @@ export interface Config {
   watch?: object;
 
   /**
-   * rollup globals config
-   */
-  globals?: GlobalsOption;
-
-  /**
    * applies to dist builds
    */
   envs?: BuildEnvironment[];
@@ -101,7 +148,7 @@ export interface Config {
    * babel plugins
    */
   babelPlugins?: any[];
-}
+};
 
 export interface Module {
   // id for indexing this file
