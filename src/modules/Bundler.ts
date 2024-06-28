@@ -274,7 +274,12 @@ class Bundler {
 
         const newRelativePath = path.join(
           fileModule.locationRelativeToSrc,
-          [fileModule.baseName, envPrefix, minify ? 'min' : '', 'js']
+          [
+            fileModule.baseName,
+            envPrefix,
+            minify && config.minifiedSuffix ? config.minifiedSuffix : '',
+            'js',
+          ]
             .filter(Boolean)
             .join('.')
         );
@@ -420,21 +425,13 @@ class Bundler {
         return;
       }
 
-      await forEach(formatConfig.envs || [], async (env) => {
+      await forEach(formatConfig.outputs || [], async ([env, minifyOption]) => {
         process.env.NODE_ENV = env;
         await this.buildFiles(buildFiles, formatConfig, {
           format,
           env,
-          minify: false,
+          minify: minifyOption === 'minified',
         });
-
-        if (formatConfig.minify) {
-          await this.buildFiles(buildFiles, formatConfig, {
-            format,
-            env,
-            minify: true,
-          });
-        }
       });
     });
   }

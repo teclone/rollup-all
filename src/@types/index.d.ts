@@ -43,12 +43,6 @@ export interface FormatConfig {
   sourcemap?: true | false | 'inline';
 
   /**
-   * indicates if minified build should be generated,
-   * applies only to the iife and umd builds
-   */
-  minify?: boolean;
-
-  /**
    * babel presets
    */
   babelPresets?: any[];
@@ -71,9 +65,18 @@ export interface FormatConfig {
   plugins?: Plugin[];
 
   /**
-   * applies to iife and umd builds
+   * applies to distribution builds only
+   * for iife and umd, two builds will be generated per file per environment,
+   * first file is the non minified, the second is the minified version
    */
-  envs?: BuildEnvironment[];
+  outputs?: Array<[BuildEnvironment, 'minified' | 'unminified']>;
+
+  /**
+   * suffix to be added to minified outputs for iife and umd builds
+   *
+   * if set to false, there will be no suffix added
+   */
+  minifiedSuffix?: string | false;
 }
 
 export type Config = Partial<{
@@ -83,76 +86,6 @@ export type Config = Partial<{
    * if true, output logs are not logged
    */
   silent?: boolean;
-};
-
-type old = {
-  /**
-   * if true, output logs are not logged
-   */
-  silent?: boolean;
-
-  /**
-   * defaults to project package name pascal-cased
-   */
-  moduleName?: string;
-
-  /**
-   * allowed file extensions. defaults to .js, .ts, .jsx, .tsx
-   */
-  extensions?: string[];
-
-  /**
-   * extensions of files to copy over as assets
-   */
-  assetExtensions?: string[];
-
-  /**
-   * defines file patterns to process for all builds
-   */
-  include?: (string | RegExp)[];
-
-  /**
-   * defines specific string of file patterns to exclude for all builds.
-   * excluded files are treated as assets
-   */
-  exclude?: (string | RegExp)[];
-
-  /**
-   * boolean indicating if the interop rollup setting should be enabled for all builds
-   */
-  interop?: boolean;
-
-  /**
-   * boolean indicating if sourcemap should be generated for all builds,
-   * can be true, false, or 'inline', defaults to true
-   */
-  sourcemap?: true | false | 'inline';
-
-  /**
-   * indicates if minified build should be generated,
-   * applies to dist builds only
-   */
-  minify?: boolean;
-
-  /**
-   * rollup watch config
-   */
-  watch?: object;
-
-  /**
-   * applies to dist builds
-   */
-  envs?: BuildEnvironment[];
-
-  /**
-   * babel presets
-   */
-  babelPresets?: any[];
-
-  /**
-   * babel plugins
-   */
-  babelPlugins?: any[];
 };
 
 export interface Module {

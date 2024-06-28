@@ -1,4 +1,4 @@
-import { Config } from './@types';
+import { Config } from '../@types';
 
 export const config: Config = {
   defaults: {
@@ -24,6 +24,11 @@ export const config: Config = {
     sourcemap: true,
 
     /**
+     * minify, only applies to iife and umd builds
+     */
+    minify: true,
+
+    /**
      * applies to umd and iife builds
      */
     globals: {},
@@ -37,6 +42,11 @@ export const config: Config = {
     include: [],
 
     plugins: [],
+
+    /**
+     * build envs, only applies to iife and umd builds
+     */
+    envs: ['production', 'development'],
   },
 
   /**
@@ -61,15 +71,7 @@ export const config: Config = {
   iife: {
     enabled: false,
     out: './build/iife',
-    src: './src',
-
-    // defines outputs
-    outputs: [
-      ['development', 'minified'],
-      ['production', 'minified'],
-    ],
-
-    minifiedSuffix: 'min',
+    src: 'src/ex',
   },
 
   /**
@@ -78,13 +80,5 @@ export const config: Config = {
   umd: {
     enabled: false,
     out: './build/umd',
-    src: './src',
-
-    // defines outputs
-    outputs: [
-      ['development', 'minified'],
-      ['production', 'minified'],
-    ],
-    minifiedSuffix: 'min',
   },
 };

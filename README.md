@@ -18,9 +18,11 @@ Library developers face the problem of shipping modern Javascript codes to forma
 
 Moreso, there is need to generate typescript definition files for most projects (javascript and typescript projects alike), sourcemaps, minification, production build, development build, resolution of dynamic imports, etc.
 
-library source codes in one parsing, allowing you to generate commonjs, es module, and browser builds at once. It is very configurable and runs asynchronously.
+This library allows you to generate commonjs, es module, and browser builds at once with sourcemaps and typescript definition files. It is very configurable.
 
 This package automates the whole process with the right configurations and makes it easy to get all target build formats generated in one command with configurability in mind.
+
+it generates typescript definition files for what is built, by leveraging typescript build api.
 
 ### Installation with npm
 
@@ -72,7 +74,7 @@ The following build formats are supported:
 It is possible to configure the build process via a config file or via cli options. To configure the build via a config file, create a `rollup.config.js` file in the project's root directory
 
 ```javascript
-const { createConfig } = require('./temp');
+const { createConfig } = require('@teclone/rollup-all');
 module.exports = createConfig({
   defaults: {
     src: './src',
@@ -97,11 +99,6 @@ module.exports = createConfig({
     sourcemap: true,
 
     /**
-     * minify, only applies to iife and umd builds
-     */
-    minify: true,
-
-    /**
      * applies to umd and iife builds
      */
     globals: {},
@@ -115,11 +112,6 @@ module.exports = createConfig({
     include: [],
 
     plugins: [],
-
-    /**
-     * build envs, only applies to iife and umd builds
-     */
-    envs: ['production', 'development'],
   },
 
   /**
@@ -142,9 +134,17 @@ module.exports = createConfig({
    * iife build config, disabled by default
    */
   iife: {
-    enabled: false,
+    enabled: true,
     out: './build/iife',
-    src: 'src/ex',
+    src: './src',
+
+    // defines outputs
+    outputs: [
+      ['development', 'minified'],
+      ['production', 'minified'],
+    ],
+
+    minifiedSuffix: 'min',
   },
 
   /**
@@ -153,6 +153,14 @@ module.exports = createConfig({
   umd: {
     enabled: false,
     out: './build/umd',
+    src: './src',
+
+    // defines outputs
+    outputs: [
+      ['development', 'minified'],
+      ['production', 'minified'],
+    ],
+    minifiedSuffix: 'min',
   },
 });
 ```
@@ -180,4 +188,31 @@ if (process.env.NODE_ENV === 'development') {
 }
 ```
 
-This is taken care of automatically with the help of [babel-plugin-transform-inline-environment-variables](https://babeljs.io/docs/babel-plugin-transform-inline-environment-variables)
+This configuration is achieved using the output option as shown below
+
+```typescript
+const { createConfig } = require('@teclone/rollup-all');
+module.exports = createConfig({
+  /**
+   * umd build config, disabled by default
+   */
+  umd: {
+    enabled: false,
+    out: './build/umd',
+    src: './src',
+
+    // defines outputs
+    outputs: [
+      ['development', 'minified'],
+      ['production', 'minified'],
+      ['uni', 'minified'],
+
+      ['development', 'unminified'],
+      ['production', 'unminified'],
+      ['uni', 'unminified'],
+    ],
+
+    minifiedSuffix: 'min',
+  },
+});
+```
