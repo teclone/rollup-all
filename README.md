@@ -76,10 +76,16 @@ It is possible to configure the build process via a config file or via cli optio
 ```javascript
 const { createConfig } = require('@teclone/rollup-all');
 module.exports = createConfig({
+  /**
+   * defines formats to build
+   */
+  formats: ['cjs', 'es'],
+
+  /**
+   * defines default configurations for all build formats
+   */
   defaults: {
     src: './src',
-
-    out: './build',
 
     entryFile: './index',
 
@@ -118,7 +124,6 @@ module.exports = createConfig({
    * cjs build config
    */
   cjs: {
-    enabled: true,
     out: './build/cjs',
   },
 
@@ -126,7 +131,6 @@ module.exports = createConfig({
    * es build config
    */
   es: {
-    enabled: true,
     out: './build/es',
   },
 
@@ -134,9 +138,7 @@ module.exports = createConfig({
    * iife build config, disabled by default
    */
   iife: {
-    enabled: true,
     out: './build/iife',
-    src: './src',
 
     // defines outputs
     outputs: [
@@ -151,10 +153,7 @@ module.exports = createConfig({
    * umd build config, disabled by default
    */
   umd: {
-    enabled: false,
     out: './build/umd',
-    src: './src',
-
     // defines outputs
     outputs: [
       ['development', 'minified'],
@@ -193,11 +192,11 @@ This configuration is achieved using the output option as shown below
 ```typescript
 const { createConfig } = require('@teclone/rollup-all');
 module.exports = createConfig({
+  formats: ['umd'],
   /**
-   * umd build config, disabled by default
+   * umd build config
    */
   umd: {
-    enabled: false,
     out: './build/umd',
     src: './src',
 

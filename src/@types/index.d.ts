@@ -9,8 +9,6 @@ export type Sourcemap = true | false | 'inline';
 export interface FormatConfig {
   moduleName?: string;
 
-  enabled?: boolean;
-
   src?: string;
 
   out?: string;
@@ -79,14 +77,19 @@ export interface FormatConfig {
   minifiedSuffix?: string | false;
 }
 
-export type Config = Partial<{
-  [p in BuildFormat | 'defaults']: FormatConfig;
-}> & {
+export type Config = {
+  /**
+   * formats to build
+   */
+  formats?: Array<BuildFormat>;
+
   /**
    * if true, output logs are not logged
    */
   silent?: boolean;
-};
+} & Partial<{
+  [p in BuildFormat | 'defaults']: FormatConfig;
+}>;
 
 export interface Module {
   // id for indexing this file

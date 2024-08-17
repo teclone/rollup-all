@@ -394,11 +394,8 @@ class Bundler {
   async process() {
     const config = this.config;
 
-    forEach(formats, async (format) => {
+    forEach(config.formats, async (format) => {
       const formatConfig = config[format];
-      if (!formatConfig.enabled) {
-        return;
-      }
 
       const modules = await this.getModules(
         [],

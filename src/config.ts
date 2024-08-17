@@ -1,10 +1,9 @@
 import { Config } from './@types';
 
 export const config: Config = {
+  formats: ['cjs', 'es'],
   defaults: {
     src: './src',
-
-    out: './build',
 
     entryFile: './index',
 
@@ -43,7 +42,6 @@ export const config: Config = {
    * cjs build config
    */
   cjs: {
-    enabled: true,
     out: './build/cjs',
   },
 
@@ -51,7 +49,6 @@ export const config: Config = {
    * es build config
    */
   es: {
-    enabled: true,
     out: './build/es',
   },
 
@@ -59,9 +56,7 @@ export const config: Config = {
    * iife build config, disabled by default
    */
   iife: {
-    enabled: false,
     out: './build/iife',
-    src: './src',
 
     // defines outputs
     outputs: [
@@ -76,7 +71,6 @@ export const config: Config = {
    * umd build config, disabled by default
    */
   umd: {
-    enabled: false,
     out: './build/umd',
     src: './src',
 
@@ -85,6 +79,7 @@ export const config: Config = {
       ['development', 'minified'],
       ['production', 'minified'],
     ],
+
     minifiedSuffix: 'min',
   },
 };
