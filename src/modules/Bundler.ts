@@ -424,11 +424,15 @@ class Bundler {
 
       await forEach(formatConfig.outputs || [], async ([env, minifyOption]) => {
         process.env.NODE_ENV = env;
-        await this.buildFiles(buildFiles, formatConfig, {
-          format,
-          env,
-          minify: minifyOption === 'minified',
-        });
+        await Promise.all([
+          this.copyFiles(outFolder, copyFiles, format),
+          this.buildFiles(buildFiles, formatConfig, {
+            format,
+            env,
+            minify: minifyOption === 'minified',
+          }),
+          this.buildTypeDefinitionFiles(buildFiles, formatConfig, format),
+        ]);
       });
     });
   }
