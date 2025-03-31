@@ -12,13 +12,13 @@ This package does the heavy lifting and builds on top of [Rollupjs](https://roll
 
 ## Motivation for this package
 
-The Javascript ecosystem is diverse, and every changing with new language proposals. There is big need to support older environments while writing in modern Javascript syntax.
+The Javascript ecosystem is diverse, and ever changing with new language proposals. There is big need to support older environments while writing in modern Javascript/typescript syntax.
 
 Library developers face the problem of shipping modern Javascript codes to formats that are compatible with NodeJs, browsers and bundle tools (webpack) in the leanest forms.
 
 Moreso, there is need to generate typescript definition files for most projects (javascript and typescript projects alike), sourcemaps, minification, production build, development build, resolution of dynamic imports, etc.
 
-This library allows you to generate commonjs, es module, and browser builds at once with sourcemaps and typescript definition files. It is very configurable.
+This library allows you to generate commonjs, es module, and browser builds at once with sourcemaps and typescript definition files outputs. It is very configurable.
 
 This package automates the whole process with the right configurations and makes it easy to get all target build formats generated in one command with configurability in mind.
 
@@ -143,10 +143,12 @@ module.exports = createConfig({
     // defines outputs
     outputs: [
       ['development', 'minified'],
-      ['production', 'minified'],
+      ['production', 'unminified'],
     ],
 
-    minifiedSuffix: 'min',
+    minifiedSuffix: 'min', // set to false if you do not want .[min] prefix in minified builds,
+    prodBuildSuffix: 'production', // set to false or empty string if you do not want .[production] suffix in output files,
+    devBuildSuffix: 'development', // set to false or empty string if you do not want .[development] suffix in output files
   },
 
   /**
@@ -156,10 +158,13 @@ module.exports = createConfig({
     out: './build/umd',
     // defines outputs
     outputs: [
-      ['development', 'minified'],
+      ['development', 'unminified'],
       ['production', 'minified'],
     ],
-    minifiedSuffix: 'min',
+
+    minifiedSuffix: 'min', // set to false if you do not want .[min] prefix in minified builds,
+    prodBuildSuffix: 'production', // set to false or empty string if you do not want .[production] suffix in output files,
+    devBuildSuffix: 'development', // set to false or empty string if you do not want .[development] suffix in output files
   },
 });
 ```
@@ -174,6 +179,8 @@ The following options can be parsed to the cli binary
 ### Environment and minified builds
 
 When generating distribution builds, aka `umd` and `iife`, it is desirable to have separate development and production build with minified and non minified versions.
+
+The value of process.env.NODE_ENV has to be injected into the outputs as well, to reduce build size by removing development only lines of code in production builds such as code lines for debugging.
 
 The build filename format for dist builds is `[filename].[env].[min]?.js`;
 

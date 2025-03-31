@@ -2,7 +2,7 @@ import { GlobalsOption, Plugin } from 'rollup';
 
 export type BuildFormat = 'cjs' | 'es' | 'iife' | 'umd';
 
-export type BuildEnvironment = 'development' | 'production' | 'uni';
+export type BuildEnvironment = 'development' | 'production';
 
 export type Sourcemap = true | false | 'inline';
 
@@ -75,6 +75,18 @@ export interface FormatConfig {
    * if set to false, there will be no suffix added
    */
   minifiedSuffix?: string | false;
+
+  /**
+   * suffix to be added to dev build output files for iife and umd build formats, defaults to development
+   * if set to false, there will be no suffix added
+   */
+  devBuildSuffix?: string | false;
+
+  /**
+   * suffix to be added to prod build output files for iife and umd build formats, defaults to production
+   * if set to false, there will be no suffix added
+   */
+  prodBuildSuffix?: string | false;
 }
 
 export type Config = {

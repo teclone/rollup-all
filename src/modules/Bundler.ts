@@ -209,7 +209,7 @@ class Bundler {
   private buildFiles(
     fileModules: Module[],
     config: FormatConfig,
-    opts: { format: BuildFormat; env: BuildEnvironment; minify?: boolean }
+    opts: { format: BuildFormat; env?: BuildEnvironment; minify?: boolean }
   ) {
     const { silent } = this.config;
     const {
@@ -243,27 +243,38 @@ class Bundler {
       extensions,
       format,
       minify,
-      env,
       plugins: extraPlugins,
-
       babelPlugins,
       babelPresets,
     });
 
-    const envPrefix = env !== 'uni' ? env : '';
     log(
       chalk.gray(
-        [
-          'Generating',
-          format,
-          minify ? 'minified' : '',
-          envPrefix,
-          'build...\n',
-        ]
+        ['Generating', format, minify ? 'minified' : '', env, 'build...\n']
           .filter(Boolean)
           .join(' ')
       )
     );
+
+    let envSuffix = '';
+    switch (env) {
+      case 'development':
+        if (config.devBuildSuffix !== false) {
+          envSuffix = config.devBuildSuffix ?? 'development';
+        }
+        break;
+
+      case 'production':
+        if (config.prodBuildSuffix !== false) {
+          envSuffix = config.prodBuildSuffix ?? 'production';
+        }
+        break;
+    }
+
+    let minifySuffix = '';
+    if (minify && config.minifiedSuffix !== false) {
+      minifySuffix = config.minifiedSuffix ?? 'min';
+    }
 
     return Promise.all(
       fileModules.map((fileModule) => {
@@ -274,12 +285,7 @@ class Bundler {
 
         const newRelativePath = path.join(
           fileModule.locationRelativeToSrc,
-          [
-            fileModule.baseName,
-            envPrefix,
-            minify && config.minifiedSuffix ? config.minifiedSuffix : '',
-            'js',
-          ]
+          [fileModule.baseName, envSuffix, minifySuffix, 'js']
             .filter(Boolean)
             .join('.')
         );
@@ -414,7 +420,6 @@ class Bundler {
           this.copyFiles(outFolder, copyFiles, format),
           this.buildFiles(buildFiles, formatConfig, {
             format,
-            env: 'uni',
             minify: false,
           }),
           this.buildTypeDefinitionFiles(buildFiles, formatConfig, format),
@@ -422,7 +427,12 @@ class Bundler {
         return;
       }
 
-      await forEach(formatConfig.outputs || [], async ([env, minifyOption]) => {
+      const outputs = formatConfig.outputs ?? [
+        ['development', 'minified'],
+        ['production', 'minified'],
+      ];
+
+      for (const [env, minifyOption] of outputs) {
         process.env.NODE_ENV = env;
         await Promise.all([
           this.copyFiles(outFolder, copyFiles, format),
@@ -433,7 +443,7 @@ class Bundler {
           }),
           this.buildTypeDefinitionFiles(buildFiles, formatConfig, format),
         ]);
-      });
+      }
     });
   }
 }

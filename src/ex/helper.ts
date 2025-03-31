@@ -1,5 +1,12 @@
 import { Config } from '../@types';
 
+const name =
+  process.env.NODE_ENV === 'production'
+    ? 'Production-build'
+    : 'Development-build';
+
+console.log(name);
+
 export const config: Config = {
   defaults: {
     src: './src',
@@ -24,11 +31,6 @@ export const config: Config = {
     sourcemap: true,
 
     /**
-     * minify, only applies to iife and umd builds
-     */
-    minify: true,
-
-    /**
      * applies to umd and iife builds
      */
     globals: {},
@@ -42,18 +44,12 @@ export const config: Config = {
     include: [],
 
     plugins: [],
-
-    /**
-     * build envs, only applies to iife and umd builds
-     */
-    envs: ['production', 'development'],
   },
 
   /**
    * cjs build config
    */
   cjs: {
-    enabled: true,
     out: './build/cjs',
   },
 
@@ -61,7 +57,6 @@ export const config: Config = {
    * es build config
    */
   es: {
-    enabled: true,
     out: './build/es',
   },
 
@@ -69,7 +64,6 @@ export const config: Config = {
    * iife build config, disabled by default
    */
   iife: {
-    enabled: false,
     out: './build/iife',
     src: 'src/ex',
   },
@@ -78,7 +72,6 @@ export const config: Config = {
    * umd build config, disabled by default
    */
   umd: {
-    enabled: false,
     out: './build/umd',
   },
 };

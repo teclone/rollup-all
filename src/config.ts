@@ -2,6 +2,7 @@ import { Config } from './@types';
 
 export const config: Config = {
   formats: ['cjs', 'es'],
+
   defaults: {
     src: './src',
 
@@ -57,14 +58,6 @@ export const config: Config = {
    */
   iife: {
     out: './build/iife',
-
-    // defines outputs
-    outputs: [
-      ['development', 'minified'],
-      ['production', 'minified'],
-    ],
-
-    minifiedSuffix: 'min',
   },
 
   /**
@@ -72,14 +65,5 @@ export const config: Config = {
    */
   umd: {
     out: './build/umd',
-    src: './src',
-
-    // defines outputs
-    outputs: [
-      ['development', 'minified'],
-      ['production', 'minified'],
-    ],
-
-    minifiedSuffix: 'min',
   },
 };
