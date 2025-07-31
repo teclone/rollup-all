@@ -18,7 +18,7 @@ import * as ts from 'typescript';
 import { copy } from '../utils/copy';
 import { camelCase } from '../utils/camelCase';
 import { forEach } from '../utils/forEach';
-import { formats } from '../constants';
+import { EXCLUDE_FILES_EXT_REGEX, formats } from '../constants';
 
 const allExternal = () => true;
 
@@ -110,8 +110,7 @@ class Bundler {
 
             const fileNameSegments = fileName.split('.');
 
-            const isTestFile =
-              /\.(spec|test|stories|tests|specs|cy)\.[\w-_]+$/i.test(fileName);
+            const isTestFile = EXCLUDE_FILES_EXT_REGEX.test(fileName);
             const isTypeDefinitionFile = fileName.endsWith('.d.ts');
 
             if (fileNameSegments.length > 1) {
