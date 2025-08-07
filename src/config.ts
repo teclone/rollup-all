@@ -3,41 +3,39 @@ import { Config } from './@types';
 export const config: Config = {
   formats: ['cjs', 'es'],
 
-  defaults: {
-    src: './src',
+  src: './src',
 
-    entryFile: './index',
+  entryFile: './index',
 
-    /**
-     * allowed file extensions
-     */
-    extensions: ['.js', '.ts', '.jsx', '.tsx'],
+  /**
+   * allowed file extensions
+   */
+  extensions: ['.js', '.ts', '.jsx', '.tsx'],
 
-    /**
-     * boolean indicating if the interop rollup setting should be enabled
-     */
-    interop: true,
+  /**
+   * boolean indicating if the interop rollup setting should be enabled
+   */
+  interop: true,
 
-    /**
-     * boolean indicating if sourcemap should be generated, can be true, false, or 'inline'
-     */
-    sourcemap: true,
+  /**
+   * boolean indicating if sourcemap should be generated, can be true, false, or 'inline'
+   */
+  sourcemap: true,
 
-    /**
-     * applies to umd and iife builds
-     */
-    globals: {},
+  /**
+   * applies to umd and iife builds
+   */
+  globals: {},
 
-    babelPlugins: [],
+  babelPlugins: [],
 
-    babelPresets: [],
+  babelPresets: [],
 
-    exclude: [],
+  exclude: [],
 
-    include: [],
+  include: [],
 
-    plugins: [],
-  },
+  plugins: [],
 
   /**
    * cjs build config

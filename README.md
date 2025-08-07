@@ -81,44 +81,46 @@ module.exports = createConfig({
    */
   formats: ['cjs', 'es'],
 
+  // defines default configurations for all build formats
+
+  // default src directory
+  src: './src',
+
+  // default entry file
+  entryFile: './index',
+
   /**
-   * defines default configurations for all build formats
+   * default allowed file extensions
    */
-  defaults: {
-    src: './src',
+  extensions: ['.js', '.ts', '.jsx', '.tsx'],
 
-    entryFile: './index',
+  /**
+   * boolean indicating if the interop rollup setting should be enabled
+   */
+  interop: true,
 
-    /**
-     * allowed file extensions
-     */
-    extensions: ['.js', '.ts', '.jsx', '.tsx'],
+  /**
+   * boolean indicating if sourcemap should be generated, can be true, false, or 'inline'
+   */
+  sourcemap: true,
 
-    /**
-     * boolean indicating if the interop rollup setting should be enabled
-     */
-    interop: true,
+  /**
+   * applies to umd and iife builds
+   */
+  globals: {},
 
-    /**
-     * boolean indicating if sourcemap should be generated, can be true, false, or 'inline'
-     */
-    sourcemap: true,
+  babelPlugins: [],
 
-    /**
-     * applies to umd and iife builds
-     */
-    globals: {},
+  babelPresets: [],
 
-    babelPlugins: [],
+  exclude: [],
 
-    babelPresets: [],
+  include: [],
 
-    exclude: [],
-
-    include: [],
-
-    plugins: [],
-  },
+  /**
+   * rollup plugins to add for all builds
+   */
+  plugins: [],
 
   /**
    * cjs build config
@@ -146,9 +148,14 @@ module.exports = createConfig({
       ['production', 'unminified'],
     ],
 
-    minifiedSuffix: 'min', // set to false if you do not want .[min] prefix in minified builds,
-    prodBuildSuffix: 'production', // set to false or empty string if you do not want .[production] suffix in output files,
-    devBuildSuffix: 'development', // set to false or empty string if you do not want .[development] suffix in output files
+    // set to false if you do not want .[min] prefix in minified builds,
+    minifiedSuffix: 'min',
+
+    // set to false or empty string if you do not want .production suffix in prod build ouputs
+    prodBuildSuffix: 'production',
+
+    // set to false or empty string if you do not want .development suffix in prod build ouputs
+    devBuildSuffix: 'development',
   },
 
   /**
