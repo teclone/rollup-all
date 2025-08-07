@@ -7,8 +7,6 @@ export type BuildEnvironment = 'development' | 'production';
 export type Sourcemap = true | false | 'inline';
 
 export interface FormatConfig {
-  moduleName?: string;
-
   src?: string;
 
   out?: string;
@@ -89,19 +87,42 @@ export interface FormatConfig {
   prodBuildSuffix?: string | false;
 }
 
-export type Config = {
+export interface Config extends Omit<FormatConfig, 'out'> {
   /**
    * formats to build
    */
   formats?: Array<BuildFormat>;
 
   /**
+   * module name
+   */
+  moduleName?: string;
+
+  /**
    * if true, output logs are not logged
    */
   silent?: boolean;
-} & Partial<{
-  [p in BuildFormat | 'defaults']: FormatConfig;
-}>;
+
+  /**
+   * cjs specific config
+   */
+  cjs?: FormatConfig;
+
+  /**
+   * iife specific config
+   */
+  iife?: FormatConfig;
+
+  /**
+   * es module specific config
+   */
+  es?: FormatConfig;
+
+  /**
+   * umd specific config
+   */
+  umd?: FormatConfig;
+}
 
 export interface Module {
   // id for indexing this file

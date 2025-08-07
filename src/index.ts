@@ -6,7 +6,6 @@ export const createConfig = (config: Config) => {
 
 export { Bundler } from './modules/Bundler';
 export * from './utils/camelCase';
-export * from './utils/copy';
 export * from './utils/getClosestPackageDir';
 export * from './utils/isCallable';
 export * from './utils/isObject';

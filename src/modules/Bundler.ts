@@ -15,10 +15,10 @@ import { getRollupPlugins } from './utils';
 import chalk from 'chalk';
 import globToRegex from 'glob-to-regexp';
 import * as ts from 'typescript';
-import { copy } from '../utils/copy';
 import { camelCase } from '../utils/camelCase';
 import { forEach } from '../utils/forEach';
-import { EXCLUDE_FILES_EXT_REGEX, formats } from '../constants';
+import { EXCLUDE_FILES_EXT_REGEX } from '../constants';
+import merge from 'lodash/merge';
 
 const allExternal = () => true;
 
@@ -55,22 +55,50 @@ class Bundler {
   constructor(givenConfig: Config = {} as Config) {
     this.entryPath = process.cwd();
 
-    const config = copy({}, defaultConfig, givenConfig) as Config;
+    const {
+      silent,
+      moduleName,
+      formats = ['cjs', 'es'],
+      cjs,
+      iife,
+      umd,
+      es,
+      ...others
+    } = givenConfig;
+
+    const processedConfig: Config = {
+      formats,
+      moduleName,
+      silent,
+    };
 
     formats.forEach((format) => {
-      config[format] = resolveFormatConfig(
-        { ...config.defaults, ...config[format] },
+      processedConfig[format] = resolveFormatConfig(
+        merge(
+          {},
+          {
+            src: './src',
+            out: `./build/${format}`,
+            entryFile: './index',
+            extensions: ['.js', '.ts', '.jsx', '.tsx'],
+            interop: true,
+            sourcemap: true,
+            ...others,
+          },
+          givenConfig[format] || {}
+        ),
         this.entryPath
       );
     });
 
-    this.config = config;
+    this.config = processedConfig;
   }
 
   /**
    * parses all files into module targets
    */
   private getModules(
+    moduleName: string,
     modules: Module[],
     config: FormatConfig,
     src: string,
@@ -98,6 +126,7 @@ class Bundler {
           if (fs.statSync(filePath).isDirectory()) {
             promises.push(
               this.getModules(
+                moduleName,
                 modules,
                 config,
                 filePath,
@@ -141,7 +170,7 @@ class Bundler {
 
               locationRelativeToSrc: currentRelativeDir,
 
-              moduleName: isEntryFile ? config.moduleName : camelCase(baseName),
+              moduleName: isEntryFile ? moduleName : camelCase(baseName),
 
               isBuildFile,
               isAssetFile,
@@ -403,6 +432,7 @@ class Bundler {
       const formatConfig = config[format];
 
       const modules = await this.getModules(
+        config.moduleName,
         [],
         formatConfig,
         formatConfig.src,

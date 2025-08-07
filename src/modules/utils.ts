@@ -6,7 +6,7 @@ import terser from '@rollup/plugin-terser';
 import image from '@rollup/plugin-image';
 import dynamicImportVars from '@rollup/plugin-dynamic-import-vars';
 import shebang from 'rollup-plugin-preserve-shebang';
-import { BuildFormat, Config } from '../@types';
+import { BuildFormat, FormatConfig } from '../@types';
 import path from 'path';
 import fs from 'fs';
 import { Plugin } from 'rollup';
@@ -29,13 +29,19 @@ export const getRollupPlugins = (opts: {
 
   extensions: string[];
 
-  babelPresets: Config['defaults']['babelPresets'];
-  babelPlugins: Config['defaults']['babelPlugins'];
+  babelPresets: FormatConfig['babelPresets'];
+  babelPlugins: FormatConfig['babelPlugins'];
 
   plugins: Plugin[];
 }) => {
-  const { extensions, format, plugins, minify, babelPlugins, babelPresets } =
-    opts;
+  const {
+    extensions,
+    format,
+    plugins = [],
+    minify,
+    babelPlugins = [],
+    babelPresets = [],
+  } = opts;
   const internalNodeModulesDir = getClosestPackageDir(__dirname);
   const isDistBuild = format === 'umd' || format === 'iife';
 
